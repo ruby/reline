@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["aycabta"]
   spec.email         = ["aycabta@gmail.com"]
 
-  spec.summary       = %q{TODO: Write a short summary, because RubyGems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
+  spec.summary       = %q{Alternative GNU Readline or Editline implementation by pure Ruby.}
+  spec.description   = %q{Alternative GNU Readline or Editline implementation by pure Ruby.}
   spec.homepage      = "https://github.com/aycabta/reline"
   spec.license       = "Ruby License"
 
