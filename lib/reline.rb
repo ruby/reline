@@ -1,4 +1,7 @@
+require 'io/console'
 require 'reline/version'
+require 'reline/line_editor'
+require 'reline/key_actor'
 
 module Reline
   FILENAME_COMPLETION_PROC = nil
@@ -35,11 +38,16 @@ module Reline
   end
 
   def self.readline(prompt = '', add_hist = false)
-    print prompt
-    line = STDIN.gets
-    if add_hist
-      HISTORY << line
+    line_editor = LineEditor.new(KeyActor::Base, prompt)
+    $stdin.raw do |io|
+      while c = io.readbyte
+        line_editor.input_key(c)
+        break if line_editor.finished?
+      end
     end
-    line
+    if add_hist
+      HISTORY << line_editor.line
+    end
+    line_editor.line
   end
 end
