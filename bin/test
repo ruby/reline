@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "reline"
+
+trap("SIGINT") do
+  puts
+  exit 0
+end
+
+puts "This is echo program by Reline"
+while line = Reline.readline("> ")
+  case line.chomp
+  when "exit", "quit"
+    exit 0
+  when ""
+    # NOOP
+  else
+    puts line
+  end
+end
+puts
