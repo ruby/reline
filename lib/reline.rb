@@ -1,4 +1,4 @@
-require "reline/version"
+require 'reline/version'
 
 module Reline
   FILENAME_COMPLETION_PROC = nil
@@ -34,7 +34,7 @@ module Reline
     self
   end
 
-  def self.readline(prompt = "", add_hist = false)
+  def self.readline(prompt = '', add_hist = false)
     print prompt
     line = STDIN.gets
     if add_hist
