@@ -1,17 +1,17 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "editline/version"
+require "reline/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "editline"
-  spec.version       = Editline::VERSION
+  spec.name          = "reline"
+  spec.version       = Reline::VERSION
   spec.authors       = ["aycabta"]
   spec.email         = ["aycabta@gmail.com"]
 
   spec.summary       = %q{TODO: Write a short summary, because RubyGems requires one.}
   spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "https://github.com/aycabta/editline"
+  spec.homepage      = "https://github.com/aycabta/reline"
   spec.license       = "Ruby License"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
