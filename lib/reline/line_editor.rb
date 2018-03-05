@@ -16,7 +16,7 @@ class Reline::LineEditor
 
   def input_key(key)
     method_symbol = @key_actor.get_method(key)
-    send(method_symbol, key) if method_symbol
+    __send__(method_symbol, key) if method_symbol and respond_to?(method_symbol, true)
   end
 
   def finished?
