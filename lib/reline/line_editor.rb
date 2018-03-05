@@ -6,7 +6,7 @@ class Reline::LineEditor
 
   def initialize(key_actor, prompt)
     @prompt = prompt
-    @cursor = @prompt.size
+    @cursor = 0
     @line = String.new
     @key_actor = key_actor
     @finished = false
@@ -28,14 +28,15 @@ class Reline::LineEditor
   end
 
   private def ed_insert(key)
-    print key.chr
-    @cursor += 1
-    @line += key.chr
-  end
-
-  private def ed_newline(key)
-    print "\r\n"
-    @finished = true
-    @line += "\n"
+    if @cursor == @line.size
+      print key.chr
+      @line += key.chr
+      @cursor += 1
+    else
+      @line.insert(@cursor, key.chr)
+      print @line.slice(@cursor..-1)
+      @cursor += 1
+      print "\e[#{@prompt.size + @cursor + 1}G"
+    end
   end
 end
