@@ -39,4 +39,5 @@ class Reline::LineEditor
       print "\e[#{@prompt.size + @cursor + 1}G"
     end
   end
+  alias_method :ed_digit, :ed_insert
 end
