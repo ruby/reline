@@ -72,7 +72,7 @@ class Reline::LineEditor
   end
 
   private def re_delete_prev_char(key)
-    if @cursor > 1
+    if @cursor > 0
       @line.slice!(@cursor - 1)
       @cursor -= 1
       print "\e[#{@prompt.size + @cursor + 1}G"
