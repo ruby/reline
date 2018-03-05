@@ -1,7 +1,6 @@
 require 'io/console'
 require 'reline/version'
-require 'reline/line_editor'
-require 'reline/key_actor'
+require 'reline/readline'
 
 module Reline
   FILENAME_COMPLETION_PROC = nil
@@ -37,37 +36,8 @@ module Reline
     self
   end
 
-  def self.getc
-    c = nil
-    until c
-      result = select([$stdin], [], [], 0.1)
-      next if result.nil?
-      c = $stdin.read(1)
-    end
-    c.ord
-  end
-
   def self.readline(prompt = '', add_hist = false)
-    otio = `stty -g`
-
-    setting = ' -echo -icrnl cbreak'
-    if (`stty -a`.scan(/-parenb\b/).first == '-parenb')
-      setting << ' pass8'
-    end
-    setting << ' -ixoff'
-    `stty #{setting}`
-
-    line_editor = LineEditor.new(KeyActor::Emacs, prompt)
-    while c = getc
-      line_editor.input_key(c)
-      break if line_editor.finished?
-    end
-    if add_hist
-      HISTORY << line_editor.line
-    end
-
-    `stty #{otio}`
-
-    line_editor.line
+    readline = Reline::Readline.new(prompt, add_hist)
+    readline.run
   end
 end

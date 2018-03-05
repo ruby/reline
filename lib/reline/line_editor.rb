@@ -23,6 +23,10 @@ class Reline::LineEditor
     @finished
   end
 
+  def finish
+    @finished = true
+  end
+
   private def ed_insert(key)
     print key.chr
     @cursor += 1
