@@ -1,4 +1,3 @@
-require 'io/console'
 require 'reline/version'
 require 'reline/readline'
 
