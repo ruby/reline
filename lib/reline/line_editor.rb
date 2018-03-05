@@ -80,4 +80,12 @@ class Reline::LineEditor
       print "\e[#{@prompt.size + @cursor + 1}G"
     end
   end
+
+  private def re_delete_or_list(key)
+    if @line.size > 0 and @cursor < @line.size
+      @line.slice!(@cursor)
+      print @line.slice(@cursor..-1) + ' '
+      print "\e[#{@prompt.size + @cursor + 1}G"
+    end
+  end
 end
