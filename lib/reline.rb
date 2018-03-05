@@ -57,7 +57,7 @@ module Reline
     setting << ' -ixoff'
     `stty #{setting}`
 
-    line_editor = LineEditor.new(KeyActor::Base, prompt)
+    line_editor = LineEditor.new(KeyActor::Emacs, prompt)
     while c = getc
       line_editor.input_key(c)
       break if line_editor.finished?
