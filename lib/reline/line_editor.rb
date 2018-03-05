@@ -40,4 +40,44 @@ class Reline::LineEditor
     end
   end
   alias_method :ed_digit, :ed_insert
+
+  private def ed_next_char(key)
+    if @cursor < @line.size
+      @cursor += 1
+      print "\e[1C"
+    end
+  end
+
+  private def ed_prev_char(key)
+    if @cursor > 0
+      @cursor -= 1
+      print "\e[1D"
+    end
+  end
+
+  private def ed_move_to_beg(key)
+    @cursor = 0
+    print "\e[#{@prompt.size + 1}G"
+  end
+
+  private def ed_move_to_end(key)
+    @cursor = @line.size
+    print "\e[#{@prompt.size + @line.size + 1}G"
+  end
+
+  private def ed_newline(key)
+    print "\r\n"
+    @finished = true
+    @line += "\n"
+  end
+
+  private def re_delete_prev_char(key)
+    if @cursor > 1
+      @line.slice!(@cursor - 1)
+      @cursor -= 1
+      print "\e[#{@prompt.size + @cursor + 1}G"
+      print @line.slice(@cursor..-1) + ' '
+      print "\e[#{@prompt.size + @cursor + 1}G"
+    end
+  end
 end
