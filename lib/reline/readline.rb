@@ -46,7 +46,7 @@ class Reline::Readline
         @line_editor.input_key(c)
         break if @line_editor.finished?
       end
-      if @add_hist
+      if @add_hist and @line_editor.line and @line_editor.line.chomp.size > 0
         Reline::HISTORY << @line_editor.line.chomp
       end
     rescue StandardError => e
