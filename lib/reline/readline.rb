@@ -22,7 +22,7 @@ class Reline::Readline
 
   def prep
     int_handle = Signal.trap('INT', 'IGNORE')
-    @otio = `stty -g`
+    @otio = `stty -g`.chomp
     setting = ' -echo -icrnl cbreak'
     if (`stty -a`.scan(/-parenb\b/).first == '-parenb')
       setting << ' pass8'
