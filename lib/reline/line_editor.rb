@@ -81,6 +81,25 @@ class Reline::LineEditor
     end
   end
 
+  private def edit_kill_line(key)
+    if @cursor > 1
+      @line.slice!(@cursor..@line.length)
+      print "\e[0K"
+    end
+  end
+
+  private def emacs_kill_line(key)
+    if @cursor > 1
+      @line.slice!(0..(@cursor - 1))
+      @cursor = 0
+      print "\e[2K"
+      print "\e[1G"
+      print @prompt
+      print @line
+      print "\e[#{@prompt.size + 1}G"
+    end
+  end
+
   private def emacs_delete_or_list(key)
     if @line.size == 0
       @line = nil
