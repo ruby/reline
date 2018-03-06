@@ -82,7 +82,10 @@ class Reline::LineEditor
   end
 
   private def emacs_delete_or_list(key)
-    if @line.size > 0 and @cursor < @line.size
+    if @line.size == 0
+      @line = nil
+      finish
+    elsif @line.size > 0 and @cursor < @line.size
       @line.slice!(@cursor)
       print @line.slice(@cursor..-1) + ' '
       print "\e[#{@prompt.size + @cursor + 1}G"
