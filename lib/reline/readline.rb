@@ -41,13 +41,6 @@ class Reline::Readline
   def run
     prep
 
-    int_handle = Signal.trap('INT', proc {
-      @line_editor.finish
-      deprep
-      int_handle.call
-      Signal.trap('INT', int_handle)
-      return
-    })
     begin
       while c = getc
         @line_editor.input_key(c)
@@ -60,7 +53,6 @@ class Reline::Readline
       deprep
       raise e
     end
-    Signal.trap('INT', int_handle)
 
     deprep
 

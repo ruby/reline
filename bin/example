@@ -3,20 +3,23 @@
 require 'bundler/setup'
 require 'reline'
 
-Signal.trap('INT') do
-  puts '^C'
-  exit 0
-end
+stty_save = `stty -g`.chomp
 
-puts 'This is echo program by Reline.'
-while line = Reline.readline("> ")
-  case line.chomp
-  when 'exit', 'quit'
-    exit 0
-  when ''
-    # NOOP
-  else
-    puts line
+begin
+  puts 'This is echo program by Reline.'
+  while line = Reline.readline("> ")
+    case line.chomp
+    when 'exit', 'quit'
+      exit 0
+    when ''
+      # NOOP
+    else
+      puts line
+    end
   end
+rescue Interrupt
+  puts '^C'
+  `stty #{stty_save}`
+  exit 0
 end
 puts
