@@ -1,3 +1,4 @@
+require 'io/console'
 require 'reline/version'
 require 'reline/readline'
 
@@ -28,10 +29,11 @@ module Reline
   end
 
   def self.get_screen_size
-    [Integer, Integer]
+    $stdin.winsize
   end
 
   def self.set_screen_size(rows, columns)
+    $stdin.winsize = [rows, columns]
     self
   end
 
