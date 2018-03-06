@@ -20,6 +20,24 @@ module Reline
     attr_writer :output
   end
 
+  @basic_quote_characters = '"\''
+  @basic_word_break_characters = " \t\n`><=;|&{("
+  @completer_quote_characters
+  @completer_word_break_characters = @basic_word_break_characters.dup
+  @completion_append_character
+  def self.completion_append_character=(val)
+    if val.size == 1
+      @completion_append_character = val
+    elsif val.size > 1
+      @completion_append_character = val[0]
+    else
+      @completion_append_character = val
+    end
+  end
+  @completion_case_fold
+  @completion_proc
+  @filename_quote_characters
+
   def self.vi_editing_mode
     nil
   end
