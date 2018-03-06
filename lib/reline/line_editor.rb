@@ -27,7 +27,7 @@ class Reline::LineEditor
     @finished = true
   end
 
-  private def ed_insert(key)
+  private def edit_insert(key)
     if @cursor == @line.size
       print key.chr
       @line += key.chr
@@ -39,39 +39,39 @@ class Reline::LineEditor
       print "\e[#{@prompt.size + @cursor + 1}G"
     end
   end
-  alias_method :ed_digit, :ed_insert
+  alias_method :edit_digit, :edit_insert
 
-  private def ed_next_char(key)
+  private def edit_next_char(key)
     if @cursor < @line.size
       @cursor += 1
       print "\e[1C"
     end
   end
 
-  private def ed_prev_char(key)
+  private def edit_prev_char(key)
     if @cursor > 0
       @cursor -= 1
       print "\e[1D"
     end
   end
 
-  private def ed_move_to_beg(key)
+  private def edit_move_to_beg(key)
     @cursor = 0
     print "\e[#{@prompt.size + 1}G"
   end
 
-  private def ed_move_to_end(key)
+  private def edit_move_to_end(key)
     @cursor = @line.size
     print "\e[#{@prompt.size + @line.size + 1}G"
   end
 
-  private def ed_newline(key)
+  private def edit_newline(key)
     print "\r\n"
     @finished = true
     @line += "\n"
   end
 
-  private def re_delete_prev_char(key)
+  private def emacs_delete_prev_char(key)
     if @cursor > 0
       @line.slice!(@cursor - 1)
       @cursor -= 1
@@ -81,7 +81,7 @@ class Reline::LineEditor
     end
   end
 
-  private def re_delete_or_list(key)
+  private def emacs_delete_or_list(key)
     if @line.size > 0 and @cursor < @line.size
       @line.slice!(@cursor)
       print @line.slice(@cursor..-1) + ' '
