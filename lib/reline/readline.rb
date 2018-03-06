@@ -47,7 +47,7 @@ class Reline::Readline
         break if @line_editor.finished?
       end
       if @add_hist
-        Reline::HISTORY << @line_editor.line
+        Reline::HISTORY << @line_editor.line.chomp
       end
     rescue StandardError => e
       deprep
