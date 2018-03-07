@@ -7,7 +7,7 @@ stty_save = `stty -g`.chomp
 
 begin
   puts 'This is echo program by Reline.'
-  while line = Reline.readline("> ")
+  while line = Reline.readline("> ", true)
     case line.chomp
     when 'exit', 'quit'
       exit 0

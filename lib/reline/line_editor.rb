@@ -10,6 +10,8 @@ class Reline::LineEditor
     @line = String.new
     @key_actor = key_actor
     @finished = false
+    @history_pointer = nil
+    @line_backup_in_history
 
     print prompt
   end
@@ -65,7 +67,61 @@ class Reline::LineEditor
     print "\e[#{@prompt.size + @line.size + 1}G"
   end
 
+  private def edit_prev_history(key)
+    if Reline::HISTORY.empty?
+      return
+    end
+    if @history_pointer.nil?
+      @history_pointer = Reline::HISTORY.size - 1
+      @line_backup_in_history = @line
+      @line = Reline::HISTORY[@history_pointer]
+      print "\e[2K"
+      print "\e[1G"
+      print @prompt
+      print @line
+      @cursor = @line.size
+    elsif @history_pointer.zero?
+      return
+    else
+      Reline::HISTORY[@history_pointer] = @line
+      @history_pointer -= 1
+      @line = Reline::HISTORY[@history_pointer]
+      print "\e[2K"
+      print "\e[1G"
+      print @prompt
+      print @line
+      @cursor = @line.size
+    end
+  end
+
+  private def edit_next_history(key)
+    if @history_pointer.nil?
+      return
+    elsif @history_pointer == (Reline::HISTORY.size - 1)
+      @history_pointer = nil
+      @line = @line_backup_in_history
+      print "\e[2K"
+      print "\e[1G"
+      print @prompt
+      print @line
+      @cursor = @line.size
+    else
+      Reline::HISTORY[@history_pointer] = @line
+      @history_pointer += 1
+      @line = Reline::HISTORY[@history_pointer]
+      print "\e[2K"
+      print "\e[1G"
+      print @prompt
+      print @line
+      @cursor = @line.size
+    end
+  end
+
   private def edit_newline(key)
+    if @history_pointer
+      Reline::HISTORY[@history_pointer] = @line
+      @history_pointer = nil
+    end
     print "\r\n"
     @finished = true
     @line += "\n"
