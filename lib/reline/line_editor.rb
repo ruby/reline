@@ -1,5 +1,6 @@
 require 'reline'
 require 'reline/key_actor'
+require 'reline/kill_ring'
 
 class Reline::LineEditor
   attr_reader :line
@@ -12,13 +13,17 @@ class Reline::LineEditor
     @finished = false
     @history_pointer = nil
     @line_backup_in_history
+    @kill_ring = Reline::KillRing.new
 
     print prompt
   end
 
   def input_key(key)
     method_symbol = @key_actor.get_method(key)
-    __send__(method_symbol, key) if method_symbol and respond_to?(method_symbol, true)
+    if method_symbol and respond_to?(method_symbol, true)
+      __send__(method_symbol, key)
+      @kill_ring.process
+    end
   end
 
   def finished?
@@ -139,14 +144,14 @@ class Reline::LineEditor
 
   private def edit_kill_line(key)
     if @line.size > @cursor
-      @line.slice!(@cursor..@line.length)
+      @kill_ring.append(@line.slice!(@cursor..@line.length))
       print "\e[0K"
     end
   end
 
   private def emacs_kill_line(key)
     if @cursor > 0
-      @line.slice!(0..(@cursor - 1))
+      @kill_ring.append(@line.slice!(0..(@cursor - 1)), true)
       @cursor = 0
       print "\e[2K"
       print "\e[1G"
@@ -163,6 +168,31 @@ class Reline::LineEditor
     elsif @line.size > 0 and @cursor < @line.size
       @line.slice!(@cursor)
       print @line.slice(@cursor..-1) + ' '
+      print "\e[#{@prompt.size + @cursor + 1}G"
+    end
+  end
+
+  private def emacs_yank(key)
+    yanked = @kill_ring.yank
+    if yanked
+      @line.insert(@cursor, yanked)
+      print @line.slice(@cursor..-1)
+      @cursor += yanked.size
+      print "\e[#{@prompt.size + @cursor + 1}G"
+    end
+  end
+
+  private def emacs_yank_pop(key)
+    yanked, prev_size = @kill_ring.yank_pop
+    if yanked
+      @cursor -= prev_size
+      @line.slice!(@cursor..(@cursor + prev_size - 1))
+      @line.insert(@cursor, yanked)
+      @cursor += yanked.size
+      print "\e[2K"
+      print "\e[1G"
+      print @prompt
+      print @line
       print "\e[#{@prompt.size + @cursor + 1}G"
     end
   end
