@@ -63,6 +63,10 @@ class Reline::LineEditor
     new_str
   end
 
+  private def calculate_width(str)
+    str.grapheme_clusters.inject(0) { |width, gc| width += Reline::Unicode.get_mbchar_width(gc) }
+  end
+
   private def edit_insert(key)
     if key.instance_of?(Array)
       mbchar = key.map(&:chr).join.force_encoding('UTF-8')
@@ -218,7 +222,7 @@ class Reline::LineEditor
     if @line.bytesize > @byte_pointer
       @line, deleted = byteslice!(@line, @byte_pointer, @line.bytesize - @byte_pointer)
       @byte_pointer = @line.bytesize
-      @cursor = @cursor_max = @line.grapheme_clusters.inject(0) { |width, gc| width += Reline::Unicode.get_mbchar_width(gc) }
+      @cursor = @cursor_max = calculate_width(@line)
       @kill_ring.append(deleted)
       print "\e[0K"
     end
@@ -229,7 +233,7 @@ class Reline::LineEditor
       @line, deleted = byteslice!(@line, 0, @byte_pointer)
       @byte_pointer = 0
       @kill_ring.append(deleted, true)
-      @cursor_max = @line.grapheme_clusters.inject(0) { |width, gc| width += Reline::Unicode.get_mbchar_width(gc) }
+      @cursor_max = calculate_width(@line)
       @cursor = 0
       print "\e[2K"
       print "\e[1G"
@@ -262,7 +266,7 @@ class Reline::LineEditor
     if yanked
       @line = byteinsert(@line, @byte_pointer, yanked)
       print @line.byteslice(@byte_pointer..-1)
-      yanked_width = yanked.grapheme_clusters.inject(0) { |width, gc| width += Reline::Unicode.get_mbchar_width(gc) }
+      yanked_width = calculate_width(yanked)
       @cursor += yanked_width
       @cursor_max += yanked_width
       @byte_pointer += yanked.bytesize
@@ -273,13 +277,13 @@ class Reline::LineEditor
   private def emacs_yank_pop(key)
     yanked, prev_yank = @kill_ring.yank_pop
     if yanked
-      prev_yank_width = prev_yank.grapheme_clusters.inject(0) { |width, gc| width += Reline::Unicode.get_mbchar_width(gc) }
+      prev_yank_width = calculate_width(prev_yank)
       @cursor -= prev_yank_width
       @cursor_max -= prev_yank_width
       @byte_pointer -= prev_yank.bytesize
       @line, mbchar = byteslice!(@line, @byte_pointer, prev_yank.bytesize)
       @line = byteinsert(@line, @byte_pointer, yanked)
-      yanked_width = yanked.grapheme_clusters.inject(0) { |width, gc| width += Reline::Unicode.get_mbchar_width(gc) }
+      yanked_width = calculate_width(yanked)
       @cursor += yanked_width
       @cursor_max += yanked_width
       @byte_pointer += yanked.bytesize
