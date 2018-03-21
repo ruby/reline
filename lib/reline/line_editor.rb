@@ -88,7 +88,7 @@ class Reline::LineEditor
         @line += key.chr
       else
         @line = byteinsert(@line, @byte_pointer, key.chr)
-        print @line.byteslice(@cursor..-1)
+        print @line.byteslice(@byte_pointer..-1)
         print "\e[#{@prompt.size + @cursor + 2}G"
       end
       @byte_pointer += 1
