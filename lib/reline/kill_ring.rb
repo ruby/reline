@@ -107,7 +107,7 @@ class Reline::KillRing
     if @state == State::YANK
       prev_yank = @ring_pointer.str
       @ring_pointer = @ring_pointer.backward
-      [@ring_pointer.str, prev_size]
+      [@ring_pointer.str, prev_yank]
     else
       nil
     end
