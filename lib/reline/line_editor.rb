@@ -51,15 +51,15 @@ class Reline::LineEditor
   end
 
   private def byteslice!(str, byte_pointer, size)
-    new_str = str.bytes[0, byte_pointer].map(&:chr).join.force_encoding('UTF-8')
-    new_str << str.bytes[byte_pointer + size, str.size].map(&:chr).join.force_encoding('UTF-8')
+    new_str = str.byteslice(0, byte_pointer)
+    new_str << str.byteslice(byte_pointer + size, str.bytesize)
     [new_str, str.byteslice(byte_pointer, size)]
   end
 
   private def byteinsert(str, byte_pointer, other)
-    new_str = str.bytes[0, byte_pointer].map(&:chr).join.force_encoding('UTF-8')
+    new_str = str.byteslice(0, byte_pointer)
     new_str << other
-    new_str << str.bytes[byte_pointer, str.size].map(&:chr).join.force_encoding('UTF-8')
+    new_str << str.byteslice(byte_pointer, str.bytesize)
     new_str
   end
 
