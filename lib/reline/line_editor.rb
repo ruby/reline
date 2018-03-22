@@ -294,4 +294,12 @@ class Reline::LineEditor
       print "\e[#{@prompt.size + @cursor + 1}G"
     end
   end
+
+  private def edit_clear_screen(key)
+    print "\e[2J"
+    print "\e[1;1H"
+    print @prompt
+    print @line
+    print "\e[#{@prompt.size + @cursor + 1}G"
+  end
 end
