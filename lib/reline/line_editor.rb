@@ -18,6 +18,7 @@ class Reline::LineEditor
     @line_backup_in_history
     @kill_ring = Reline::KillRing.new
     @multibyte_buffer = []
+    @meta_prefix = false
 
     print prompt
   end
@@ -33,7 +34,18 @@ class Reline::LineEditor
       end
     elsif Reline::Unicode.get_mbchar_byte_size_by_first_char(key) > 1
       @multibyte_buffer << key
+    elsif key == "\e".ord # meta key
+      if @meta_prefix
+        # escape twice
+        @meta_prefix = false
+      else
+        @meta_prefix = true
+      end
     else
+      if @meta_prefix
+        key |= 0b10000000
+        @meta_prefix = true
+      end
       method_symbol = @key_actor.get_method(key)
       if method_symbol and respond_to?(method_symbol, true)
         __send__(method_symbol, key)
