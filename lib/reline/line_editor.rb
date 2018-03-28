@@ -322,4 +322,13 @@ class Reline::LineEditor
       print "\e[#{width}C"
     end
   end
+
+  private def edit_prev_word(key)
+    if @byte_pointer > 0
+      byte_size, width = Reline::Unicode.backward_word(@line, @byte_pointer)
+      @byte_pointer -= byte_size
+      @cursor -= width
+      print "\e[#{width}D"
+    end
+  end
 end
