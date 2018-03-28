@@ -63,6 +63,26 @@ class Reline::Unicode
     end
     total_byte_size
   end
+
+  def self.forward_word(line, byte_pointer)
+    width = 0
+    byte_size = 0
+    while line.bytesize > (byte_pointer + byte_size)
+      size = get_next_mbchar_size(line, byte_pointer + byte_size)
+      mbchar = line.byteslice(byte_pointer + byte_size, size)
+      break if mbchar =~ /\w/
+      width += get_mbchar_width(mbchar)
+      byte_size += size
+    end
+    while line.bytesize > (byte_pointer + byte_size)
+      size = get_next_mbchar_size(line, byte_pointer + byte_size)
+      mbchar = line.byteslice(byte_pointer + byte_size, size)
+      break if mbchar =~ /\W/
+      width += get_mbchar_width(mbchar)
+      byte_size += size
+    end
+    [byte_size, width]
+  end
 end
 
 require 'reline/unicode/east_asian_width'

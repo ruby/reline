@@ -313,4 +313,13 @@ class Reline::LineEditor
     print @line
     print "\e[#{@prompt.size + @cursor + 1}G"
   end
+
+  private def emacs_next_word(key)
+    if @line.bytesize > @byte_pointer
+      byte_size, width = Reline::Unicode.forward_word(@line, @byte_pointer)
+      @byte_pointer += byte_size
+      @cursor += width
+      print "\e[#{width}C"
+    end
+  end
 end
