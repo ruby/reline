@@ -112,7 +112,6 @@ class Reline::LineEditor
 
   private def edit_next_char(key)
     byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
-    #puts "byte_size: #{@byte_pointer} #{byte_size} #{@line.bytesize}"
     if @byte_pointer < @line.bytesize
       mbchar = @line.byteslice(@byte_pointer, byte_size)
       width = Reline::Unicode.get_mbchar_width(mbchar)
