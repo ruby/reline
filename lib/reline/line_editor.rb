@@ -43,8 +43,8 @@ class Reline::LineEditor
       end
     else
       if @meta_prefix
-        key |= 0b10000000
-        @meta_prefix = true
+        key |= 0b10000000 if key.nobits?(0b10000000)
+        @meta_prefix = false
       end
       method_symbol = @key_actor.get_method(key)
       if method_symbol and respond_to?(method_symbol, true)
