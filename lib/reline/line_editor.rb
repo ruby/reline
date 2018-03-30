@@ -333,4 +333,16 @@ class Reline::LineEditor
       print "\e[#{width}D"
     end
   end
+
+  private def emacs_delete_next_word(key)
+    if @line.bytesize > @byte_pointer
+      byte_size, width = Reline::Unicode.forward_word(@line, @byte_pointer)
+      @line, word = byteslice!(@line, @byte_pointer, byte_size)
+      @cursor_max -= width
+      print "\e[#{@prompt.size + @cursor + 1}G"
+      print @line.byteslice(@byte_pointer..-1)
+      print ' ' * width
+      print "\e[#{@prompt.size + @cursor + 1}G"
+    end
+  end
 end
