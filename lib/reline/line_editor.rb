@@ -338,6 +338,7 @@ class Reline::LineEditor
     if @line.bytesize > @byte_pointer
       byte_size, width = Reline::Unicode.forward_word(@line, @byte_pointer)
       @line, word = byteslice!(@line, @byte_pointer, byte_size)
+      @kill_ring.append(word)
       @cursor_max -= width
       print "\e[#{@prompt.size + @cursor + 1}G"
       print @line.byteslice(@byte_pointer..-1)
