@@ -361,4 +361,5 @@ class Reline::LineEditor
       print "\e[#{@prompt.size + @cursor + 1}G"
     end
   end
+  alias_method :edit_delete_prev_word, :emacs_kill_region
 end
