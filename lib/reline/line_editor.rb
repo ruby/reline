@@ -346,4 +346,19 @@ class Reline::LineEditor
       print "\e[#{@prompt.size + @cursor + 1}G"
     end
   end
+
+  private def emacs_kill_region(key)
+    if @byte_pointer > 0
+      byte_size, width = Reline::Unicode.backward_word(@line, @byte_pointer)
+      @line, word = byteslice!(@line, @byte_pointer - byte_size, byte_size)
+      @kill_ring.append(word, true)
+      @byte_pointer -= byte_size
+      @cursor -= width
+      @cursor_max -= width
+      print "\e[#{@prompt.size + @cursor + 1}G"
+      print @line.byteslice(@byte_pointer..-1)
+      print ' ' * width
+      print "\e[#{@prompt.size + @cursor + 1}G"
+    end
+  end
 end
