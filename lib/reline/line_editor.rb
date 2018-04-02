@@ -39,10 +39,10 @@ class Reline::LineEditor
       if @meta_prefix
         # escape twice
         @meta_prefix = false
+        @kill_ring.process
       else
         @meta_prefix = true
       end
-      @kill_ring.process
     else
       if @meta_prefix
         key |= 0b10000000 if key.nobits?(0b10000000)
