@@ -362,4 +362,28 @@ class Reline::LineEditor
     end
   end
   alias_method :edit_delete_prev_word, :emacs_kill_region
+
+  private def edit_transpose_chars(key)
+    if @byte_pointer > 0
+      if @cursor_max > @cursor
+        byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
+        mbchar = @line.byteslice(@byte_pointer, byte_size)
+        width = Reline::Unicode.get_mbchar_width(mbchar)
+        @cursor += width
+        @byte_pointer += byte_size
+      end
+      back1_byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer)
+      if (@byte_pointer - back1_byte_size) > 0
+        back2_byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer - back1_byte_size)
+        back2_pointer = @byte_pointer - back1_byte_size - back2_byte_size
+        @line, back2_mbchar = byteslice!(@line, back2_pointer, back2_byte_size)
+        @line = byteinsert(@line, @byte_pointer - back2_byte_size, back2_mbchar)
+        print "\e[2K"
+        print "\e[1G"
+        print @prompt
+        print @line
+        print "\e[#{@prompt.size + @cursor + 1}G"
+      end
+    end
+  end
 end
