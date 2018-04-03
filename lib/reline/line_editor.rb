@@ -347,7 +347,7 @@ class Reline::LineEditor
     end
   end
 
-  private def emacs_kill_region(key)
+  private def edit_delete_prev_word(key)
     if @byte_pointer > 0
       byte_size, width = Reline::Unicode.backward_word(@line, @byte_pointer)
       @line, word = byteslice!(@line, @byte_pointer - byte_size, byte_size)
@@ -361,7 +361,6 @@ class Reline::LineEditor
       print "\e[#{@prompt.size + @cursor + 1}G"
     end
   end
-  alias_method :edit_delete_prev_word, :emacs_kill_region
 
   private def edit_transpose_chars(key)
     if @byte_pointer > 0
