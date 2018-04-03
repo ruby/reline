@@ -79,7 +79,7 @@ class Reline::LineEditor
   end
 
   private def calculate_width(str)
-    str.grapheme_clusters.inject(0) { |width, gc| width += Reline::Unicode.get_mbchar_width(gc) }
+    str.grapheme_clusters.inject(0) { |width, gc| width + Reline::Unicode.get_mbchar_width(gc) }
   end
 
   private def edit_insert(key)
