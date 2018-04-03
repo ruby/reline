@@ -6,7 +6,7 @@ class Reline::Readline
   def initialize(prompt, add_hist)
     @prompt = prompt
     @add_hist = add_hist
-    @line_editor = Reline::LineEditor.new(Reline::KeyActor::Emacs, prompt)
+    @line_editor = Reline::LineEditor.new(Reline::KeyActor::ViCommand, prompt)
   end
 
   def getc
