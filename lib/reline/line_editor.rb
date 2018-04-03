@@ -8,6 +8,7 @@ class Reline::LineEditor
 
   def initialize(key_actor, prompt)
     @prompt = prompt
+    @prompt_width = calculate_width(@prompt)
     @cursor = 0
     @cursor_max = 0
     @byte_pointer = 0
@@ -91,7 +92,7 @@ class Reline::LineEditor
       else
         @line = byteinsert(@line, @byte_pointer, mbchar)
         print @line.byteslice(@byte_pointer..-1)
-        print "\e[#{@prompt.size + @cursor + width + 1}G"
+        print "\e[#{@prompt_width + @cursor + width + 1}G"
       end
       @byte_pointer += Reline::Unicode.get_mbchar_byte_size_by_first_char(key.first)
       @cursor += width
@@ -103,7 +104,7 @@ class Reline::LineEditor
       else
         @line = byteinsert(@line, @byte_pointer, key.chr)
         print @line.byteslice(@byte_pointer..-1)
-        print "\e[#{@prompt.size + @cursor + 2}G"
+        print "\e[#{@prompt_width + @cursor + 2}G"
       end
       @byte_pointer += 1
       @cursor += 1
@@ -137,7 +138,7 @@ class Reline::LineEditor
   private def edit_move_to_beg(key)
     @byte_pointer = 0
     @cursor = 0
-    print "\e[#{@prompt.size + 1}G"
+    print "\e[#{@prompt_width + 1}G"
   end
 
   private def edit_move_to_end(key)
@@ -153,7 +154,7 @@ class Reline::LineEditor
       end
       @byte_pointer += byte_size
     end
-    print "\e[#{@prompt.size + @cursor + 1}G"
+    print "\e[#{@prompt_width + @cursor + 1}G"
   end
 
   private def edit_prev_history(key)
@@ -224,10 +225,10 @@ class Reline::LineEditor
       width = Reline::Unicode.get_mbchar_width(mbchar)
       @cursor -= width
       @cursor_max -= width
-      print "\e[#{@prompt.size + @cursor + 1}G"
+      print "\e[#{@prompt_width + @cursor + 1}G"
       print "\e[0K"
       print @line.byteslice(@byte_pointer..-1) + ' '
-      print "\e[#{@prompt.size + @cursor + 1}G"
+      print "\e[#{@prompt_width + @cursor + 1}G"
     end
   end
 
@@ -252,7 +253,7 @@ class Reline::LineEditor
       print "\e[1G"
       print @prompt
       print @line
-      print "\e[#{@prompt.size + 1}G"
+      print "\e[#{@prompt_width + 1}G"
     end
   end
 
@@ -270,7 +271,7 @@ class Reline::LineEditor
       print "\e[1G"
       print @prompt
       print @line
-      print "\e[#{@prompt.size + @cursor + 1}G"
+      print "\e[#{@prompt_width + @cursor + 1}G"
     end
   end
 
@@ -283,7 +284,7 @@ class Reline::LineEditor
       @cursor += yanked_width
       @cursor_max += yanked_width
       @byte_pointer += yanked.bytesize
-      print "\e[#{@prompt.size + @cursor + 1}G"
+      print "\e[#{@prompt_width + @cursor + 1}G"
     end
   end
 
@@ -304,7 +305,7 @@ class Reline::LineEditor
       print "\e[1G"
       print @prompt
       print @line
-      print "\e[#{@prompt.size + @cursor + 1}G"
+      print "\e[#{@prompt_width + @cursor + 1}G"
     end
   end
 
@@ -313,7 +314,7 @@ class Reline::LineEditor
     print "\e[1;1H"
     print @prompt
     print @line
-    print "\e[#{@prompt.size + @cursor + 1}G"
+    print "\e[#{@prompt_width + @cursor + 1}G"
   end
 
   private def emacs_next_word(key)
@@ -340,10 +341,10 @@ class Reline::LineEditor
       @line, word = byteslice!(@line, @byte_pointer, byte_size)
       @kill_ring.append(word)
       @cursor_max -= width
-      print "\e[#{@prompt.size + @cursor + 1}G"
+      print "\e[#{@prompt_width + @cursor + 1}G"
       print @line.byteslice(@byte_pointer..-1)
       print ' ' * width
-      print "\e[#{@prompt.size + @cursor + 1}G"
+      print "\e[#{@prompt_width + @cursor + 1}G"
     end
   end
 
@@ -355,10 +356,10 @@ class Reline::LineEditor
       @byte_pointer -= byte_size
       @cursor -= width
       @cursor_max -= width
-      print "\e[#{@prompt.size + @cursor + 1}G"
+      print "\e[#{@prompt_width + @cursor + 1}G"
       print @line.byteslice(@byte_pointer..-1)
       print ' ' * width
-      print "\e[#{@prompt.size + @cursor + 1}G"
+      print "\e[#{@prompt_width + @cursor + 1}G"
     end
   end
 
@@ -381,7 +382,7 @@ class Reline::LineEditor
         print "\e[1G"
         print @prompt
         print @line
-        print "\e[#{@prompt.size + @cursor + 1}G"
+        print "\e[#{@prompt_width + @cursor + 1}G"
       end
     end
   end
