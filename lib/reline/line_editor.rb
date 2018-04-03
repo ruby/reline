@@ -401,4 +401,24 @@ class Reline::LineEditor
       print "\e[#{@prompt_width + @cursor + 1}G"
     end
   end
+
+  private def emacs_lower_case(key)
+    if @line.bytesize > @byte_pointer
+      byte_size, width = Reline::Unicode.forward_word(@line, @byte_pointer)
+      part = @line.byteslice(@byte_pointer, byte_size).grapheme_clusters.map { |mbchar|
+        mbchar =~ /[A-Z]/ ? mbchar.downcase : mbchar
+      }.join
+      rest = @line.byteslice((@byte_pointer + byte_size)..-1)
+      @line = @line.byteslice(0, @byte_pointer) + part
+      @byte_pointer = @line.bytesize
+      @cursor = calculate_width(@line)
+      @cursor_max = @cursor + calculate_width(rest)
+      @line += rest
+      print "\e[2K"
+      print "\e[1G"
+      print @prompt
+      print @line
+      print "\e[#{@prompt_width + @cursor + 1}G"
+    end
+  end
 end
