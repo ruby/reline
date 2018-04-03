@@ -326,10 +326,6 @@ class Reline::Unicode::EastAsianWidth
   )/x
 
   # Neutral
-  #
-  # ---
-  #
-  # [\u{D800}-\u{DFFF}] cause error.
   TYPE_N = /^(
     [\u{0000}-\u{001F}] |
     [\u{007F}-\u{00A0}] |
