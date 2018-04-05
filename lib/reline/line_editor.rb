@@ -36,7 +36,7 @@ class Reline::LineEditor
       end
     elsif Reline::Unicode.get_mbchar_byte_size_by_first_char(key) > 1
       @multibyte_buffer << key
-    elsif key == "\e".ord # meta key
+    elsif Reline::KeyActor::Emacs == @key_actor and key == "\e".ord # meta key
       if @meta_prefix
         # escape twice
         @meta_prefix = false
@@ -440,5 +440,13 @@ class Reline::LineEditor
       print @line
       print "\e[#{@prompt_width + @cursor + 1}G"
     end
+  end
+
+  private def vi_insert(key)
+    @key_actor = Reline::KeyActor::ViInsert
+  end
+
+  private def vi_command_mode(key)
+    @key_actor = Reline::KeyActor::ViCommand
   end
 end
