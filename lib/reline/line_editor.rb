@@ -114,8 +114,8 @@ class Reline::LineEditor
   alias_method :ed_digit, :ed_insert
 
   private def ed_next_char(key)
-    byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
     if @byte_pointer < @line.bytesize
+      byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
       mbchar = @line.byteslice(@byte_pointer, byte_size)
       width = Reline::Unicode.get_mbchar_width(mbchar)
       @cursor += width if width
