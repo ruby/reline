@@ -469,4 +469,13 @@ class Reline::LineEditor
       print "\e[#{width}C" if width > 0
     end
   end
+
+  private def vi_prev_word(key)
+    if @byte_pointer > 0
+      byte_size, width = Reline::Unicode.vi_backward_word(@line, @byte_pointer)
+      @byte_pointer -= byte_size
+      @cursor -= width
+      print "\e[#{width}D"
+    end
+  end
 end
