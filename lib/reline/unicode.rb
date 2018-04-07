@@ -64,7 +64,7 @@ class Reline::Unicode
     total_byte_size
   end
 
-  def self.forward_word(line, byte_pointer)
+  def self.em_forward_word(line, byte_pointer)
     width = 0
     byte_size = 0
     while line.bytesize > (byte_pointer + byte_size)
@@ -84,7 +84,7 @@ class Reline::Unicode
     [byte_size, width]
   end
 
-  def self.backward_word(line, byte_pointer)
+  def self.em_backward_word(line, byte_pointer)
     width = 0
     byte_size = 0
     while 0 < (byte_pointer - byte_size)

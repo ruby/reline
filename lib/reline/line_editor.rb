@@ -324,7 +324,7 @@ class Reline::LineEditor
 
   private def em_next_word(key)
     if @line.bytesize > @byte_pointer
-      byte_size, width = Reline::Unicode.forward_word(@line, @byte_pointer)
+      byte_size, width = Reline::Unicode.em_forward_word(@line, @byte_pointer)
       @byte_pointer += byte_size
       @cursor += width
       print "\e[#{width}C"
@@ -333,7 +333,7 @@ class Reline::LineEditor
 
   private def ed_prev_word(key)
     if @byte_pointer > 0
-      byte_size, width = Reline::Unicode.backward_word(@line, @byte_pointer)
+      byte_size, width = Reline::Unicode.em_backward_word(@line, @byte_pointer)
       @byte_pointer -= byte_size
       @cursor -= width
       print "\e[#{width}D"
@@ -342,7 +342,7 @@ class Reline::LineEditor
 
   private def em_delete_next_word(key)
     if @line.bytesize > @byte_pointer
-      byte_size, width = Reline::Unicode.forward_word(@line, @byte_pointer)
+      byte_size, width = Reline::Unicode.em_forward_word(@line, @byte_pointer)
       @line, word = byteslice!(@line, @byte_pointer, byte_size)
       @kill_ring.append(word)
       @cursor_max -= width
@@ -355,7 +355,7 @@ class Reline::LineEditor
 
   private def ed_delete_prev_word(key)
     if @byte_pointer > 0
-      byte_size, width = Reline::Unicode.backward_word(@line, @byte_pointer)
+      byte_size, width = Reline::Unicode.em_backward_word(@line, @byte_pointer)
       @line, word = byteslice!(@line, @byte_pointer - byte_size, byte_size)
       @kill_ring.append(word, true)
       @byte_pointer -= byte_size
@@ -396,7 +396,7 @@ class Reline::LineEditor
     if @line.bytesize > @byte_pointer
       byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
       cursor_mbchar = @line.byteslice(@byte_pointer, byte_size)
-      byte_size, width = Reline::Unicode.forward_word(@line, @byte_pointer)
+      byte_size, width = Reline::Unicode.em_forward_word(@line, @byte_pointer)
       if cursor_mbchar =~ /^[a-z]/
         @line = @line.byteslice(0, @byte_pointer) + cursor_mbchar.upcase + @line.byteslice((@byte_pointer + 1)..-1)
         print cursor_mbchar.upcase
@@ -409,7 +409,7 @@ class Reline::LineEditor
 
   private def em_lower_case(key)
     if @line.bytesize > @byte_pointer
-      byte_size, width = Reline::Unicode.forward_word(@line, @byte_pointer)
+      byte_size, width = Reline::Unicode.em_forward_word(@line, @byte_pointer)
       part = @line.byteslice(@byte_pointer, byte_size).grapheme_clusters.map { |mbchar|
         mbchar =~ /[A-Z]/ ? mbchar.downcase : mbchar
       }.join
@@ -429,7 +429,7 @@ class Reline::LineEditor
 
   private def em_upper_case(key)
     if @line.bytesize > @byte_pointer
-      byte_size, width = Reline::Unicode.forward_word(@line, @byte_pointer)
+      byte_size, width = Reline::Unicode.em_forward_word(@line, @byte_pointer)
       part = @line.byteslice(@byte_pointer, byte_size).grapheme_clusters.map { |mbchar|
         mbchar =~ /[a-z]/ ? mbchar.upcase : mbchar
       }.join
