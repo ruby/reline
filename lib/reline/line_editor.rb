@@ -460,4 +460,13 @@ class Reline::LineEditor
     ed_prev_char(key)
     @key_actor = Reline::KeyActor::ViCommand
   end
+
+  private def vi_next_word(key)
+    if @line.bytesize > @byte_pointer
+      byte_size, width = Reline::Unicode.vi_forward_word(@line, @byte_pointer)
+      @byte_pointer += byte_size
+      @cursor += width
+      print "\e[#{width}C" if width > 0
+    end
+  end
 end
