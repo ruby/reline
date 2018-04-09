@@ -406,4 +406,15 @@ class Reline::LineEditor
       @cursor -= width
     end
   end
+
+  private def vi_delete_prev_char(key)
+    if @cursor > 0
+      byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer)
+      @byte_pointer -= byte_size
+      @line, mbchar = byteslice!(@line, @byte_pointer, byte_size)
+      width = Reline::Unicode.get_mbchar_width(mbchar)
+      @cursor -= width
+      @cursor_max -= width
+    end
+  end
 end
