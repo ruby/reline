@@ -30,7 +30,7 @@ class Reline::LineEditor
       first_c = @multibyte_buffer.first
       byte_size = Reline::Unicode.get_mbchar_byte_size_by_first_char(first_c)
       if @multibyte_buffer.size >= byte_size
-        edit_insert(@multibyte_buffer)
+        ed_insert(@multibyte_buffer)
         @multibyte_buffer = []
         @kill_ring.process
       end
