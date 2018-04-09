@@ -382,8 +382,8 @@ class Reline::LineEditor
   end
 
   private def vi_add(key)
-    ed_next_char(key)
     @key_actor = Reline::KeyActor::ViInsert
+    ed_next_char(key)
   end
 
   private def vi_command_mode(key)
