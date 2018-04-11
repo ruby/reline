@@ -21,7 +21,7 @@ class Reline::LineEditor
     @multibyte_buffer = []
     @meta_prefix = false
 
-    print prompt
+    print @prompt
   end
 
   def input_key(key)
