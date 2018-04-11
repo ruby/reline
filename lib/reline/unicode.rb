@@ -104,7 +104,7 @@ class Reline::Unicode
     [byte_size, width]
   end
 
-  def self.vi_forward_word(line, byte_pointer)
+  def self.vi_big_forward_word(line, byte_pointer)
     width = 0
     byte_size = 0
     while (line.bytesize - 1) > (byte_pointer + byte_size)
@@ -124,7 +124,7 @@ class Reline::Unicode
     [byte_size, width]
   end
 
-  def self.vi_forward_end_word(line, byte_pointer)
+  def self.vi_big_forward_end_word(line, byte_pointer)
     if (line.bytesize - 1) > byte_pointer
       size = get_next_mbchar_size(line, byte_pointer)
       mbchar = line.byteslice(byte_pointer, size)
@@ -154,7 +154,7 @@ class Reline::Unicode
     [prev_byte_size, prev_width]
   end
 
-  def self.vi_backward_word(line, byte_pointer)
+  def self.vi_big_backward_word(line, byte_pointer)
     width = 0
     byte_size = 0
     while 0 < (byte_pointer - byte_size)
