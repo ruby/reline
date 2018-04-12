@@ -449,4 +449,9 @@ class Reline::LineEditor
       @cursor_max -= width
     end
   end
+
+  private def vi_zero(key)
+    @byte_pointer = 0
+    @cursor = 0
+  end
 end
