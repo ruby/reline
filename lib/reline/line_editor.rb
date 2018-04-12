@@ -159,6 +159,9 @@ class Reline::LineEditor
       end
       @byte_pointer += byte_size
     end
+    if Reline::KeyActor::ViCommand == @key_actor
+      ed_prev_char(key)
+    end
   end
 
   private def ed_prev_history(key)
