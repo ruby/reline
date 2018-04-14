@@ -172,14 +172,14 @@ class Reline::LineEditor
       @history_pointer = Reline::HISTORY.size - 1
       @line_backup_in_history = @line
       @line = Reline::HISTORY[@history_pointer]
-      @cursor = @line.size
+      @cursor = calculate_width(@line)
     elsif @history_pointer.zero?
       return
     else
       Reline::HISTORY[@history_pointer] = @line
       @history_pointer -= 1
       @line = Reline::HISTORY[@history_pointer]
-      @cursor = @line.size
+      @cursor = calculate_width(@line)
     end
   end
 
@@ -189,12 +189,12 @@ class Reline::LineEditor
     elsif @history_pointer == (Reline::HISTORY.size - 1)
       @history_pointer = nil
       @line = @line_backup_in_history
-      @cursor = @line.size
+      @cursor = calculate_width(@line)
     else
       Reline::HISTORY[@history_pointer] = @line
       @history_pointer += 1
       @line = Reline::HISTORY[@history_pointer]
-      @cursor = @line.size
+      @cursor = calculate_width(@line)
     end
   end
 
