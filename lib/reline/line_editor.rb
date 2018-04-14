@@ -245,7 +245,7 @@ class Reline::LineEditor
   end
 
   private def em_delete_or_list(key)
-    if @line.size == 0
+    if @line.empty?
       @line = nil
       finish
     elsif @line.size > 0 and @byte_pointer < @line.bytesize
@@ -466,7 +466,7 @@ class Reline::LineEditor
   end
 
   private def ed_delete_next_char(key)
-    if @line.size > 0
+    unless @line.empty?
       byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
       @line, mbchar = byteslice!(@line, @byte_pointer, byte_size)
       width = Reline::Unicode.get_mbchar_width(mbchar)
