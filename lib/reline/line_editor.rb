@@ -474,4 +474,27 @@ class Reline::LineEditor
       end
     end
   end
+
+  private def vi_to_history_line(key)
+    if Reline::HISTORY.empty?
+      return
+    end
+    if @history_pointer.nil?
+      @history_pointer = 0
+      @line_backup_in_history = @line
+      @line = Reline::HISTORY[@history_pointer]
+      @cursor_max = calculate_width(@line)
+      @cursor = 0
+      @byte_pointer = 0
+    elsif @history_pointer.zero?
+      return
+    else
+      Reline::HISTORY[@history_pointer] = @line
+      @history_pointer = 0
+      @line = Reline::HISTORY[@history_pointer]
+      @cursor_max = calculate_width(@line)
+      @cursor = 0
+      @byte_pointer = 0
+    end
+  end
 end
