@@ -248,7 +248,7 @@ class Reline::LineEditor
     if @line.empty?
       @line = nil
       finish
-    elsif @line.size > 0 and @byte_pointer < @line.bytesize
+    elsif @byte_pointer < @line.bytesize
       splitted_last = @line.byteslice(@byte_pointer, @line.bytesize)
       mbchar = splitted_last.grapheme_clusters.first
       width = Reline::Unicode.get_mbchar_width(mbchar)
