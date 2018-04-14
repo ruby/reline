@@ -3,6 +3,9 @@ require 'reline/key_actor'
 require 'reline/kill_ring'
 require 'reline/unicode'
 
+require 'tempfile'
+require 'pathname'
+
 class Reline::LineEditor
   attr_reader :line
 
@@ -496,5 +499,16 @@ class Reline::LineEditor
       @cursor = 0
       @byte_pointer = 0
     end
+  end
+
+  private def vi_histedit(key)
+    path = Tempfile.open { |fp|
+      fp.write @line
+      fp.path
+    }
+    system("#{ENV['EDITOR']} #{path}")
+    @line = Pathname.new(path).read
+    @finished = true
+    @line += "\n"
   end
 end
