@@ -9,6 +9,19 @@ require 'pathname'
 class Reline::LineEditor
   attr_reader :line
 
+  ARGUMENTABLE = %i{
+    ed_delete_next_char
+    ed_delete_prev_char#
+    ed_delete_prev_word
+    ed_next_char
+    ed_next_history
+    ed_next_line#
+    ed_prev_char
+    ed_prev_history
+    ed_prev_line#
+    ed_prev_word
+  }
+
   def initialize(key_actor, prompt)
     @prompt = prompt
     @prompt_width = calculate_width(@prompt)
@@ -21,12 +34,26 @@ class Reline::LineEditor
     @history_pointer = nil
     @line_backup_in_history
     @kill_ring = Reline::KillRing.new
+    @vi_arg = nil
     @multibyte_buffer = []
     @meta_prefix = false
 
-    print @prompt
+    rerender
+  end
+
+  def rerender
+    if @vi_arg
+      prompt = "(arg: #{@vi_arg}) "
+      prompt_width = calculate_width(prompt)
+    else
+      prompt = @prompt
+      prompt_width = @prompt_width
+    end
+    print "\e[2K"
+    print "\e[1G"
+    print prompt
     print @line
-    print "\e[#{@prompt_width + @cursor + 1}G"
+    print "\e[#{prompt_width + @cursor + 1}G"
   end
 
   def input_key(key)
@@ -56,18 +83,29 @@ class Reline::LineEditor
       end
       method_symbol = @key_actor.get_method(key)
       if method_symbol and respond_to?(method_symbol, true)
-        __send__(method_symbol, key)
-        @kill_ring.process
+        if @vi_arg
+          if key.chr =~ /[0-9]/
+            ed_argument_digit(key)
+          else
+            if ARGUMENTABLE.include?(method_symbol)
+              __send__(method_symbol, key, @vi_arg)
+              @kill_ring.process
+            else
+              __send__(method_symbol, key)
+              @kill_ring.process
+            end
+            @vi_arg = nil
+          end
+        else
+          __send__(method_symbol, key)
+          @kill_ring.process
+        end
       end
     end
     if @finished
       puts
     else
-      print "\e[2K"
-      print "\e[1G"
-      print @prompt
-      print @line
-      print "\e[#{@prompt_width + @cursor + 1}G"
+      rerender
     end
   end
 
@@ -121,7 +159,7 @@ class Reline::LineEditor
   end
   alias_method :ed_digit, :ed_insert
 
-  private def ed_next_char(key)
+  private def ed_next_char(key, arg = 1)
     byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
     if Reline::KeyActor::ViCommand == @key_actor
       ignite = ((@byte_pointer + byte_size) < @line.bytesize)
@@ -134,9 +172,11 @@ class Reline::LineEditor
       @cursor += width if width
       @byte_pointer += byte_size
     end
+    arg -= 1
+    ed_next_char(key, arg) if arg > 0
   end
 
-  private def ed_prev_char(key)
+  private def ed_prev_char(key, arg = 1)
     if @cursor > 0
       byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer)
       @byte_pointer -= byte_size
@@ -144,6 +184,8 @@ class Reline::LineEditor
       width = Reline::Unicode.get_mbchar_width(mbchar)
       @cursor -= width
     end
+    arg -= 1
+    ed_prev_char(key, arg) if arg > 0
   end
 
   private def ed_move_to_beg(key)
@@ -169,7 +211,7 @@ class Reline::LineEditor
     end
   end
 
-  private def ed_prev_history(key)
+  private def ed_prev_history(key, arg = 1)
     if Reline::HISTORY.empty?
       return
     end
@@ -188,9 +230,11 @@ class Reline::LineEditor
       @cursor_max = @cursor = calculate_width(@line)
       @byte_pointer = @line.bytesize
     end
+    arg -= 1
+    ed_prev_history(key, arg) if arg > 0
   end
 
-  private def ed_next_history(key)
+  private def ed_next_history(key, arg = 1)
     if @history_pointer.nil?
       return
     elsif @history_pointer == (Reline::HISTORY.size - 1)
@@ -205,6 +249,8 @@ class Reline::LineEditor
       @cursor_max = @cursor = calculate_width(@line)
       @byte_pointer = @line.bytesize
     end
+    arg -= 1
+    ed_next_history(key, arg) if arg > 0
   end
 
   private def ed_newline(key)
@@ -299,12 +345,14 @@ class Reline::LineEditor
     end
   end
 
-  private def ed_prev_word(key)
+  private def ed_prev_word(key, arg = 1)
     if @byte_pointer > 0
       byte_size, width = Reline::Unicode.em_backward_word(@line, @byte_pointer)
       @byte_pointer -= byte_size
       @cursor -= width
     end
+    arg -= 1
+    ed_prev_word(key, arg) if arg > 0
   end
 
   private def em_delete_next_word(key)
@@ -316,7 +364,7 @@ class Reline::LineEditor
     end
   end
 
-  private def ed_delete_prev_word(key)
+  private def ed_delete_prev_word(key, arg = 1)
     if @byte_pointer > 0
       byte_size, width = Reline::Unicode.em_backward_word(@line, @byte_pointer)
       @line, word = byteslice!(@line, @byte_pointer - byte_size, byte_size)
@@ -325,6 +373,8 @@ class Reline::LineEditor
       @cursor -= width
       @cursor_max -= width
     end
+    arg -= 1
+    ed_delete_prev_word(key, arg) if arg > 0
   end
 
   private def ed_transpose_chars(key)
@@ -467,7 +517,7 @@ class Reline::LineEditor
     @cursor = 0
   end
 
-  private def ed_delete_next_char(key)
+  private def ed_delete_next_char(key, arg = 1)
     unless @line.empty?
       byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
       @line, mbchar = byteslice!(@line, @byte_pointer, byte_size)
@@ -478,6 +528,8 @@ class Reline::LineEditor
         @cursor -= width
       end
     end
+    arg -= 1
+    ed_delete_next_char(key, arg) if arg > 0
   end
 
   private def vi_to_history_line(key)
@@ -512,5 +564,15 @@ class Reline::LineEditor
     @line = Pathname.new(path).read
     @finished = true
     @line += "\n"
+  end
+
+  private def ed_argument_digit(key)
+    if @vi_arg.nil?
+      unless key.chr.to_i.zero?
+        @vi_arg = key.chr.to_i
+      end
+    else
+      @vi_arg = @vi_arg * 10 + key.chr.to_i
+    end
   end
 end
