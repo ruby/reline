@@ -25,6 +25,8 @@ class Reline::LineEditor
     @meta_prefix = false
 
     print @prompt
+    print @line
+    print "\e[#{@prompt_width + @cursor + 1}G"
   end
 
   def input_key(key)
