@@ -20,6 +20,7 @@ class Reline::LineEditor
     ed_prev_history
     ed_prev_line#
     ed_prev_word
+    vi_to_column
   }
 
   def initialize(key_actor, prompt)
@@ -574,5 +575,20 @@ class Reline::LineEditor
     else
       @vi_arg = @vi_arg * 10 + key.chr.to_i
     end
+  end
+
+  private def vi_to_column(key, arg = 0)
+    @byte_pointer, @cursor = @line.grapheme_clusters.inject([0, 0]) { |total, gc|
+      # total has [byte_size, cursor]
+      mbchar_width = Reline::Unicode.get_mbchar_width(gc)
+      if (total.last + mbchar_width) >= arg
+        break total
+      elsif (total.last + mbchar_width) >= @cursor_max
+        break total
+      else
+        total = [total.first + gc.bytesize, total.last + mbchar_width]
+        total
+      end
+    }
   end
 end
