@@ -54,7 +54,7 @@ class Reline::LineEditor
     print "\e[1G"
     print prompt
     print @line
-    print "\e[#{prompt_width + @cursor + 1}G"
+    print "\e[#{prompt_width + @cursor + 1}G" unless @line.end_with?("\n")
   end
 
   def input_key(key)
@@ -104,7 +104,7 @@ class Reline::LineEditor
       end
     end
     if @finished
-      puts
+      rerender
     else
       rerender
     end
