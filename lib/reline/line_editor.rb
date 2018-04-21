@@ -21,6 +21,12 @@ class Reline::LineEditor
     ed_prev_line#
     ed_prev_word
     vi_to_column
+    vi_next_word
+    vi_prev_word
+    vi_end_word
+    vi_next_big_word
+    vi_prev_big_word
+    vi_end_big_word
   }
 
   def initialize(key_actor, prompt)
