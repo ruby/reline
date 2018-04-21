@@ -27,6 +27,7 @@ class Reline::LineEditor
     vi_next_big_word
     vi_prev_big_word
     vi_end_big_word
+    vi_next_char
   }
 
   def initialize(key_actor, prompt)
@@ -44,6 +45,7 @@ class Reline::LineEditor
     @vi_arg = nil
     @multibyte_buffer = []
     @meta_prefix = false
+    @waiting_proc = nil
 
     rerender
   end
@@ -97,12 +99,16 @@ class Reline::LineEditor
             if ARGUMENTABLE.include?(method_symbol)
               __send__(method_symbol, key, @vi_arg)
               @kill_ring.process
+            elsif @waiting_proc
+              @waiting_proc.(key)
             else
               __send__(method_symbol, key)
               @kill_ring.process
             end
             @vi_arg = nil
           end
+        elsif @waiting_proc
+          @waiting_proc.(key)
         else
           __send__(method_symbol, key)
           @kill_ring.process
@@ -596,5 +602,38 @@ class Reline::LineEditor
         total
       end
     }
+  end
+
+  private def vi_next_char(key, arg = 1)
+    @waiting_proc = ->(key) { search_next_char(key, arg) }
+  end
+
+  private def search_next_char(key, arg)
+    # TODO: support multi-byte char input
+    inputed_char = key.chr
+    total = nil
+    @line.byteslice(@byte_pointer..-1).grapheme_clusters.each do |mbchar|
+      # total has [byte_size, cursor]
+      unless total
+        # skip cursor point
+        width = Reline::Unicode.get_mbchar_width(mbchar)
+        total = [mbchar.bytesize, width]
+      else
+        if inputed_char == mbchar
+          arg -= 1
+          if arg.zero?
+            break
+          end
+        end
+        width = Reline::Unicode.get_mbchar_width(mbchar)
+        total = [total.first + mbchar.bytesize, total.last + width]
+      end
+    end
+    if total
+      byte_size, width = total
+      @byte_pointer += byte_size
+      @cursor += width
+    end
+    @waiting_proc = nil
   end
 end
