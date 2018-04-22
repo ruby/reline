@@ -9,7 +9,7 @@ begin
   puts 'This is echo program by Reline.'
   while line = Reline.readline("> ", true)
     case line.chomp
-    when 'exit', 'quit'
+    when 'exit', 'quit', 'q'
       exit 0
     when ''
       # NOOP
