@@ -35,6 +35,7 @@ class Reline::Unicode
   end
 
   def self.get_next_mbchar_size(line, byte_pointer)
+    # TODO: use grapheme_clusters
     base_char = nil
     total_byte_size = 0
     while byte_pointer < line.bytesize
@@ -49,6 +50,7 @@ class Reline::Unicode
   end
 
   def self.get_prev_mbchar_size(line, byte_pointer)
+    # TODO: use grapheme_clusters
     base_char = nil
     total_byte_size = 0
     while byte_pointer > 0
