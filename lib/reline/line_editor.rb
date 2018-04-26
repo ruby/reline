@@ -98,17 +98,17 @@ class Reline::LineEditor
           else
             if ARGUMENTABLE.include?(method_symbol)
               __send__(method_symbol, key, @vi_arg)
-              @kill_ring.process
             elsif @waiting_proc
               @waiting_proc.(key)
             else
               __send__(method_symbol, key)
-              @kill_ring.process
             end
+            @kill_ring.process
             @vi_arg = nil
           end
         elsif @waiting_proc
           @waiting_proc.(key)
+          @kill_ring.process
         else
           __send__(method_symbol, key)
           @kill_ring.process
