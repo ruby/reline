@@ -71,7 +71,11 @@ class Reline::LineEditor
       first_c = @multibyte_buffer.first
       byte_size = Reline::Unicode.get_mbchar_byte_size_by_first_char(first_c)
       if @multibyte_buffer.size >= byte_size
-        ed_insert(@multibyte_buffer)
+        if @waiting_proc
+          @waiting_proc.(@multibyte_buffer)
+        else
+          ed_insert(@multibyte_buffer)
+        end
         @multibyte_buffer = []
         @kill_ring.process
       end
@@ -610,7 +614,11 @@ class Reline::LineEditor
 
   private def search_next_char(key, arg)
     # TODO: support multi-byte char input
-    inputed_char = key.chr
+    if key.instance_of?(Array)
+      inputed_char = key.map(&:chr).join.force_encoding('UTF-8')
+    else
+      inputed_char = key.chr
+    end
     total = nil
     @line.byteslice(@byte_pointer..-1).grapheme_clusters.each do |mbchar|
       # total has [byte_size, cursor]
