@@ -613,7 +613,6 @@ class Reline::LineEditor
   end
 
   private def search_next_char(key, arg)
-    # TODO: support multi-byte char input
     if key.instance_of?(Array)
       inputed_char = key.map(&:chr).join.force_encoding('UTF-8')
     else
