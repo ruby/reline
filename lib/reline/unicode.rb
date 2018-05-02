@@ -35,35 +35,17 @@ class Reline::Unicode
   end
 
   def self.get_next_mbchar_size(line, byte_pointer)
-    # TODO: use grapheme_clusters
-    base_char = nil
-    total_byte_size = 0
-    while byte_pointer < line.bytesize
-      byte_size = get_mbchar_byte_size_by_first_char(line.bytes[byte_pointer])
-      mbchar = line.byteslice(byte_pointer, byte_size)
-      break if base_char and /\P{M}/.match?(mbchar)
-      base_char = mbchar unless base_char
-      byte_pointer += byte_size
-      total_byte_size += byte_size
-    end
-    total_byte_size
+    grapheme = line.byteslice(byte_pointer..-1).grapheme_clusters.first
+    grapheme ? grapheme.bytesize : 0
   end
 
   def self.get_prev_mbchar_size(line, byte_pointer)
-    # TODO: use grapheme_clusters
-    base_char = nil
-    total_byte_size = 0
-    while byte_pointer > 0
-      byte_pointer -= 1
-      next if (byte_size = get_mbchar_byte_size_by_first_char(line.bytes[byte_pointer])).zero?
-      total_byte_size += byte_size
-      mbchar = line.byteslice(byte_pointer, byte_size)
-      if /\P{M}/.match?(mbchar)
-        base_char = mbchar
-        break
-      end
+    if byte_pointer.zero?
+      0
+    else
+      grapheme = line.byteslice(0..(byte_pointer - 1)).grapheme_clusters.last
+      grapheme ? grapheme.bytesize : 0
     end
-    total_byte_size
   end
 
   def self.em_forward_word(line, byte_pointer)
