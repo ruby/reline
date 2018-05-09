@@ -3,6 +3,7 @@ class Reline::Readline
     @prompt = prompt
     @add_hist = add_hist
     @line_editor = Reline::LineEditor.new(Reline::KeyActor::ViInsert, prompt)
+    @line_editor.rerender
   end
 
   def getc
@@ -40,6 +41,7 @@ class Reline::Readline
     begin
       while c = getc
         @line_editor.input_key(c)
+        @line_editor.rerender
         break if @line_editor.finished?
       end
       if @add_hist and @line_editor.line and @line_editor.line.chomp.size > 0

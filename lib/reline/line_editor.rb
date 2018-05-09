@@ -45,8 +45,6 @@ class Reline::LineEditor
     @multibyte_buffer = []
     @meta_prefix = false
     @waiting_proc = nil
-
-    rerender
   end
 
   def rerender
@@ -122,11 +120,6 @@ class Reline::LineEditor
           @kill_ring.process
         end
       end
-    end
-    if @finished
-      rerender
-    else
-      rerender
     end
   end
 
