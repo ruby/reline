@@ -37,6 +37,7 @@ class Reline::LineEditor
     @line = String.new
     @key_actor = key_actor
     @finished = false
+    @cleared = false
     @history_pointer = nil
     @line_backup_in_history = nil
     @kill_ring = Reline::KillRing.new
@@ -55,6 +56,11 @@ class Reline::LineEditor
     else
       prompt = @prompt
       prompt_width = @prompt_width
+    end
+    if @cleared
+      print "\e[2J"
+      print "\e[1;1H"
+      @cleared = false
     end
     print "\e[2K"
     print "\e[1G"
@@ -347,8 +353,7 @@ class Reline::LineEditor
   end
 
   private def ed_clear_screen(key)
-    print "\e[2J"
-    print "\e[1;1H"
+    @cleared = true
   end
 
   private def em_next_word(key)
