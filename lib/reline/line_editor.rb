@@ -1,5 +1,3 @@
-require 'reline'
-require 'reline/key_actor'
 require 'reline/kill_ring'
 require 'reline/unicode'
 

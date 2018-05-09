@@ -1,7 +1,3 @@
-require 'reline'
-require 'reline/key_actor'
-require 'reline/key_actor/base'
-
 class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
   MAPPING = [
     #   0 ^@

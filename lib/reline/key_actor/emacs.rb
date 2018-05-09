@@ -1,7 +1,3 @@
-require 'reline'
-require 'reline/key_actor'
-require 'reline/key_actor/base'
-
 class Reline::KeyActor::Emacs < Reline::KeyActor::Base
   MAPPING = [
     #   0 ^@

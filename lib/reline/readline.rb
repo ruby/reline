@@ -1,7 +1,3 @@
-require 'reline'
-require 'reline/line_editor'
-require 'reline/key_actor'
-
 class Reline::Readline
   def initialize(prompt, add_hist)
     @prompt = prompt

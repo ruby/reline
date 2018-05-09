@@ -1,5 +1,7 @@
 require 'io/console'
 require 'reline/version'
+require 'reline/key_actor'
+require 'reline/line_editor'
 require 'reline/readline'
 
 module Reline

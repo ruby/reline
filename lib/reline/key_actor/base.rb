@@ -1,6 +1,3 @@
-require 'reline'
-require 'reline/key_actor'
-
 class Reline::KeyActor::Base
   MAPPING = Array.new(256)
 

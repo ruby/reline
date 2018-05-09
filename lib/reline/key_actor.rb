@@ -1,5 +1,3 @@
-require 'reline'
-
 module Reline::KeyActor
 end
 

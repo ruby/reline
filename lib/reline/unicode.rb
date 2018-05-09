@@ -1,5 +1,3 @@
-require 'reline'
-
 class Reline::Unicode
   def self.get_mbchar_byte_size_by_first_char(c)
     # Checks UTF-8 character byte size

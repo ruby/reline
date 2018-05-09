@@ -1,5 +1,3 @@
-require 'reline'
-
 class Reline::KillRing
   module State
     FRESH = 0
