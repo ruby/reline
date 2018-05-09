@@ -14,7 +14,7 @@ module Reline
     attr_accessor :basic_word_break_characters
     attr_accessor :completer_quote_characters
     attr_accessor :completer_word_break_characters
-    attr_accessor :completion_append_character
+    attr_reader :completion_append_character
     attr_accessor :completion_case_fold
     attr_accessor :completion_proc
     attr_accessor :filename_quote_characters

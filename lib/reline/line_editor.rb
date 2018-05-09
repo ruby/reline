@@ -38,7 +38,7 @@ class Reline::LineEditor
     @key_actor = key_actor
     @finished = false
     @history_pointer = nil
-    @line_backup_in_history
+    @line_backup_in_history = nil
     @kill_ring = Reline::KillRing.new
     @vi_arg = nil
     @multibyte_buffer = []
@@ -606,7 +606,7 @@ class Reline::LineEditor
   end
 
   private def vi_next_char(key, arg = 1)
-    @waiting_proc = ->(key) { search_next_char(key, arg) }
+    @waiting_proc = ->(key_for_proc) { search_next_char(key_for_proc, arg) }
   end
 
   private def search_next_char(key, arg)
