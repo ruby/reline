@@ -10,4 +10,15 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     @line_editor.input_key('a'.ord)
     assert_equal(@line_editor.line, 'a')
   end
+
+  def test_move_next_and_prev
+    @line_editor.input_key('a'.ord)
+    @line_editor.input_key('b'.ord)
+    @line_editor.input_key('d'.ord)
+    @line_editor.input_key("\C-b".ord)
+    @line_editor.input_key("\C-b".ord)
+    @line_editor.input_key("\C-f".ord)
+    @line_editor.input_key('c'.ord)
+    assert_equal(@line_editor.line, 'abcd')
+  end
 end
