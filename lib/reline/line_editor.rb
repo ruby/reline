@@ -34,7 +34,7 @@ class Reline::LineEditor
     @cursor = 0
     @cursor_max = 0
     @byte_pointer = 0
-    @line = String.new
+    @line = String.new(encoding: 'UTF-8')
     @key_actor = key_actor
     @finished = false
     @cleared = false
