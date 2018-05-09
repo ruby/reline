@@ -272,7 +272,7 @@ class Reline::LineEditor
       Reline::HISTORY[@history_pointer] = @line
       @history_pointer = nil
     end
-    @finished = true
+    finish
     @line += "\n"
   end
 
@@ -576,7 +576,7 @@ class Reline::LineEditor
     }
     system("#{ENV['EDITOR']} #{path}")
     @line = Pathname.new(path).read
-    @finished = true
+    finish
     @line += "\n"
   end
 
