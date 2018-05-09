@@ -209,7 +209,6 @@ class Reline::LineEditor
   end
 
   private def ed_move_to_end(key)
-    last_mbchar_size = nil
     @byte_pointer = 0
     @cursor = 0
     byte_size = 0
@@ -316,7 +315,7 @@ class Reline::LineEditor
       mbchar = splitted_last.grapheme_clusters.first
       width = Reline::Unicode.get_mbchar_width(mbchar)
       @cursor_max -= width
-      @line, deleted = byteslice!(@line, @byte_pointer, mbchar.bytesize)
+      @line, = byteslice!(@line, @byte_pointer, mbchar.bytesize)
     end
   end
 
@@ -338,7 +337,7 @@ class Reline::LineEditor
       @cursor -= prev_yank_width
       @cursor_max -= prev_yank_width
       @byte_pointer -= prev_yank.bytesize
-      @line, mbchar = byteslice!(@line, @byte_pointer, prev_yank.bytesize)
+      @line, = byteslice!(@line, @byte_pointer, prev_yank.bytesize)
       @line = byteinsert(@line, @byte_pointer, yanked)
       yanked_width = calculate_width(yanked)
       @cursor += yanked_width
@@ -426,7 +425,7 @@ class Reline::LineEditor
 
   private def em_lower_case(key)
     if @line.bytesize > @byte_pointer
-      byte_size, width = Reline::Unicode.em_forward_word(@line, @byte_pointer)
+      byte_size, = Reline::Unicode.em_forward_word(@line, @byte_pointer)
       part = @line.byteslice(@byte_pointer, byte_size).grapheme_clusters.map { |mbchar|
         mbchar =~ /[A-Z]/ ? mbchar.downcase : mbchar
       }.join
@@ -441,7 +440,7 @@ class Reline::LineEditor
 
   private def em_upper_case(key)
     if @line.bytesize > @byte_pointer
-      byte_size, width = Reline::Unicode.em_forward_word(@line, @byte_pointer)
+      byte_size, = Reline::Unicode.em_forward_word(@line, @byte_pointer)
       part = @line.byteslice(@byte_pointer, byte_size).grapheme_clusters.map { |mbchar|
         mbchar =~ /[a-z]/ ? mbchar.upcase : mbchar
       }.join
