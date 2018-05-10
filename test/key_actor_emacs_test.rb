@@ -32,4 +32,12 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     @line_editor.input_key('e'.ord)
     assert_equal(@line_editor.line, 'abcde')
   end
+
+  def test_newline
+    @line_editor.input_key('a'.ord)
+    @line_editor.input_key('b'.ord)
+    @line_editor.input_key("\C-m".ord)
+    assert_equal(@line_editor.line, "ab\n")
+    assert(@line_editor.finished?)
+  end
 end
