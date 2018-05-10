@@ -40,4 +40,11 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(@line_editor.line, "ab\n")
     assert(@line_editor.finished?)
   end
+
+  def test_delete_prev_char
+    @line_editor.input_key('a'.ord)
+    @line_editor.input_key('b'.ord)
+    @line_editor.input_key("\C-h".ord)
+    assert_equal(@line_editor.line, 'a')
+  end
 end
