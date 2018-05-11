@@ -47,4 +47,35 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     @line_editor.input_key("\C-h".ord)
     assert_equal(@line_editor.line, 'a')
   end
+
+  def test_ed_kill_line
+    @line_editor.input_key("\C-k".ord)
+    assert_equal(@line_editor.line, '')
+    @line_editor.input_key('a'.ord)
+    @line_editor.input_key('b'.ord)
+    @line_editor.input_key('c'.ord)
+    @line_editor.input_key("\C-k".ord)
+    assert_equal(@line_editor.line, 'abc')
+    @line_editor.input_key("\C-b".ord)
+    @line_editor.input_key("\C-k".ord)
+    assert_equal(@line_editor.line, 'ab')
+  end
+
+  def test_em_kill_line
+    @line_editor.input_key("\C-u".ord)
+    assert_equal(@line_editor.line, '')
+    @line_editor.input_key('a'.ord)
+    @line_editor.input_key('b'.ord)
+    @line_editor.input_key('c'.ord)
+    @line_editor.input_key("\C-u".ord)
+    assert_equal(@line_editor.line, '')
+    @line_editor.input_key('a'.ord)
+    @line_editor.input_key('b'.ord)
+    @line_editor.input_key('c'.ord)
+    @line_editor.input_key("\C-b".ord)
+    @line_editor.input_key("\C-u".ord)
+    assert_equal(@line_editor.line, 'c')
+    @line_editor.input_key("\C-u".ord)
+    assert_equal(@line_editor.line, 'c')
+  end
 end
