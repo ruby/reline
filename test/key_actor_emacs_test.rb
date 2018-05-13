@@ -11,6 +11,12 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(@line_editor.line, 'a')
   end
 
+  def test_ed_insert_two
+    @line_editor.input_key('a'.ord)
+    @line_editor.input_key('b'.ord)
+    assert_equal(@line_editor.line, 'ab')
+  end
+
   def test_move_next_and_prev
     @line_editor.input_key('a'.ord)
     @line_editor.input_key('b'.ord)
