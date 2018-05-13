@@ -32,6 +32,11 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(@line_editor.line, 'かき')
   end
 
+  def test_ed_insert_grapheme_cluster_by_plural_code_points
+    input_keys("か\u3099")
+    assert_equal(@line_editor.line, "か\u3099")
+  end
+
   def test_move_next_and_prev
     input_keys("abd\C-b\C-b\C-fc")
     assert_equal(@line_editor.line, 'abcd')
