@@ -52,6 +52,11 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(@line_editor.line, 'かきくけ')
   end
 
+  def test_move_next_and_prev_for_grapheme_clusters_by_plural_code_points
+    input_keys("か\u3099き\u3099け\u3099\C-b\C-b\C-fく\u3099")
+    assert_equal(@line_editor.line, "か\u3099き\u3099く\u3099け\u3099")
+  end
+
   def test_move_to_beg_end
     input_keys("bcd\C-aa\C-ee")
     assert_equal(@line_editor.line, 'abcde')
