@@ -73,6 +73,11 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(@line_editor.line, 'a')
   end
 
+  def test_delete_prev_char_for_mbchar
+    input_keys("かき\C-h")
+    assert_equal(@line_editor.line, 'か')
+  end
+
   def test_ed_kill_line
     input_keys("\C-k")
     assert_equal(@line_editor.line, '')
