@@ -47,7 +47,7 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(@line_editor.line, 'abcd')
   end
 
-  def test_move_next_and_prev_mbchar
+  def test_move_next_and_prev_for_mbchar
     input_keys("かきけ\C-b\C-b\C-fく")
     assert_equal(@line_editor.line, 'かきくけ')
   end
