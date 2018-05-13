@@ -78,6 +78,11 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(@line_editor.line, 'か')
   end
 
+  def test_delete_prev_char_for_grapheme_clusters_by_plural_code_points
+    input_keys("か\u3099き\u3099\C-h")
+    assert_equal(@line_editor.line, "か\u3099")
+  end
+
   def test_ed_kill_line
     input_keys("\C-k")
     assert_equal(@line_editor.line, '')
