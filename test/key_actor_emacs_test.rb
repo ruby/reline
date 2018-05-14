@@ -102,4 +102,22 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     input_keys("\C-u")
     assert_equal(@line_editor.line, 'c')
   end
+
+  def test_ed_move_to_beg
+    input_keys("abd\C-bc\C-a012")
+    assert_equal(@line_editor.line, '012abcd')
+    input_keys("\C-aABC")
+    assert_equal(@line_editor.line, 'ABC012abcd')
+    input_keys("\C-f" * 10 + "\C-aa")
+    assert_equal(@line_editor.line, 'aABC012abcd')
+  end
+
+  def test_ed_move_to_end
+    input_keys("abd\C-bc\C-e012")
+    assert_equal(@line_editor.line, 'abcd012')
+    input_keys("\C-eABC")
+    assert_equal(@line_editor.line, 'abcd012ABC')
+    input_keys("\C-b" * 10 + "\C-ea")
+    assert_equal(@line_editor.line, 'abcd012ABCa')
+  end
 end
