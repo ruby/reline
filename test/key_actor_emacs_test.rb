@@ -120,4 +120,19 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     input_keys("\C-b" * 10 + "\C-ea")
     assert_equal(@line_editor.line, 'abcd012ABCa')
   end
+
+  def test_em_delete_or_list
+    input_keys("ab\C-a\C-d")
+    assert_equal(@line_editor.line, 'b')
+  end
+
+  def test_em_delete_or_list_for_mbchar
+    input_keys("かき\C-a\C-d")
+    assert_equal(@line_editor.line, 'き')
+  end
+
+  def test_em_delete_or_list_for_grapheme_clusters_by_plural_code_points
+    input_keys("か\u3099き\u3099\C-a\C-d")
+    assert_equal(@line_editor.line, "き\u3099")
+  end
 end
