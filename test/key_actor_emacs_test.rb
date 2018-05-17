@@ -135,4 +135,10 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     input_keys("か\u3099き\u3099\C-a\C-d")
     assert_equal(@line_editor.line, "き\u3099")
   end
+
+  def test_clear_screen
+    refute(@line_editor.instance_variable_get(:@cleared))
+    input_keys("\C-l")
+    assert(@line_editor.instance_variable_get(:@cleared))
+  end
 end
