@@ -1,0 +1,8 @@
+---
+language: ruby
+rvm:
+  - ruby-head
+before_install:
+  - gem update --system
+  - gem update bundler
+script: rake
