@@ -7,7 +7,12 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
   end
 
   def input_keys(input)
+    eighth_bit = 0b10000000
     input.bytes.each do |byte|
+      if byte.allbits?(eighth_bit)
+        @line_editor.input_key("\e".ord)
+        byte ^= eighth_bit
+      end
       @line_editor.input_key(byte)
     end
   end
@@ -140,5 +145,30 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     refute(@line_editor.instance_variable_get(:@cleared))
     input_keys("\C-l")
     assert(@line_editor.instance_variable_get(:@cleared))
+  end
+
+  def test_em_next_word
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
+    input_keys("abc def{bbb}ccc\C-a\M-F")
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor))
+    input_keys("\M-F")
+    assert_equal(7, @line_editor.instance_variable_get(:@cursor))
+    input_keys("\M-F")
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor))
+    input_keys("\M-F")
+    assert_equal(15, @line_editor.instance_variable_get(:@cursor))
+  end
+
+  def test_em_prev_word
+    input_keys("abc def{bbb}ccc")
+    assert_equal(15, @line_editor.instance_variable_get(:@cursor))
+    input_keys("\M-B")
+    assert_equal(12, @line_editor.instance_variable_get(:@cursor))
+    input_keys("\M-B")
+    assert_equal(8, @line_editor.instance_variable_get(:@cursor))
+    input_keys("\M-B")
+    assert_equal(4, @line_editor.instance_variable_get(:@cursor))
+    input_keys("\M-B")
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
   end
 end
