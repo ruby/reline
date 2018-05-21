@@ -7,13 +7,20 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
   end
 
   def input_keys(input)
-    eighth_bit = 0b10000000
-    input.bytes.each do |byte|
-      if byte.allbits?(eighth_bit)
-        @line_editor.input_key("\e".ord)
-        byte ^= eighth_bit
+    input.chars.each do |c|
+      if c.bytesize == 1
+        eighth_bit = 0b10000000
+        byte = c.bytes.first
+        if byte.allbits?(eighth_bit)
+          @line_editor.input_key("\e".ord)
+          byte ^= eighth_bit
+        end
+        @line_editor.input_key(byte)
+      else
+        c.bytes.each do |byte|
+          @line_editor.input_key(byte)
+        end
       end
-      @line_editor.input_key(byte)
     end
   end
 
