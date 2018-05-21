@@ -178,4 +178,16 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     input_keys("\M-B")
     assert_equal(0, @line_editor.instance_variable_get(:@cursor))
   end
+
+  def test_em_delete_next_word
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
+    input_keys("abc def{bbb}ccc\C-a\M-d")
+    assert_equal(' def{bbb}ccc', @line_editor.line)
+    input_keys("\M-d")
+    assert_equal('{bbb}ccc', @line_editor.line)
+    input_keys("\M-d")
+    assert_equal('}ccc', @line_editor.line)
+    input_keys("\M-d")
+    assert_equal('', @line_editor.line)
+  end
 end
