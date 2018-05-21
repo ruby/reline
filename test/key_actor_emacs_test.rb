@@ -190,4 +190,15 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     input_keys("\M-d")
     assert_equal('', @line_editor.line)
   end
+
+  def test_ed_delete_prev_word
+    input_keys("abc def{bbb}ccc\M-\C-H")
+    assert_equal('abc def{bbb}', @line_editor.line)
+    input_keys("\M-\C-H")
+    assert_equal('abc def{', @line_editor.line)
+    input_keys("\M-\C-H")
+    assert_equal('abc ', @line_editor.line)
+    input_keys("\M-\C-H")
+    assert_equal('', @line_editor.line)
+  end
 end
