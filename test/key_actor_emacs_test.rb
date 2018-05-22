@@ -201,4 +201,19 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     input_keys("\M-\C-H")
     assert_equal('', @line_editor.line)
   end
+
+  def test_ed_transpose_chars
+    input_keys("abc\C-a\C-t")
+    assert_equal('abc', @line_editor.line)
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
+    input_keys("\C-f\C-t")
+    assert_equal('bac', @line_editor.line)
+    assert_equal(2, @line_editor.instance_variable_get(:@cursor))
+    input_keys("\C-t")
+    assert_equal('bca', @line_editor.line)
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor))
+    input_keys("\C-t")
+    assert_equal('bac', @line_editor.line)
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor))
+  end
 end
