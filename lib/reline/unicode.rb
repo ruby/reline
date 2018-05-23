@@ -52,14 +52,14 @@ class Reline::Unicode
     while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
-      break if mbchar =~ /\w/
+      break if mbchar =~ /\p{Word}/
       width += get_mbchar_width(mbchar)
       byte_size += size
     end
     while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
-      break if mbchar =~ /\W/
+      break if mbchar =~ /\P{Word}/
       width += get_mbchar_width(mbchar)
       byte_size += size
     end
@@ -72,14 +72,14 @@ class Reline::Unicode
     while 0 < (byte_pointer - byte_size)
       size = get_prev_mbchar_size(line, byte_pointer - byte_size)
       mbchar = line.byteslice(byte_pointer - byte_size - size, size)
-      break if mbchar =~ /\w/
+      break if mbchar =~ /\p{Word}/
       width += get_mbchar_width(mbchar)
       byte_size += size
     end
     while 0 < (byte_pointer - byte_size)
       size = get_prev_mbchar_size(line, byte_pointer - byte_size)
       mbchar = line.byteslice(byte_pointer - byte_size - size, size)
-      break if mbchar =~ /\W/
+      break if mbchar =~ /\P{Word}/
       width += get_mbchar_width(mbchar)
       byte_size += size
     end
