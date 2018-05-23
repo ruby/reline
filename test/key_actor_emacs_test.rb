@@ -154,6 +154,17 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert(@line_editor.instance_variable_get(:@cleared))
   end
 
+  def test_ed_clear_screen_with_inputed
+    input_keys("abc\C-b")
+    refute(@line_editor.instance_variable_get(:@cleared))
+    assert_equal(2, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor_max))
+    input_keys("\C-l")
+    assert(@line_editor.instance_variable_get(:@cleared))
+    assert_equal(2, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor_max))
+  end
+
   def test_em_next_word
     assert_equal(0, @line_editor.instance_variable_get(:@cursor))
     input_keys("abc def{bbb}ccc\C-a\M-F")
