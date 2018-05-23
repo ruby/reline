@@ -164,6 +164,8 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(11, @line_editor.instance_variable_get(:@cursor))
     input_keys("\M-F")
     assert_equal(15, @line_editor.instance_variable_get(:@cursor))
+    input_keys("\M-F")
+    assert_equal(15, @line_editor.instance_variable_get(:@cursor))
   end
 
   def test_em_prev_word
@@ -175,6 +177,8 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(8, @line_editor.instance_variable_get(:@cursor))
     input_keys("\M-B")
     assert_equal(4, @line_editor.instance_variable_get(:@cursor))
+    input_keys("\M-B")
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
     input_keys("\M-B")
     assert_equal(0, @line_editor.instance_variable_get(:@cursor))
   end
