@@ -173,6 +173,7 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(2, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(2, @line_editor.instance_variable_get(:@cursor))
     assert_equal(2, @line_editor.instance_variable_get(:@cursor_max))
+    refute(@line_editor.finished?)
     input_keys("\C-m")
     assert_equal("ab\n", @line_editor.line)
     assert(@line_editor.finished?)
