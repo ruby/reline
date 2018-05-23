@@ -187,6 +187,25 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(39, @line_editor.instance_variable_get(:@byte_pointer))
   end
 
+  def test_em_next_word_for_mbchar_by_plural_code_points
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
+    input_keys("あいう か\u3099き\u3099く\u3099{さしす}たちつ\C-a\M-F")
+    assert_equal(6, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(9, @line_editor.instance_variable_get(:@byte_pointer))
+    input_keys("\M-F")
+    assert_equal(13, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(28, @line_editor.instance_variable_get(:@byte_pointer))
+    input_keys("\M-F")
+    assert_equal(20, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(38, @line_editor.instance_variable_get(:@byte_pointer))
+    input_keys("\M-F")
+    assert_equal(27, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(48, @line_editor.instance_variable_get(:@byte_pointer))
+    input_keys("\M-F")
+    assert_equal(27, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(48, @line_editor.instance_variable_get(:@byte_pointer))
+  end
+
   def test_em_prev_word
     input_keys("abc def{bbb}ccc")
     assert_equal(15, @line_editor.instance_variable_get(:@cursor))
@@ -212,6 +231,27 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     input_keys("\M-B")
     assert_equal(14, @line_editor.instance_variable_get(:@cursor))
     assert_equal(20, @line_editor.instance_variable_get(:@byte_pointer))
+    input_keys("\M-B")
+    assert_equal(7, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(10, @line_editor.instance_variable_get(:@byte_pointer))
+    input_keys("\M-B")
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(0, @line_editor.instance_variable_get(:@byte_pointer))
+    input_keys("\M-B")
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(0, @line_editor.instance_variable_get(:@byte_pointer))
+  end
+
+  def test_em_prev_word_for_mbchar_by_plural_code_points
+    input_keys("あいう か\u3099き\u3099く\u3099{さしす}たちつ")
+    assert_equal(27, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(48, @line_editor.instance_variable_get(:@byte_pointer))
+    input_keys("\M-B")
+    assert_equal(21, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(39, @line_editor.instance_variable_get(:@byte_pointer))
+    input_keys("\M-B")
+    assert_equal(14, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(29, @line_editor.instance_variable_get(:@byte_pointer))
     input_keys("\M-B")
     assert_equal(7, @line_editor.instance_variable_get(:@cursor))
     assert_equal(10, @line_editor.instance_variable_get(:@byte_pointer))
