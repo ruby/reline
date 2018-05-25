@@ -590,6 +590,33 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal('', @line_editor.line)
   end
 
+  def test_em_delete_next_word_for_mbchar_by_plural_code_points
+    input_keys("あいう か\u3099き\u3099く\u3099{さしす}たちつ\C-a")
+    assert_equal(0, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(27, @line_editor.instance_variable_get(:@cursor_max))
+    input_keys("\M-d")
+    assert_equal(0, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(21, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal(" か\u3099き\u3099く\u3099{さしす}たちつ", @line_editor.line)
+    input_keys("\M-d")
+    assert_equal(0, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(14, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('{さしす}たちつ', @line_editor.line)
+    input_keys("\M-d")
+    assert_equal(0, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(7, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('}たちつ', @line_editor.line)
+    input_keys("\M-d")
+    assert_equal(0, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(0, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('', @line_editor.line)
+  end
+
   def test_ed_delete_prev_word
     input_keys('abc def{bbb}ccc')
     assert_equal(15, @line_editor.instance_variable_get(:@byte_pointer))
