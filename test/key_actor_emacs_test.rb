@@ -56,7 +56,7 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(4, @line_editor.instance_variable_get(:@cursor_max))
   end
 
-  def test_ed_insert_grapheme_cluster_by_plural_code_points
+  def test_ed_insert_for_mbchar_by_plural_code_points
     input_keys("か\u3099")
     assert_equal("か\u3099", @line_editor.line)
     assert_equal(6, @line_editor.instance_variable_get(:@byte_pointer))
@@ -64,7 +64,7 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(2, @line_editor.instance_variable_get(:@cursor_max))
   end
 
-  def test_ed_insert_plural_grapheme_clusters_by_plural_code_points
+  def test_ed_insert_for_plural_mbchar_by_plural_code_points
     input_keys("か\u3099き\u3099")
     assert_equal("か\u3099き\u3099", @line_editor.line)
     assert_equal(12, @line_editor.instance_variable_get(:@byte_pointer))
@@ -120,7 +120,7 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal('かきくけ', @line_editor.line)
   end
 
-  def test_move_next_and_prev_for_grapheme_clusters_by_plural_code_points
+  def test_move_next_and_prev_for_mbchar_by_plural_code_points
     input_keys("か\u3099き\u3099け\u3099")
     assert_equal(18, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(6, @line_editor.instance_variable_get(:@cursor))
@@ -203,7 +203,7 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal('か', @line_editor.line)
   end
 
-  def test_delete_prev_char_for_grapheme_clusters_by_plural_code_points
+  def test_delete_prev_char_for_mbchar_by_plural_code_points
     input_keys("か\u3099き\u3099")
     assert_equal(12, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(4, @line_editor.instance_variable_get(:@cursor))
@@ -380,7 +380,7 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal('き', @line_editor.line)
   end
 
-  def test_em_delete_or_list_for_grapheme_clusters_by_plural_code_points
+  def test_em_delete_or_list_for_mbchar_by_plural_code_points
     input_keys("か\u3099き\u3099")
     assert_equal(12, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(4, @line_editor.instance_variable_get(:@cursor))
