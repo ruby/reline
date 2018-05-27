@@ -778,4 +778,12 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(6, @line_editor.instance_variable_get(:@cursor_max))
     assert_equal("か\u3099あさ", @line_editor.line)
   end
+
+  def test_ed_digit
+    input_keys('0123')
+    assert_equal(4, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(4, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(4, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('0123', @line_editor.line)
+  end
 end
