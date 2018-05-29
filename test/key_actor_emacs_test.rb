@@ -903,4 +903,12 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(6, @line_editor.instance_variable_get(:@cursor))
     assert_equal(6, @line_editor.instance_variable_get(:@cursor_max))
   end
+
+  def test_em_capitol_case
+    input_keys("abc def{bbb}ccc\C-a\M-c")
+    assert_equal(3, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(15, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('Abc def{bbb}ccc', @line_editor.line)
+  end
 end
