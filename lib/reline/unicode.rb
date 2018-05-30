@@ -66,6 +66,35 @@ class Reline::Unicode
     [byte_size, width]
   end
 
+  def self.em_forward_word_with_capitalization(line, byte_pointer)
+    width = 0
+    byte_size = 0
+    new_str = String.new
+    while line.bytesize > (byte_pointer + byte_size)
+      size = get_next_mbchar_size(line, byte_pointer + byte_size)
+      mbchar = line.byteslice(byte_pointer + byte_size, size)
+      break if mbchar =~ /\p{Word}/
+      new_str += mbchar
+      width += get_mbchar_width(mbchar)
+      byte_size += size
+    end
+    first = true
+    while line.bytesize > (byte_pointer + byte_size)
+      size = get_next_mbchar_size(line, byte_pointer + byte_size)
+      mbchar = line.byteslice(byte_pointer + byte_size, size)
+      break if mbchar =~ /\P{Word}/
+      if first
+        new_str += mbchar.upcase
+        first = false
+      else
+        new_str += mbchar.downcase
+      end
+      width += get_mbchar_width(mbchar)
+      byte_size += size
+    end
+    [byte_size, width, new_str]
+  end
+
   def self.em_backward_word(line, byte_pointer)
     width = 0
     byte_size = 0

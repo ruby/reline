@@ -410,14 +410,12 @@ class Reline::LineEditor
 
   private def em_capitol_case(key)
     if @line.bytesize > @byte_pointer
-      byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
-      cursor_mbchar = @line.byteslice(@byte_pointer, byte_size)
-      byte_size, width = Reline::Unicode.em_forward_word(@line, @byte_pointer)
-      if cursor_mbchar =~ /^[a-z]/
-        @line = @line.byteslice(0, @byte_pointer) + cursor_mbchar.upcase + @line.byteslice((@byte_pointer + 1)..-1)
-      end
-      @byte_pointer += byte_size
-      @cursor += width
+      byte_size, width, new_str = Reline::Unicode.em_forward_word_with_capitalization(@line, @byte_pointer)
+      before = @line.byteslice(0, @byte_pointer)
+      after = @line.byteslice((@byte_pointer + byte_size)..-1)
+      @line = before + new_str + after
+      @byte_pointer += new_str.bytesize
+      @cursor += calculate_width(new_str)
     end
   end
 
