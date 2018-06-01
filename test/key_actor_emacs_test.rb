@@ -985,4 +985,45 @@ class Reline::KeyActor::Emacs::Test < Test::Unit::TestCase
     assert_equal(20, @line_editor.instance_variable_get(:@cursor_max))
     assert_equal('{}#*    aaa!!!ccc   ', @line_editor.line)
   end
+
+  def test_em_upper_case
+    input_keys("AbC def{bBb}CCC\C-a\M-u")
+    assert_equal(3, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(15, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('ABC def{bBb}CCC', @line_editor.line)
+    input_keys("\M-u")
+    assert_equal(7, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(7, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(15, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('ABC DEF{bBb}CCC', @line_editor.line)
+    input_keys("\M-u")
+    assert_equal(11, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(15, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('ABC DEF{BBB}CCC', @line_editor.line)
+    input_keys("\M-u")
+    assert_equal(15, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(15, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(15, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('ABC DEF{BBB}CCC', @line_editor.line)
+  end
+
+  def test_em_upper_case_with_complex_example
+    input_keys("{}#*    AaA!!!cCc   \C-a\M-u")
+    assert_equal(11, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(20, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('{}#*    AAA!!!cCc   ', @line_editor.line)
+    input_keys("\M-u")
+    assert_equal(17, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(17, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(20, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('{}#*    AAA!!!CCC   ', @line_editor.line)
+    input_keys("\M-u")
+    assert_equal(20, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(20, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(20, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('{}#*    AAA!!!CCC   ', @line_editor.line)
+  end
 end
