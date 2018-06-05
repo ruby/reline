@@ -161,7 +161,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert(@line_editor.finished?)
   end
 
-  def test_delete_prev_char
+  def test_em_delete_prev_char
     input_keys('ab')
     assert_equal(2, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(2, @line_editor.instance_variable_get(:@cursor))
@@ -173,7 +173,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_equal('a', @line_editor.line)
   end
 
-  def test_delete_prev_char_for_mbchar
+  def test_em_delete_prev_char_for_mbchar
     input_keys('かき')
     assert_equal(6, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(4, @line_editor.instance_variable_get(:@cursor))
@@ -185,7 +185,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_equal('か', @line_editor.line)
   end
 
-  def test_delete_prev_char_for_mbchar_by_plural_code_points
+  def test_em_delete_prev_char_for_mbchar_by_plural_code_points
     input_keys("か\u3099き\u3099")
     assert_equal(12, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(4, @line_editor.instance_variable_get(:@cursor))
