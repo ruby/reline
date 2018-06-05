@@ -150,13 +150,24 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_equal('abcde', @line_editor.line)
   end
 
-  def test_ed_newline
+  def test_ed_newline_with_cr
     input_keys('ab')
     assert_equal(2, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(2, @line_editor.instance_variable_get(:@cursor))
     assert_equal(2, @line_editor.instance_variable_get(:@cursor_max))
     refute(@line_editor.finished?)
     input_keys("\C-m")
+    assert_equal("ab\n", @line_editor.line)
+    assert(@line_editor.finished?)
+  end
+
+  def test_ed_newline_lf
+    input_keys('ab')
+    assert_equal(2, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(2, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(2, @line_editor.instance_variable_get(:@cursor_max))
+    refute(@line_editor.finished?)
+    input_keys("\C-j")
     assert_equal("ab\n", @line_editor.line)
     assert(@line_editor.finished?)
   end
