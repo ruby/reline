@@ -6,6 +6,17 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     @line_editor = Reline::LineEditor.new(Reline::KeyActor::ViInsert, @prompt)
   end
 
+  def test_vi_command_mode
+    input_keys("\C-[")
+    assert_equal(Reline::KeyActor::ViCommand, @line_editor.instance_variable_get(:@key_actor))
+  end
+
+  def test_vi_command_mode_with_input
+    input_keys("abc\C-[")
+    assert_equal(Reline::KeyActor::ViCommand, @line_editor.instance_variable_get(:@key_actor))
+    assert_equal('abc', @line_editor.line)
+  end
+
   def test_ed_insert_one
     input_keys('a')
     assert_equal('a', @line_editor.line)
