@@ -161,7 +161,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert(@line_editor.finished?)
   end
 
-  def test_ed_newline_lf
+  def test_ed_newline_with_lf
     input_keys('ab')
     assert_equal(2, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(2, @line_editor.instance_variable_get(:@cursor))
