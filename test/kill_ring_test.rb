@@ -5,4 +5,16 @@ class Reline::KillRing::Test < Reline::TestCase
     @prompt = '> '
     @kill_ring = Reline::KillRing.new
   end
+
+  def test_append_one
+    assert_equal(Reline::KillRing::State::FRESH, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.append('a')
+    assert_equal(Reline::KillRing::State::CONTINUED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
+    assert_equal('a', @kill_ring.yank)
+    assert_equal('a', @kill_ring.yank)
+    assert_equal(['a', 'a'], @kill_ring.yank_pop)
+    assert_equal(['a', 'a'], @kill_ring.yank_pop)
+  end
 end
