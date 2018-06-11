@@ -70,9 +70,9 @@ class Reline::KillRing
       @state = State::CONTINUED
     when State::CONTINUED, State::PROCESSED
       if before_p
-        @ring.head.str = string + @ring.head.str
+        @ring.head.str.prepend(string)
       else
-        @ring.head.str << string
+        @ring.head.str.concat(string)
       end
       @state = State::CONTINUED
     end
