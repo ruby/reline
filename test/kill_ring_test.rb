@@ -113,4 +113,34 @@ class Reline::KillRing::Test < Reline::TestCase
     assert_equal(['ba', 'ba'], @kill_ring.yank_pop)
     assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
   end
+
+  def test_append_chain_two
+    assert_equal(Reline::KillRing::State::FRESH, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.append('a')
+    assert_equal(Reline::KillRing::State::CONTINUED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.append('b')
+    assert_equal(Reline::KillRing::State::CONTINUED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::FRESH, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.append('c')
+    assert_equal(Reline::KillRing::State::CONTINUED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.append('d')
+    assert_equal(Reline::KillRing::State::CONTINUED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
+    assert_equal('cd', @kill_ring.yank)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
+    assert_equal('cd', @kill_ring.yank)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
+    assert_equal(['ab', 'cd'], @kill_ring.yank_pop)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
+    assert_equal(['cd', 'ab'], @kill_ring.yank_pop)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
+  end
 end
