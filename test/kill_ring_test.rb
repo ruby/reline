@@ -143,4 +143,46 @@ class Reline::KillRing::Test < Reline::TestCase
     assert_equal(['cd', 'ab'], @kill_ring.yank_pop)
     assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
   end
+
+  def test_append_complex_chain
+    assert_equal(Reline::KillRing::State::FRESH, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.append('c')
+    assert_equal(Reline::KillRing::State::CONTINUED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.append('d')
+    assert_equal(Reline::KillRing::State::CONTINUED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.append('b', true)
+    assert_equal(Reline::KillRing::State::CONTINUED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.append('e')
+    assert_equal(Reline::KillRing::State::CONTINUED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.append('a', true)
+    assert_equal(Reline::KillRing::State::CONTINUED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::FRESH, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.append('A')
+    assert_equal(Reline::KillRing::State::CONTINUED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.append('B')
+    assert_equal(Reline::KillRing::State::CONTINUED, @kill_ring.instance_variable_get(:@state))
+    @kill_ring.process
+    assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
+    assert_equal('AB', @kill_ring.yank)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
+    assert_equal('AB', @kill_ring.yank)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
+    assert_equal(['abcde', 'AB'], @kill_ring.yank_pop)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
+    assert_equal(['AB', 'abcde'], @kill_ring.yank_pop)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
+  end
 end
