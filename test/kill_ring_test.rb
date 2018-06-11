@@ -13,9 +13,13 @@ class Reline::KillRing::Test < Reline::TestCase
     @kill_ring.process
     assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
     assert_equal('a', @kill_ring.yank)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
     assert_equal('a', @kill_ring.yank)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
     assert_equal(['a', 'a'], @kill_ring.yank_pop)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
     assert_equal(['a', 'a'], @kill_ring.yank_pop)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
   end
 
   def test_append_two
@@ -31,8 +35,12 @@ class Reline::KillRing::Test < Reline::TestCase
     @kill_ring.process
     assert_equal(Reline::KillRing::State::PROCESSED, @kill_ring.instance_variable_get(:@state))
     assert_equal('b', @kill_ring.yank)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
     assert_equal('b', @kill_ring.yank)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
     assert_equal(['a', 'b'], @kill_ring.yank_pop)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
     assert_equal(['b', 'a'], @kill_ring.yank_pop)
+    assert_equal(Reline::KillRing::State::YANK, @kill_ring.instance_variable_get(:@state))
   end
 end
