@@ -2,7 +2,6 @@ require 'io/console'
 require 'reline/version'
 require 'reline/key_actor'
 require 'reline/line_editor'
-require 'reline/readline'
 
 module Reline
   FILENAME_COMPLETION_PROC = nil
@@ -57,8 +56,57 @@ module Reline
     self
   end
 
+  def self.getc
+    c = nil
+    until c
+      return nil if @line_editor.finished?
+      result = select([$stdin], [], [], 0.1)
+      next if result.nil?
+      c = $stdin.read(1)
+    end
+    c.ord
+  end
+
+  def self.prep
+    int_handle = Signal.trap('INT', 'IGNORE')
+    otio = `stty -g`.chomp
+    setting = ' -echo -icrnl cbreak'
+    if (`stty -a`.scan(/-parenb\b/).first == '-parenb')
+      setting << ' pass8'
+    end
+    setting << ' -ixoff'
+    `stty #{setting}`
+    Signal.trap('INT', int_handle)
+    otio
+  end
+
+  def self.deprep(otio)
+    int_handle = Signal.trap('INT', 'IGNORE')
+    `stty #{otio}`
+    Signal.trap('INT', int_handle)
+  end
+
   def self.readline(prompt = '', add_hist = false)
-    readline = Reline::Readline.new(prompt, add_hist)
-    readline.run
+    otio = prep
+
+    @line_editor = Reline::LineEditor.new(Reline::KeyActor::Emacs, prompt)
+    @line_editor.rerender
+    begin
+      while c = getc
+        @line_editor.input_key(c)
+        @line_editor.rerender
+        break if @line_editor.finished?
+      end
+      if add_hist and @line_editor.line and @line_editor.line.chomp.size > 0
+        Reline::HISTORY << @line_editor.line.chomp
+      end
+    rescue StandardError => e
+      deprep(otio)
+      raise e
+    end
+
+    deprep(otio)
+
+    @line_editor.line
   end
 end
