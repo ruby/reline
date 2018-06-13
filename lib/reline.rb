@@ -90,6 +90,7 @@ module Reline
     otio = prep
 
     @line_editor = Reline::LineEditor.new(Reline::KeyActor::Emacs, prompt)
+    @line_editor.completion_proc = @completion_proc
     @line_editor.rerender
     begin
       while c = getc

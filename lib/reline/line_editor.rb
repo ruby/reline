@@ -6,6 +6,7 @@ require 'pathname'
 
 class Reline::LineEditor
   attr_reader :line
+  attr_accessor :completion_proc
 
   ARGUMENTABLE = %i{
     ed_delete_next_char
@@ -83,6 +84,14 @@ class Reline::LineEditor
       end
     elsif Reline::Unicode.get_mbchar_byte_size_by_first_char(key) > 1
       @multibyte_buffer << key
+    elsif key == "\C-i".ord
+      result = @completion_proc&.(@line)
+      if result.is_a?(Enumerable)
+        puts
+        result.each do |item|
+          puts item
+        end
+      end
     elsif Reline::KeyActor::Emacs == @key_actor and key == "\e".ord # meta key
       if @meta_prefix
         # escape twice
