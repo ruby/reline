@@ -82,6 +82,7 @@ class Reline::LineEditor
     end
   end
 
+  # TODO completion logic should move to Reline from Reline::LineEditor
   def complete(list)
     list = list.select { |i| i.start_with?(@line) }
     case @completion_state
