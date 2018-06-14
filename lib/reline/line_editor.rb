@@ -93,6 +93,7 @@ class Reline::LineEditor
       return menu(list)
     end
     completed = list.inject { |memo, item|
+      # TODO: Unicode normalization for completion
       memo_mbchars = memo.grapheme_clusters
       item_mbchars = item.grapheme_clusters
       size = [memo_mbchars.size, item_mbchars.size].min
