@@ -97,7 +97,7 @@ class Reline::LineEditor
       memo_mbchars = memo.grapheme_clusters
       item_mbchars = item.grapheme_clusters
       size = [memo_mbchars.size, item_mbchars.size].min
-      result = String.new
+      result = ''
       size.times do |i|
         if memo_mbchars[i] == item_mbchars[i]
           result << memo_mbchars[i]
