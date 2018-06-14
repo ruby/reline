@@ -30,9 +30,9 @@ class Reline::LineEditor
   }
 
   module CompletionState
-    NORMAL = 0
-    COMPLETION = 1
-    MENU = 2
+    NORMAL = :normal
+    COMPLETION = :completion
+    MENU = :menu
   end
 
   def initialize(key_actor, prompt)

@@ -1,9 +1,9 @@
 class Reline::KillRing
   module State
-    FRESH = 0
-    CONTINUED = 1
-    PROCESSED = 2
-    YANK = 3
+    FRESH = :fresh
+    CONTINUED = :continued
+    PROCESSED = :processed
+    YANK = :yank
   end
 
   RingPoint = Struct.new(:backward, :forward, :str) do
