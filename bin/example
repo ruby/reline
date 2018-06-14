@@ -9,9 +9,10 @@ begin
   puts 'This is echo program by Reline.'
   Reline.completion_proc = proc { |line|
     %W{
-      #{line}1
-      #{line}2
-      #{line}3
+      fooabc0
+      foocde1
+      foocde2
+      bar3
     }
   }
   while line = Reline.readline("echo> ", true)

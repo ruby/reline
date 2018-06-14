@@ -29,6 +29,12 @@ class Reline::LineEditor
     vi_next_char
   }
 
+  module CompletionState
+    NORMAL = 0
+    COMPLETION = 1
+    MENU = 2
+  end
+
   def initialize(key_actor, prompt)
     @prompt = prompt
     @prompt_width = calculate_width(@prompt)
@@ -46,6 +52,7 @@ class Reline::LineEditor
     @multibyte_buffer = []
     @meta_prefix = false
     @waiting_proc = nil
+    @completion_state = CompletionState::NORMAL
   end
 
   def rerender
@@ -68,7 +75,49 @@ class Reline::LineEditor
     print "\e[#{prompt_width + @cursor + 1}G" unless @line.end_with?("\n")
   end
 
+  def menu(list)
+    puts
+    list.each do |item|
+      puts item
+    end
+  end
+
+  def complete(list)
+    list = list.select { |i| i.start_with?(@line) }
+    case @completion_state
+    when CompletionState::NORMAL
+      @completion_state = CompletionState::COMPLETION
+    when CompletionState::COMPLETION
+      # do nothing
+    when CompletionState::MENU
+      return menu(list)
+    end
+    completed = list.inject { |memo, item|
+      memo_mbchars = memo.grapheme_clusters
+      item_mbchars = item.grapheme_clusters
+      size = [memo_mbchars.size, item_mbchars.size].min
+      result = String.new
+      size.times do |i|
+        if memo_mbchars[i] == item_mbchars[i]
+          result << memo_mbchars[i]
+        else
+          break
+        end
+      end
+      result
+    }
+    if @line <= completed and @completion_state == CompletionState::COMPLETION
+      @completion_state = CompletionState::MENU
+      if @line < completed
+        @line = completed
+        @cursor = @cursor_max = calculate_width(@line)
+        @byte_pointer = @line.bytesize
+      end
+    end
+  end
+
   def input_key(key)
+    completion_occurs = false
     if !@multibyte_buffer.empty?
       @multibyte_buffer << key
       first_c = @multibyte_buffer.first
@@ -87,10 +136,8 @@ class Reline::LineEditor
     elsif key == "\C-i".ord
       result = @completion_proc&.(@line)
       if result.is_a?(Enumerable)
-        puts
-        result.each do |item|
-          puts item
-        end
+        completion_occurs = true
+        complete(result)
       end
     elsif Reline::KeyActor::Emacs == @key_actor and key == "\e".ord # meta key
       if @meta_prefix
@@ -128,6 +175,12 @@ class Reline::LineEditor
           __send__(method_symbol, key)
           @kill_ring.process
         end
+      end
+    end
+    unless completion_occurs
+      case @completion_state
+      when CompletionState::COMPLETION, CompletionState::MENU
+        @completion_state = CompletionState::NORMAL
       end
     end
   end
