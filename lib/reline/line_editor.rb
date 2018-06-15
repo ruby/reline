@@ -7,6 +7,7 @@ require 'pathname'
 class Reline::LineEditor
   attr_reader :line
   attr_accessor :completion_proc
+  attr_writer :complete_internal_proc
 
   ARGUMENTABLE = %i{
     ed_delete_next_char
@@ -75,38 +76,13 @@ class Reline::LineEditor
     print "\e[#{prompt_width + @cursor + 1}G" unless @line.end_with?("\n")
   end
 
-  def menu(list)
-    puts
-    list.each do |item|
-      puts item
-    end
-  end
-
-  # TODO completion logic should move to Reline from Reline::LineEditor
   def complete(list)
-    list = list.select { |i| i.start_with?(@line) }
-    case @completion_state
-    when CompletionState::NORMAL
+    if @completion_state == CompletionState::NORMAL
       @completion_state = CompletionState::COMPLETION
-    when CompletionState::COMPLETION
-      # do nothing
-    when CompletionState::MENU
-      return menu(list)
     end
-    completed = list.inject { |memo, item|
-      memo_mbchars = memo.unicode_normalize.grapheme_clusters
-      item_mbchars = item.unicode_normalize.grapheme_clusters
-      size = [memo_mbchars.size, item_mbchars.size].min
-      result = ''
-      size.times do |i|
-        if memo_mbchars[i] == item_mbchars[i]
-          result << memo_mbchars[i]
-        else
-          break
-        end
-      end
-      result
-    }
+    is_menu = (@completion_state == CompletionState::MENU)
+    completed = @complete_internal_proc.(@line, list, is_menu)
+    return if completed.nil?
     if @line <= completed and @completion_state == CompletionState::COMPLETION
       @completion_state = CompletionState::MENU
       if @line < completed
