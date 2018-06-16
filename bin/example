@@ -8,11 +8,11 @@ stty_save = `stty -g`.chomp
 begin
   puts 'This is echo program by Reline.'
   Reline.completion_proc = proc { |line|
-    %W{
-      fooabc0
-      foocde1
-      foocde2
-      bar3
+    %w{
+      foo_foo
+      foo_bar
+      foo_baz
+      qux
     }
   }
   while line = Reline.readline("echo> ", true)
