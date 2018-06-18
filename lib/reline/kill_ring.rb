@@ -56,8 +56,8 @@ class Reline::KillRing
     end
   end
 
-  def initialize
-    @ring = RingBuffer.new
+  def initialize(max = 1024)
+    @ring = RingBuffer.new(max)
     @ring_pointer = nil
     @buffer = nil
     @state = State::FRESH
