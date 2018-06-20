@@ -14,8 +14,8 @@ class Reline::TestCase < Test::Unit::TestCase
         end
         @line_editor.input_key(byte)
       else
-        c.bytes.each do |byte|
-          @line_editor.input_key(byte)
+        c.bytes.each do |b|
+          @line_editor.input_key(b)
         end
       end
     end
