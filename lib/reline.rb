@@ -93,7 +93,23 @@ module Reline
     end
   end
 
-  def self.complete_internal_proc(line, list, is_menu)
+  def self.retrieve_completion_block(line, byte_pointer)
+    break_regexp = /[#{Regexp.escape(@basic_word_break_characters)}]/
+    before_pointer = line.byteslice(0, byte_pointer)
+    break_point = before_pointer.rindex(break_regexp)
+    if break_point
+      preposing = before_pointer[0..(break_point)]
+      block = before_pointer[(break_point + 1)..-1]
+    else
+      preposing = ''
+      block = before_pointer
+    end
+    postposing = line.byteslice(byte_pointer, line.bytesize)
+    [preposing, block, postposing]
+  end
+
+  def self.complete_internal_proc(line, list, is_menu, byte_pointer)
+    preposing, line, postposing = retrieve_completion_block(line, byte_pointer)
     list = list.select { |i| i.start_with?(line) }
     if is_menu
       menu(line, list)
@@ -113,7 +129,7 @@ module Reline
       end
       result
     }
-    completed
+    preposing + completed + postposing
   end
 
   def self.readline(prompt = '', add_hist = false)

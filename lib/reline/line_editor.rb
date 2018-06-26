@@ -81,7 +81,7 @@ class Reline::LineEditor
       @completion_state = CompletionState::COMPLETION
     end
     is_menu = (@completion_state == CompletionState::MENU)
-    completed = @complete_internal_proc.(@line, list, is_menu)
+    completed = @complete_internal_proc.(@line, list, is_menu, @byte_pointer)
     return if completed.nil?
     if @line <= completed and @completion_state == CompletionState::COMPLETION
       @completion_state = CompletionState::MENU
