@@ -110,7 +110,7 @@ class Reline::LineEditor
       end
     elsif Reline::Unicode.get_mbchar_byte_size_by_first_char(key) > 1
       @multibyte_buffer << key
-    elsif key == "\C-i".ord
+    elsif [Reline::KeyActor::Emacs, Reline::KeyActor::ViInsert].include?(@key_actor) and key == "\C-i".ord
       result = @completion_proc&.(@line)
       if result.is_a?(Enumerable)
         completion_occurs = true
