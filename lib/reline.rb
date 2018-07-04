@@ -86,13 +86,6 @@ module Reline
     Signal.trap('INT', int_handle)
   end
 
-  def self.menu(line, list)
-    puts
-    list.each do |item|
-      puts item
-    end
-  end
-
   def self.retrieve_completion_block(line, byte_pointer)
     break_regexp = /[#{Regexp.escape(@basic_word_break_characters)}]/
     before_pointer = line.byteslice(0, byte_pointer)
@@ -108,36 +101,12 @@ module Reline
     [preposing, block, postposing]
   end
 
-  def self.complete_internal_proc(line, list, is_menu, byte_pointer)
-    preposing, line, postposing = retrieve_completion_block(line, byte_pointer)
-    list = list.select { |i| i.start_with?(line) }
-    if is_menu
-      menu(line, list)
-      return nil
-    end
-    completed = list.inject { |memo, item|
-      memo_mbchars = memo.unicode_normalize.grapheme_clusters
-      item_mbchars = item.unicode_normalize.grapheme_clusters
-      size = [memo_mbchars.size, item_mbchars.size].min
-      result = ''
-      size.times do |i|
-        if memo_mbchars[i] == item_mbchars[i]
-          result << memo_mbchars[i]
-        else
-          break
-        end
-      end
-      result
-    }
-    preposing + completed + postposing
-  end
-
   def self.readline(prompt = '', add_hist = false)
     otio = prep
 
     @line_editor = Reline::LineEditor.new(Reline::KeyActor::Emacs, prompt)
     @line_editor.completion_proc = @completion_proc
-    @line_editor.complete_internal_proc = method(:complete_internal_proc)
+    @line_editor.retrieve_completion_block = method(:retrieve_completion_block)
     @line_editor.rerender
     begin
       while c = getc

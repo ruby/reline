@@ -7,7 +7,7 @@ require 'pathname'
 class Reline::LineEditor
   attr_reader :line
   attr_accessor :completion_proc
-  attr_writer :complete_internal_proc
+  attr_writer :retrieve_completion_block
 
   ARGUMENTABLE = %i{
     ed_delete_next_char
@@ -76,12 +76,43 @@ class Reline::LineEditor
     print "\e[#{prompt_width + @cursor + 1}G" unless @line.end_with?("\n")
   end
 
+  def menu(target, list)
+    puts
+    list.each do |item|
+      puts item
+    end
+  end
+
+  def complete_internal_proc(list, is_menu)
+    preposing, target, postposing = @retrieve_completion_block.(@line, @byte_pointer)
+    list = list.select { |i| i.start_with?(target) }
+    if is_menu
+      menu(target, list)
+      return nil
+    end
+    completed = list.inject { |memo, item|
+      memo_mbchars = memo.unicode_normalize.grapheme_clusters
+      item_mbchars = item.unicode_normalize.grapheme_clusters
+      size = [memo_mbchars.size, item_mbchars.size].min
+      result = ''
+      size.times do |i|
+        if memo_mbchars[i] == item_mbchars[i]
+          result << memo_mbchars[i]
+        else
+          break
+        end
+      end
+      result
+    }
+    preposing + completed + postposing
+  end
+
   def complete(list)
     if @completion_state == CompletionState::NORMAL
       @completion_state = CompletionState::COMPLETION
     end
     is_menu = (@completion_state == CompletionState::MENU)
-    completed = @complete_internal_proc.(@line, list, is_menu, @byte_pointer)
+    completed = complete_internal_proc(list, is_menu)
     return if completed.nil?
     if @line <= completed and @completion_state == CompletionState::COMPLETION
       @completion_state = CompletionState::MENU
