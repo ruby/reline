@@ -34,7 +34,10 @@ class Reline::LineEditor
     NORMAL = :normal
     COMPLETION = :completion
     MENU = :menu
+    JOURNEY = :journey
   end
+
+  CompletionJourneyData = Struct.new('CompletionJourneyData', :preposing, :postposing, :list, :pointer)
 
   def initialize(key_actor, prompt)
     @prompt = prompt
@@ -53,6 +56,7 @@ class Reline::LineEditor
     @multibyte_buffer = []
     @meta_prefix = false
     @waiting_proc = nil
+    @completion_journey_data = nil
     @completion_state = CompletionState::NORMAL
   end
 
@@ -108,7 +112,8 @@ class Reline::LineEditor
   end
 
   def complete(list)
-    if @completion_state == CompletionState::NORMAL
+    case @completion_state
+    when CompletionState::NORMAL, CompletionState::JOURNEY
       @completion_state = CompletionState::COMPLETION
     end
     is_menu = (@completion_state == CompletionState::MENU)
@@ -124,6 +129,39 @@ class Reline::LineEditor
         @cursor = calculate_width(line_to_pointer)
         @byte_pointer = line_to_pointer.bytesize
       end
+    end
+  end
+
+  def move_completed_list(list, direction)
+    case @completion_state
+    when CompletionState::NORMAL, CompletionState::COMPLETION, CompletionState::MENU
+      @completion_state = CompletionState::JOURNEY
+      result = @retrieve_completion_block.(@line, @byte_pointer)
+      return if result.nil?
+      preposing, target, postposing = result
+      @completion_journey_data = CompletionJourneyData.new(
+        preposing, postposing,
+        [target] + list.select{ |item| item.start_with?(target) }, 0)
+      @completion_state = CompletionState::JOURNEY
+    else
+      case direction
+      when :up
+        @completion_journey_data.pointer -= 1
+        if @completion_journey_data.pointer < 0
+          @completion_journey_data.pointer = @completion_journey_data.list.size - 1
+        end
+      when :down
+        @completion_journey_data.pointer += 1
+        if @completion_journey_data.pointer >= @completion_journey_data.list.size
+          @completion_journey_data.pointer = 0
+        end
+      end
+      completed = @completion_journey_data.list[@completion_journey_data.pointer]
+      @line = @completion_journey_data.preposing + completed + @completion_journey_data.postposing
+      line_to_pointer = @completion_journey_data.preposing + completed
+      @cursor_max = calculate_width(@line)
+      @cursor = calculate_width(line_to_pointer)
+      @byte_pointer = line_to_pointer.bytesize
     end
   end
 
@@ -149,6 +187,12 @@ class Reline::LineEditor
       if result.is_a?(Array)
         completion_occurs = true
         complete(result)
+      end
+    elsif Reline::KeyActor::ViInsert == @key_actor and ["\C-p".ord, "\C-n".ord].include?(key)
+      result = @completion_proc&.(@line)
+      if result.is_a?(Array)
+        completion_occurs = true
+        move_completed_list(result, "\C-p".ord == key ? :up : :down)
       end
     elsif Reline::KeyActor::Emacs == @key_actor and key == "\e".ord # meta key
       if @meta_prefix
