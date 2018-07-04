@@ -7,7 +7,7 @@ stty_save = `stty -g`.chomp
 
 begin
   puts 'This is echo program by Reline.'
-  Reline.completion_proc = proc { |line|
+  Reline.completion_proc = proc { |word|
     %w{
       foo_foo
       foo_bar
