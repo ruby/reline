@@ -104,7 +104,7 @@ class Reline::LineEditor
       end
       result
     }
-    preposing + completed + postposing
+    [target, preposing, completed, postposing]
   end
 
   def complete(list)
@@ -112,14 +112,17 @@ class Reline::LineEditor
       @completion_state = CompletionState::COMPLETION
     end
     is_menu = (@completion_state == CompletionState::MENU)
-    completed = complete_internal_proc(list, is_menu)
-    return if completed.nil?
-    if @line <= completed and @completion_state == CompletionState::COMPLETION
+    result = complete_internal_proc(list, is_menu)
+    return if result.nil?
+    target, preposing, completed, postposing = result
+    if target <= completed and @completion_state == CompletionState::COMPLETION
       @completion_state = CompletionState::MENU
-      if @line < completed
-        @line = completed
-        @cursor = @cursor_max = calculate_width(@line)
-        @byte_pointer = @line.bytesize
+      if target < completed
+        @line = preposing + completed + postposing
+        line_to_pointer = preposing + completed
+        @cursor_max = calculate_width(@line)
+        @cursor = calculate_width(line_to_pointer)
+        @byte_pointer = line_to_pointer.bytesize
       end
     end
   end
