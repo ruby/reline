@@ -80,14 +80,14 @@ class Reline::LineEditor
     print "\e[#{prompt_width + @cursor + 1}G" unless @line.end_with?("\n")
   end
 
-  def menu(target, list)
+  private def menu(target, list)
     puts
     list.each do |item|
       puts item
     end
   end
 
-  def complete_internal_proc(list, is_menu)
+  private def complete_internal_proc(list, is_menu)
     preposing, target, postposing = @retrieve_completion_block.(@line, @byte_pointer)
     list = list.select { |i| i.start_with?(target) }
     if is_menu
@@ -111,7 +111,7 @@ class Reline::LineEditor
     [target, preposing, completed, postposing]
   end
 
-  def complete(list)
+  private def complete(list)
     case @completion_state
     when CompletionState::NORMAL, CompletionState::JOURNEY
       @completion_state = CompletionState::COMPLETION
@@ -132,7 +132,7 @@ class Reline::LineEditor
     end
   end
 
-  def move_completed_list(list, direction)
+  private def move_completed_list(list, direction)
     case @completion_state
     when CompletionState::NORMAL, CompletionState::COMPLETION, CompletionState::MENU
       @completion_state = CompletionState::JOURNEY
