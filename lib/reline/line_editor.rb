@@ -146,7 +146,7 @@ class Reline::LineEditor
       @multibyte_buffer << key
     elsif [Reline::KeyActor::Emacs, Reline::KeyActor::ViInsert].include?(@key_actor) and key == "\C-i".ord
       result = @completion_proc&.(@line)
-      if result.is_a?(Enumerable)
+      if result.is_a?(Array)
         completion_occurs = true
         complete(result)
       end
