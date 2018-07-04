@@ -233,10 +233,7 @@ class Reline::LineEditor
       end
     end
     unless completion_occurs
-      case @completion_state
-      when CompletionState::COMPLETION, CompletionState::MENU
-        @completion_state = CompletionState::NORMAL
-      end
+      @completion_state = CompletionState::NORMAL
     end
   end
 
