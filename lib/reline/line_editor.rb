@@ -120,6 +120,7 @@ class Reline::LineEditor
     result = complete_internal_proc(list, is_menu)
     return if result.nil?
     target, preposing, completed, postposing = result
+    return if completed.nil?
     if target <= completed and @completion_state == CompletionState::COMPLETION
       @completion_state = CompletionState::MENU
       if target < completed
