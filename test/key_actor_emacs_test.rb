@@ -1019,4 +1019,41 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_equal(20, @line_editor.instance_variable_get(:@cursor_max))
     assert_equal('{}#*    AAA!!!CCC   ', @line_editor.line)
   end
+
+  def test_completion
+    @line_editor.completion_proc = proc { |word|
+      %w{
+        foo_foo
+        foo_bar
+        foo_baz
+        qux
+      }
+    }
+    @line_editor.retrieve_completion_block = Reline.method(:retrieve_completion_block)
+    input_keys('fo')
+    assert_equal(2, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(2, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(2, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('fo', @line_editor.line)
+    input_keys("\C-i")
+    assert_equal(4, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(4, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(4, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_', @line_editor.line)
+    input_keys("\C-i")
+    assert_equal(4, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(4, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(4, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_', @line_editor.line)
+    input_keys("a\C-i")
+    assert_equal(5, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(5, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(5, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_a', @line_editor.line)
+    input_keys("\C-hb\C-i")
+    assert_equal(6, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(6, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(6, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_ba', @line_editor.line)
+  end
 end
