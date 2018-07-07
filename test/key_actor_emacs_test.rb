@@ -4,6 +4,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
   def setup
     @prompt = '> '
     @line_editor = Reline::LineEditor.new(Reline::KeyActor::Emacs, @prompt)
+    @line_editor.retrieve_completion_block = Reline.method(:retrieve_completion_block)
   end
 
   def test_ed_insert_one
@@ -1029,7 +1030,6 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
         qux
       }
     }
-    @line_editor.retrieve_completion_block = Reline.method(:retrieve_completion_block)
     input_keys('fo')
     assert_equal(2, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(2, @line_editor.instance_variable_get(:@cursor))
