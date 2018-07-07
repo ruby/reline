@@ -1056,4 +1056,27 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_equal(6, @line_editor.instance_variable_get(:@cursor_max))
     assert_equal('foo_ba', @line_editor.line)
   end
+
+  def test_completion_in_middle_of_line
+    @line_editor.completion_proc = proc { |word|
+      %w{
+        foo_foo
+        foo_bar
+        foo_baz
+        qux
+      }
+    }
+    input_keys('abcde fo ABCDE')
+    assert_equal('abcde fo ABCDE', @line_editor.line)
+    input_keys("\C-b" * 6 + "\C-i")
+    assert_equal(10, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(10, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(16, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('abcde foo_ ABCDE', @line_editor.line)
+    input_keys("\C-b" * 2 + "\C-i")
+    assert_equal(10, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(10, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(18, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('abcde foo_o_ ABCDE', @line_editor.line)
+  end
 end
