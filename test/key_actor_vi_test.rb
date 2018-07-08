@@ -4,6 +4,7 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
   def setup
     @prompt = '> '
     @line_editor = Reline::LineEditor.new(Reline::KeyActor::ViInsert, @prompt)
+    @line_editor.retrieve_completion_block = Reline.method(:retrieve_completion_block)
   end
 
   def test_vi_command_mode
@@ -202,5 +203,113 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     input_keys("\C-j")
     assert_equal("ab\n", @line_editor.line)
     assert(@line_editor.finished?)
+  end
+
+  def test_completion_journey
+    @line_editor.completion_proc = proc { |word|
+      %w{
+        foo_bar
+        foo_bar_baz
+      }
+    }
+    input_keys('foo')
+    assert_equal(3, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo', @line_editor.line)
+    input_keys("\C-n")
+    assert_equal(3, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo', @line_editor.line)
+    input_keys("\C-n")
+    assert_equal(7, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(7, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(7, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_bar', @line_editor.line)
+    input_keys("\C-n")
+    assert_equal(11, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_bar_baz', @line_editor.line)
+    input_keys("\C-n")
+    assert_equal(3, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo', @line_editor.line)
+    input_keys("\C-n")
+    assert_equal(7, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(7, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(7, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_bar', @line_editor.line)
+    input_keys("_\C-n")
+    assert_equal(8, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(8, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(8, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_bar_', @line_editor.line)
+    input_keys("\C-n")
+    assert_equal(11, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_bar_baz', @line_editor.line)
+    input_keys("\C-n")
+    assert_equal(8, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(8, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(8, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_bar_', @line_editor.line)
+  end
+
+  def test_completion_journey_reverse
+    @line_editor.completion_proc = proc { |word|
+      %w{
+        foo_bar
+        foo_bar_baz
+      }
+    }
+    input_keys('foo')
+    assert_equal(3, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo', @line_editor.line)
+    input_keys("\C-p")
+    assert_equal(3, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo', @line_editor.line)
+    input_keys("\C-p")
+    assert_equal(11, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_bar_baz', @line_editor.line)
+    input_keys("\C-p")
+    assert_equal(7, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(7, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(7, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_bar', @line_editor.line)
+    input_keys("\C-p")
+    assert_equal(3, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(3, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo', @line_editor.line)
+    input_keys("\C-p")
+    assert_equal(11, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_bar_baz', @line_editor.line)
+    input_keys("\C-h\C-p")
+    assert_equal(10, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(10, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(10, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_bar_ba', @line_editor.line)
+    input_keys("\C-p")
+    assert_equal(11, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(11, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_bar_baz', @line_editor.line)
+    input_keys("\C-p")
+    assert_equal(10, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(10, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(10, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('foo_bar_ba', @line_editor.line)
   end
 end
