@@ -8,6 +8,13 @@ module Reline
   USERNAME_COMPLETION_PROC = nil
   HISTORY = Array.new
 
+  if RUBY_PLATFORM =~ /mswin|mingw/
+    require 'Win32API'
+    IS_WINDOWS = true
+  else
+    IS_WINDOWS = false
+  end
+
   class << self
     attr_accessor :basic_quote_characters
     attr_accessor :basic_word_break_characters
@@ -56,34 +63,76 @@ module Reline
     self
   end
 
-  def self.getc
-    c = nil
-    until c
-      return nil if @line_editor.finished?
-      result = select([$stdin], [], [], 0.1)
-      next if result.nil?
-      c = $stdin.read(1)
-    end
-    c.ord
-  end
+  if IS_WINDOWS
+    @@getch = Win32API.new("msvcrt", "_getch", [], 'I')
+    @@kbhit = Win32API.new("msvcrt", "_kbhit", [], 'I')
+    @@GetKeyState = Win32API.new("user32","GetKeyState",['L'],'L')
+    VK_LMENU = 0xA4
+    @@buf = []
 
-  def self.prep
-    int_handle = Signal.trap('INT', 'IGNORE')
-    otio = `stty -g`.chomp
-    setting = ' -echo -icrnl cbreak'
-    if (`stty -a`.scan(/-parenb\b/).first == '-parenb')
-      setting << ' pass8'
+    def self.getc
+      unless @@buf.empty?
+        return @@buf.shift
+      end
+      while @@kbhit.Call == 0
+        sleep(0.001)
+      end
+      c = @@getch.Call
+      alt = (@@GetKeyState.call(VK_LMENU) & 0x80) != 0
+      if c == 0 or c == 0xE0
+        while @@kbhit.Call == 0
+          sleep(0.001)
+        end
+        r = c.chr + @@getch.Call.chr
+      else
+        r = c.chr
+      end
+      if alt
+        @@buf << r.ord
+        "\e".ord
+      else
+        r.ord
+      end
     end
-    setting << ' -ixoff'
-    `stty #{setting}`
-    Signal.trap('INT', int_handle)
-    otio
-  end
 
-  def self.deprep(otio)
-    int_handle = Signal.trap('INT', 'IGNORE')
-    `stty #{otio}`
-    Signal.trap('INT', int_handle)
+    def self.prep
+      # do nothing
+      nil
+    end
+
+    def self.deprep(otio)
+      # do nothing
+    end
+  else
+    def self.getc
+      c = nil
+      until c
+        return nil if @line_editor.finished?
+        result = select([$stdin], [], [], 0.1)
+        next if result.nil?
+        c = $stdin.read(1)
+      end
+      c.ord
+    end
+
+    def self.prep
+      int_handle = Signal.trap('INT', 'IGNORE')
+      otio = `stty -g`.chomp
+      setting = ' -echo -icrnl cbreak'
+      if (`stty -a`.scan(/-parenb\b/).first == '-parenb')
+        setting << ' pass8'
+      end
+      setting << ' -ixoff'
+      `stty #{setting}`
+      Signal.trap('INT', int_handle)
+      otio
+    end
+
+    def self.deprep(otio)
+      int_handle = Signal.trap('INT', 'IGNORE')
+      `stty #{otio}`
+      Signal.trap('INT', int_handle)
+    end
   end
 
   def self.retrieve_completion_block(line, byte_pointer)

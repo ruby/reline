@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
 
-require 'bundler/setup'
 require 'reline'
 
-stty_save = `stty -g`.chomp
+begin
+  stty_save = `stty -g`.chomp
+rescue
+end
 
 begin
   puts 'This is echo program by Reline.'
@@ -27,7 +29,7 @@ begin
   end
 rescue Interrupt
   puts '^C'
-  `stty #{stty_save}`
+  `stty #{stty_save}` if stty_save
   exit 0
 end
 puts
