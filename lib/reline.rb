@@ -54,20 +54,15 @@ module Reline
     nil
   end
 
-  def self.get_screen_size
-    $stdin.winsize
-  end
-
-  def self.set_screen_size(rows, columns)
-    $stdin.winsize = [rows, columns]
-    self
-  end
-
   if IS_WINDOWS
+    VK_LMENU = 0xA4
+    STD_OUTPUT_HANDLE = -11
     @@getch = Win32API.new("msvcrt", "_getch", [], 'I')
     @@kbhit = Win32API.new("msvcrt", "_kbhit", [], 'I')
     @@GetKeyState = Win32API.new("user32","GetKeyState",['L'],'L')
-    VK_LMENU = 0xA4
+    @@GetConsoleScreenBufferInfo = Win32API.new("kernel32", "GetConsoleScreenBufferInfo", ['L', 'P'], 'L')
+    @@GetStdHandle = Win32API.new("kernel32", "GetStdHandle", ['L'], 'L')
+    @@hConsoleHandle = @@GetStdHandle.Call(STD_OUTPUT_HANDLE)
     @@buf = []
 
     def self.getc
@@ -95,6 +90,16 @@ module Reline
       end
     end
 
+    def self.get_screen_size
+      csbi = 0.chr * 24
+      @@GetConsoleScreenBufferInfo.Call(@@hConsoleHandle, csbi)
+      csbi[0, 4].unpack('SS')
+    end
+
+    def self.set_screen_size(rows, columns)
+      raise NotImplementedError
+    end
+
     def self.prep
       # do nothing
       nil
@@ -113,6 +118,15 @@ module Reline
         c = $stdin.read(1)
       end
       c.ord
+    end
+
+    def self.get_screen_size
+      $stdin.winsize
+    end
+
+    def self.set_screen_size(rows, columns)
+      $stdin.winsize = [rows, columns]
+      self
     end
 
     def self.prep
