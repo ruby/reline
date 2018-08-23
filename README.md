@@ -1,6 +1,6 @@
 # Reline
 
-Reline is compatible, with GNU Readline and Editline, with the API of Ruby's stdlib 'readline' compatible, by pure Ruby implementation.
+Reline is compatible with the API of Ruby's stdlib 'readline', GNU Readline and Editline by pure Ruby implementation.
 
 ## License
 
