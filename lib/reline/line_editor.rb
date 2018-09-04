@@ -166,6 +166,37 @@ class Reline::LineEditor
     end
   end
 
+  def normal_char(key)
+    if @meta_prefix
+      key |= 0b10000000 if key.nobits?(0b10000000)
+      @meta_prefix = false
+    end
+    method_symbol = @key_actor.get_method(key)
+    if method_symbol and respond_to?(method_symbol, true)
+      if @vi_arg
+        if key.chr =~ /[0-9]/
+          ed_argument_digit(key)
+        else
+          if ARGUMENTABLE.include?(method_symbol)
+            __send__(method_symbol, key, @vi_arg)
+          elsif @waiting_proc
+            @waiting_proc.(key)
+          else
+            __send__(method_symbol, key)
+          end
+          @kill_ring.process
+          @vi_arg = nil
+        end
+      elsif @waiting_proc
+        @waiting_proc.(key)
+        @kill_ring.process
+      else
+        __send__(method_symbol, key)
+        @kill_ring.process
+      end
+    end
+  end
+
   def input_key(key)
     completion_occurs = false
     if !@multibyte_buffer.empty?
@@ -204,34 +235,7 @@ class Reline::LineEditor
         @meta_prefix = true
       end
     else
-      if @meta_prefix
-        key |= 0b10000000 if key.nobits?(0b10000000)
-        @meta_prefix = false
-      end
-      method_symbol = @key_actor.get_method(key)
-      if method_symbol and respond_to?(method_symbol, true)
-        if @vi_arg
-          if key.chr =~ /[0-9]/
-            ed_argument_digit(key)
-          else
-            if ARGUMENTABLE.include?(method_symbol)
-              __send__(method_symbol, key, @vi_arg)
-            elsif @waiting_proc
-              @waiting_proc.(key)
-            else
-              __send__(method_symbol, key)
-            end
-            @kill_ring.process
-            @vi_arg = nil
-          end
-        elsif @waiting_proc
-          @waiting_proc.(key)
-          @kill_ring.process
-        else
-          __send__(method_symbol, key)
-          @kill_ring.process
-        end
-      end
+      normal_char(key)
     end
     unless completion_occurs
       @completion_state = CompletionState::NORMAL
