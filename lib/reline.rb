@@ -15,6 +15,8 @@ module Reline
     IS_WINDOWS = false
   end
 
+  CursorPos = Struct.new(:x, :y)
+
   class << self
     attr_accessor :basic_quote_characters
     attr_accessor :basic_word_break_characters
@@ -109,15 +111,19 @@ module Reline
       # do nothing
     end
   else
+    @@buf = []
+
     def self.getc
-      c = nil
-      until c
-        return nil if @line_editor.finished?
-        result = select([$stdin], [], [], 0.1)
-        next if result.nil?
-        c = $stdin.read(1)
+      return @@buf.shift unless @@buf.empty?
+      return nil if @line_editor.finished?
+      while select([$stdin], [], [], 0.00001).nil?
       end
-      c.ord
+      c = nil
+      until select([$stdin], [], [], 0.00001).nil?
+        @@buf << $stdin.read(1).ord
+      end
+      c = @@buf.shift
+      return c
     end
 
     def self.get_screen_size
@@ -127,6 +133,19 @@ module Reline
     def self.set_screen_size(rows, columns)
       $stdin.winsize = [rows, columns]
       self
+    end
+
+    def self.cursor_pos
+      res = ''
+      $stdin.raw do |stdin|
+        $stdout << "\e[6n"
+        $stdout.flush
+        while (c = stdin.getc) != 'R'
+          res << c if c
+        end
+      end
+      m = res.match /(?<row>\d+);(?<column>\d+)/
+      CursorPos.new(m[:column].to_i, m[:row].to_i)
     end
 
     def self.prep
@@ -177,6 +196,7 @@ module Reline
         @line_editor.rerender
         break if @line_editor.finished?
       end
+      print "\e[1G"
       if add_hist and @line_editor.line and @line_editor.line.chomp.size > 0
         Reline::HISTORY << @line_editor.line.chomp
       end
