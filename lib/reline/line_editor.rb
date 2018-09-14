@@ -44,7 +44,7 @@ class Reline::LineEditor
     @prompt = prompt
     @editing_space = Struct.new(:height, :x, :y).new(1, 0, 0)
     @byte_pointer = 0
-    @line = String.new(encoding: 'UTF-8')
+    @line = String.new(encoding: Encoding.default_external)
     @key_actor = key_actor
     @finished = false
     @cleared = false
@@ -52,7 +52,7 @@ class Reline::LineEditor
     @line_backup_in_history = nil
     @kill_ring = Reline::KillRing.new
     @vi_arg = nil
-    @multibyte_buffer = []
+    @multibyte_buffer = String.new(encoding: 'ASCII-8BIT')
     @meta_prefix = false
     @waiting_proc = nil
     @completion_journey_data = nil
@@ -91,7 +91,8 @@ class Reline::LineEditor
         print "\e[#{@editing_space.height - 1}A" if @editing_space.height > 1
         print "\e[1G"
       else
-        print "\e[1G"
+        #print "\e[1G"
+        Reline.move_cursor_column(0)
       end
     end
     @editing_space.height = 1
@@ -100,8 +101,8 @@ class Reline::LineEditor
     @editing_space.x = pos.x
     @editing_space.y = @editing_space.height - 1
     print_in_space(@line.byteslice(@byte_pointer..-1))
-    print "\e[J"
-    print "\e[#{@editing_space.x}G"
+    Reline.erase_after_cursor
+    Reline.move_cursor_column(@editing_space.x)
   end
 
   private def menu(target, list)
@@ -187,54 +188,57 @@ class Reline::LineEditor
   end
 
   def normal_char(key)
-    if @meta_prefix
-      key |= 0b10000000 if key.nobits?(0b10000000)
-      @meta_prefix = false
-    end
-    method_symbol = @key_actor.get_method(key)
-    if method_symbol and respond_to?(method_symbol, true)
-      if @vi_arg
-        if key.chr =~ /[0-9]/
-          ed_argument_digit(key)
-        else
-          if ARGUMENTABLE.include?(method_symbol)
-            __send__(method_symbol, key, @vi_arg)
-          elsif @waiting_proc
-            @waiting_proc.(key)
-          else
-            __send__(method_symbol, key)
-          end
-          @kill_ring.process
-          @vi_arg = nil
-        end
-      elsif @waiting_proc
-        @waiting_proc.(key)
-        @kill_ring.process
+    @multibyte_buffer << key
+    if @multibyte_buffer.size > 1
+      if @multibyte_buffer.dup.force_encoding(Encoding.default_external).valid_encoding?
+        key = @multibyte_buffer.dup.force_encoding(Encoding.default_external)
+        @multibyte_buffer.clear
       else
-        __send__(method_symbol, key)
-        @kill_ring.process
+        # invalid
+        return
       end
+    else # single byte
+      return if key >= 128 # maybe, first byte of multi byte
+      if @meta_prefix
+        key |= 0b10000000 if key.nobits?(0b10000000)
+        @meta_prefix = false
+      end
+      method_symbol = @key_actor.get_method(key)
+      if method_symbol and respond_to?(method_symbol, true)
+        method_obj = method(method_symbol)
+      end
+      @multibyte_buffer.clear
+    end
+    if @vi_arg
+      if key.chr =~ /[0-9]/
+        ed_argument_digit(key)
+      else
+        if ARGUMENTABLE.include?(method_symbol) and method_obj
+          method_obj.(key, @vi_arg)
+        elsif @waiting_proc
+          @waiting_proc.(key)
+        elsif method_obj
+          method_obj.(key)
+        else
+          ed_insert(key)
+        end
+        @kill_ring.process
+        @vi_arg = nil
+      end
+    elsif @waiting_proc
+      @waiting_proc.(key)
+      @kill_ring.process
+    elsif method_obj
+      method_obj.(key)
+      @kill_ring.process
+    else
+      ed_insert(key)
     end
   end
 
   def input_key(key)
     completion_occurs = false
-    if !@multibyte_buffer.empty?
-      @multibyte_buffer << key
-      first_c = @multibyte_buffer.first
-      byte_size = Reline::Unicode.get_mbchar_byte_size_by_first_char(first_c)
-      if @multibyte_buffer.size >= byte_size
-        if @waiting_proc
-          @waiting_proc.(@multibyte_buffer)
-        else
-          ed_insert(@multibyte_buffer)
-        end
-        @multibyte_buffer = []
-        @kill_ring.process
-      end
-    elsif Reline::Unicode.get_mbchar_byte_size_by_first_char(key) > 1
-      @multibyte_buffer << key
-    elsif [Reline::KeyActor::Emacs, Reline::KeyActor::ViInsert].include?(@key_actor) and key == "\C-i".ord
+    if [Reline::KeyActor::Emacs, Reline::KeyActor::ViInsert].include?(@key_actor) and key == "\C-i".ord
       result = @completion_proc&.(@line)
       if result.is_a?(Array)
         completion_occurs = true
@@ -304,10 +308,9 @@ class Reline::LineEditor
   end
 
   private def ed_insert(key)
-    if key.instance_of?(Array)
-      mbchar = key.map(&:chr).join.force_encoding('UTF-8')
-      @line = byteinsert(@line, @byte_pointer, mbchar)
-      @byte_pointer += mbchar.bytesize
+    if key.instance_of?(String)
+      @line = byteinsert(@line, @byte_pointer, key)
+      @byte_pointer += key.bytesize
     else
       @line = byteinsert(@line, @byte_pointer, key.chr)
       @byte_pointer += 1
@@ -677,8 +680,8 @@ class Reline::LineEditor
   end
 
   private def search_next_char(key, arg)
-    if key.instance_of?(Array)
-      inputed_char = key.map(&:chr).join.force_encoding('UTF-8')
+    if key.instance_of?(String)
+      inputed_char = key
     else
       inputed_char = key.chr
     end
