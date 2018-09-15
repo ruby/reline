@@ -19,19 +19,6 @@ class Reline::Unicode
     end
   end
 
-  def self.get_mbchar_width(mbchar)
-    case mbchar
-    when /^\p{M}/
-      0
-    when EastAsianWidth::TYPE_F, EastAsianWidth::TYPE_W, EastAsianWidth::TYPE_A
-      2
-    when EastAsianWidth::TYPE_H, EastAsianWidth::TYPE_NA, EastAsianWidth::TYPE_N
-      1
-    else
-      nil
-    end
-  end
-
   def self.get_next_mbchar_size(line, byte_pointer)
     grapheme = line.byteslice(byte_pointer..-1).grapheme_clusters.first
     grapheme ? grapheme.bytesize : 0

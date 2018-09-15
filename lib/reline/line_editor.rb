@@ -287,10 +287,6 @@ class Reline::LineEditor
     new_str
   end
 
-  private def calculate_width(str)
-    str.grapheme_clusters.inject(0) { |width, gc| width + Reline::Unicode.get_mbchar_width(gc) }
-  end
-
   private def prev_byte_size
     if @line.bytesize == 0 or @byte_pointer == 0
       0
