@@ -1,5 +1,5 @@
 # Split off char processing methods from LineEditor
-class CharProcessing
+module CharProcessing
   private def byteslice!(str, byte_pointer, size)
     new_str = str.byteslice(0, byte_pointer)
     new_str << str.byteslice(byte_pointer + size, str.bytesize)
