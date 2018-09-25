@@ -13,19 +13,21 @@ module CharProcessing
     new_str
   end
 
-  private def prev_byte_size
-    if @line.bytesize == 0 or @byte_pointer == 0
+  private def prev_byte_size(offset = 0)
+    byte_pointer = @byte_pointer + offset
+    if @line.bytesize == 0 or byte_pointer == 0
       0
     else
-      @line.byteslice(0..(@byte_pointer - 1)).grapheme_clusters.last.bytesize
+      @line.byteslice(0..(byte_pointer - 1)).grapheme_clusters.last.bytesize
     end
   end
 
-  private def next_byte_size
-    if @line.bytesize == 0 or @line.bytesize == @byte_pointer
+  private def next_byte_size(offset = 0)
+    byte_pointer = @byte_pointer + offset
+    if @line.bytesize == 0 or @line.bytesize == byte_pointer
       0
     else
-      @line.byteslice(@byte_pointer..-1).grapheme_clusters.first.bytesize
+      @line.byteslice(byte_pointer..-1).grapheme_clusters.first.bytesize
     end
   end
 end

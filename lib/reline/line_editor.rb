@@ -464,12 +464,11 @@ class Reline::LineEditor
   private def ed_transpose_chars(key)
     if @byte_pointer > 0
       if @line.bytesize > @byte_pointer
-        byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
-        @byte_pointer += byte_size
+        @byte_pointer += next_byte_size
       end
-      back1_byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer)
+      back1_byte_size = next_byte_size
       if (@byte_pointer - back1_byte_size) > 0
-        back2_byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer - back1_byte_size)
+        back2_byte_size = next_byte_size(-back1_byte_size)
         back2_pointer = @byte_pointer - back1_byte_size - back2_byte_size
         @line, back2_mbchar = byteslice!(@line, back2_pointer, back2_byte_size)
         @line = byteinsert(@line, @byte_pointer - back2_byte_size, back2_mbchar)
@@ -571,7 +570,7 @@ class Reline::LineEditor
 
   private def vi_delete_prev_char(key)
     if @byte_pointer > 0
-      byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer)
+      byte_size = prev_byte_size
       @byte_pointer -= byte_size
       @line, = byteslice!(@line, @byte_pointer, byte_size)
     end
@@ -583,8 +582,7 @@ class Reline::LineEditor
 
   private def ed_delete_next_char(key, arg = 1)
     unless @line.empty?
-      byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
-      @line, mbchar = byteslice!(@line, @byte_pointer, byte_size)
+      @line, mbchar = byteslice!(@line, @byte_pointer, next_byte_size)
       if @byte_pointer >= @line.bytesize
         @byte_pointer -= byte_size
       end
