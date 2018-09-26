@@ -30,4 +30,21 @@ module CharProcessing
       @line.byteslice(byte_pointer..-1).grapheme_clusters.first.bytesize
     end
   end
+
+  private def forward_word
+    byte_size = 0
+    while @line.bytesize > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      break if mbchar =~ /\p{Word}/
+      byte_size += size
+    end
+    while line.bytesize > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      break if mbchar =~ /\P{Word}/
+      byte_size += size
+    end
+    byte_size
+  end
 end

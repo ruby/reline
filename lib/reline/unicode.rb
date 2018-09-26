@@ -33,26 +33,6 @@ class Reline::Unicode
     end
   end
 
-  def self.em_forward_word(line, byte_pointer)
-    width = 0
-    byte_size = 0
-    while line.bytesize > (byte_pointer + byte_size)
-      size = get_next_mbchar_size(line, byte_pointer + byte_size)
-      mbchar = line.byteslice(byte_pointer + byte_size, size)
-      break if mbchar =~ /\p{Word}/
-      width += get_mbchar_width(mbchar)
-      byte_size += size
-    end
-    while line.bytesize > (byte_pointer + byte_size)
-      size = get_next_mbchar_size(line, byte_pointer + byte_size)
-      mbchar = line.byteslice(byte_pointer + byte_size, size)
-      break if mbchar =~ /\P{Word}/
-      width += get_mbchar_width(mbchar)
-      byte_size += size
-    end
-    [byte_size, width]
-  end
-
   def self.em_forward_word_with_capitalization(line, byte_pointer)
     width = 0
     byte_size = 0
