@@ -435,7 +435,7 @@ class Reline::LineEditor
 
   private def ed_prev_word(key, arg = 1)
     if @byte_pointer > 0
-      byte_size, = Reline::Unicode.em_backward_word(@line, @byte_pointer)
+      byte_size= backward_word
       @byte_pointer -= byte_size
     end
     arg -= 1
@@ -452,7 +452,7 @@ class Reline::LineEditor
 
   private def ed_delete_prev_word(key, arg = 1)
     if @byte_pointer > 0
-      byte_size, = Reline::Unicode.em_backward_word(@line, @byte_pointer)
+      byte_size = backward_word
       @line, word = byteslice!(@line, @byte_pointer - byte_size, byte_size)
       @kill_ring.append(word, true)
       @byte_pointer -= byte_size

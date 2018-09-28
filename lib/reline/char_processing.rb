@@ -31,6 +31,23 @@ module CharProcessing
     end
   end
 
+  private def backward_word
+    byte_size = 0
+    while 0 < (@byte_pointer - byte_size)
+      size = prev_byte_size(-byte_size)
+      mbchar = @line.byteslice(@byte_pointer - byte_size - size, size)
+      break if mbchar =~ /\p{Word}/
+      byte_size += size
+    end
+    while 0 < (@byte_pointer - byte_size)
+      size = prev_byte_size(-byte_size)
+      mbchar = @line.byteslice(@byte_pointer - byte_size - size, size)
+      break if mbchar =~ /\P{Word}/
+      byte_size += size
+    end
+    byte_size
+  end
+
   private def forward_word
     byte_size = 0
     while @line.bytesize > (@byte_pointer + byte_size)
