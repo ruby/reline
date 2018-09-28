@@ -478,7 +478,7 @@ class Reline::LineEditor
 
   private def em_capitol_case(key)
     if @line.bytesize > @byte_pointer
-      byte_size, _, new_str = Reline::Unicode.em_forward_word_with_capitalization(@line, @byte_pointer)
+      byte_size, new_str = forward_word_with_capitalization
       before = @line.byteslice(0, @byte_pointer)
       after = @line.byteslice((@byte_pointer + byte_size)..-1)
       @line = before + new_str + after

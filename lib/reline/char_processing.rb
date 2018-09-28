@@ -64,4 +64,30 @@ module CharProcessing
     end
     byte_size
   end
+
+  private def forward_word_with_capitalization
+    byte_size = 0
+    new_str = String.new
+    while @line.bytesize > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      break if mbchar =~ /\p{Word}/
+      new_str += mbchar
+      byte_size += size
+    end
+    first = true
+    while @line.bytesize > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      break if mbchar =~ /\P{Word}/
+      if first
+        new_str += mbchar.upcase
+        first = false
+      else
+        new_str += mbchar.downcase
+      end
+      byte_size += size
+    end
+    [byte_size, new_str]
+  end
 end
