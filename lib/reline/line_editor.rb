@@ -528,42 +528,42 @@ class Reline::LineEditor
 
   private def vi_next_word(key)
     if @line.bytesize > @byte_pointer
-      byte_size, = Reline::Unicode.vi_forward_word(@line, @byte_pointer)
+      byte_size = vi_forward_word
       @byte_pointer += byte_size
     end
   end
 
   private def vi_prev_word(key)
     if @byte_pointer > 0
-      byte_size, = Reline::Unicode.vi_backward_word(@line, @byte_pointer)
+      byte_size = vi_backward_word
       @byte_pointer -= byte_size
     end
   end
 
   private def vi_end_word(key)
     if @line.bytesize > @byte_pointer
-      byte_size, = Reline::Unicode.vi_forward_end_word(@line, @byte_pointer)
+      byte_size = vi_forward_end_word
       @byte_pointer += byte_size
     end
   end
 
   private def vi_next_big_word(key)
     if @line.bytesize > @byte_pointer
-      byte_size, = Reline::Unicode.vi_big_forward_word(@line, @byte_pointer)
+      byte_size = vi_big_forward_word
       @byte_pointer += byte_size
     end
   end
 
   private def vi_prev_big_word(key)
     if @byte_pointer > 0
-      byte_size, = Reline::Unicode.vi_big_backward_word(@line, @byte_pointer)
+      byte_size = vi_big_backward_word
       @byte_pointer -= byte_size
     end
   end
 
   private def vi_end_big_word(key)
     if @line.bytesize > @byte_pointer
-      byte_size, = Reline::Unicode.vi_big_forward_end_word(@line, @byte_pointer)
+      byte_size = vi_big_forward_end_word
       @byte_pointer += byte_size
     end
   end

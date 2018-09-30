@@ -230,7 +230,7 @@ module Reline
   def self.readline(prompt = '', add_hist = false)
     otio = prep
 
-    @line_editor = Reline::LineEditor.new(Reline::KeyActor::Emacs, prompt)
+    @line_editor = Reline::LineEditor.new(Reline::KeyActor::ViInsert, prompt)
     @line_editor.completion_proc = @completion_proc
     @line_editor.retrieve_completion_block = method(:retrieve_completion_block)
     @line_editor.rerender

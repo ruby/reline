@@ -90,4 +90,186 @@ module CharProcessing
     end
     [byte_size, new_str]
   end
+
+  def vi_big_forward_word
+    byte_size = 0
+    while (@line.bytesize - 1) > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      break if mbchar =~ /\s/
+      byte_size += size
+    end
+    while (@line.bytesize - 1) > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      break if mbchar =~ /\S/
+      byte_size += size
+    end
+    byte_size
+  end
+
+  def vi_big_forward_end_word
+    if (@line.bytesize - 1) > @byte_pointer
+      size = next_byte_size
+      mbchar = @line.byteslice(@byte_pointer, size)
+      byte_size = size
+    else
+      return [0, 0]
+    end
+    while (@line.bytesize - 1) > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      break if mbchar =~ /\S/
+      byte_size += size
+    end
+    prev_byte_size = byte_size
+    while (@line.bytesize - 1) > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      break if mbchar =~ /\s/
+      prev_byte_size = byte_size
+      byte_size += size
+    end
+    prev_byte_size
+  end
+
+  def vi_big_backward_word
+    byte_size = 0
+    while 0 < (@byte_pointer - byte_size)
+      size = prev_byte_size(-byte_size)
+      mbchar = @line.byteslice(@byte_pointer - byte_size - size, size)
+      break if mbchar =~ /\S/
+      byte_size += size
+    end
+    while 0 < (@byte_pointer - byte_size)
+      size = prev_byte_size(-byte_size)
+      mbchar = @line.byteslice(@byte_pointer - byte_size - size, size)
+      break if mbchar =~ /\s/
+      byte_size += size
+    end
+    byte_size
+  end
+
+  def vi_forward_word
+    if (@line.bytesize - 1) > @byte_pointer
+      size = next_byte_size
+      mbchar = @line.byteslice(@byte_pointer, size)
+      if mbchar =~ /\w/
+        started_by = :word
+      elsif mbchar =~ /\s/
+        started_by = :space
+      else
+        started_by = :non_word_printable
+      end
+      byte_size = size
+    else
+      return [0, 0]
+    end
+    while (@line.bytesize - 1) > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      case started_by
+      when :word
+        break if mbchar =~ /\W/
+      when :space
+        break if mbchar =~ /\S/
+      when :non_word_printable
+        break if mbchar =~ /\w|\s/
+      end
+      byte_size += size
+    end
+    while (@line.bytesize - 1) > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      break if mbchar =~ /\S/
+      byte_size += size
+    end
+    byte_size
+  end
+
+  def vi_forward_end_word
+    if (@line.bytesize - 1) > @byte_pointer
+      size = next_byte_size
+      mbchar = @line.byteslice(@byte_pointer, size)
+      if mbchar =~ /\w/
+        started_by = :word
+      elsif mbchar =~ /\s/
+        started_by = :space
+      else
+        started_by = :non_word_printable
+      end
+      byte_size = size
+    else
+      return [0, 0]
+    end
+    while (@line.bytesize - 1) > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      case started_by
+      when :word
+        break if mbchar =~ /\W/
+      when :space
+        break if mbchar =~ /\S/
+      when :non_word_printable
+        break if mbchar =~ /\w|\s/
+      end
+      byte_size += size
+    end
+    while (@line.bytesize - 1) > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      if mbchar =~ /\S/
+        if mbchar =~ /\w/
+          started_by = :word
+        else
+          started_by = :non_word_printable
+        end
+        break
+      end
+      byte_size += size
+    end
+    prev_byte_size = byte_size
+    while (@line.bytesize - 1) > (@byte_pointer + byte_size)
+      size = next_byte_size(byte_size)
+      mbchar = @line.byteslice(@byte_pointer + byte_size, size)
+      case started_by
+      when :word
+        break if mbchar =~ /\W/
+      when :non_word_printable
+        break if mbchar =~ /[\w\s]/
+      end
+      prev_byte_size = byte_size
+      byte_size += size
+    end
+    prev_byte_size
+  end
+
+  def vi_backward_word
+    byte_size = 0
+    while 0 < (@byte_pointer - byte_size)
+      size = prev_byte_size(-byte_size)
+      mbchar = @line.byteslice(@byte_pointer - byte_size - size, size)
+      if mbchar =~ /\S/
+        if mbchar =~ /\w/
+          started_by = :word
+        else
+          started_by = :non_word_printable
+        end
+        break
+      end
+      byte_size += size
+    end
+    while 0 < (@byte_pointer - byte_size)
+      size = prev_byte_size(-byte_size)
+      mbchar = @line.byteslice(@byte_pointer - byte_size - size, size)
+      case started_by
+      when :word
+        break if mbchar =~ /\W/
+      when :non_word_printable
+        break if mbchar =~ /[\w\s]/
+      end
+      byte_size += size
+    end
+    byte_size
+  end
 end
