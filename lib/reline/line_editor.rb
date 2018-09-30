@@ -428,14 +428,14 @@ class Reline::LineEditor
 
   private def em_next_word(key)
     if @line.bytesize > @byte_pointer
-      byte_size = forward_word
+      byte_size = em_forward_word
       @byte_pointer += byte_size
     end
   end
 
   private def ed_prev_word(key, arg = 1)
     if @byte_pointer > 0
-      byte_size= backward_word
+      byte_size= em_backward_word
       @byte_pointer -= byte_size
     end
     arg -= 1
@@ -444,7 +444,7 @@ class Reline::LineEditor
 
   private def em_delete_next_word(key)
     if @line.bytesize > @byte_pointer
-      byte_size = forward_word
+      byte_size = em_forward_word
       @line, word = byteslice!(@line, @byte_pointer, byte_size)
       @kill_ring.append(word)
     end
@@ -452,7 +452,7 @@ class Reline::LineEditor
 
   private def ed_delete_prev_word(key, arg = 1)
     if @byte_pointer > 0
-      byte_size = backward_word
+      byte_size = em_backward_word
       @line, word = byteslice!(@line, @byte_pointer - byte_size, byte_size)
       @kill_ring.append(word, true)
       @byte_pointer -= byte_size
@@ -478,7 +478,7 @@ class Reline::LineEditor
 
   private def em_capitol_case(key)
     if @line.bytesize > @byte_pointer
-      byte_size, new_str = forward_word_with_capitalization
+      byte_size, new_str = em_forward_word_with_capitalization
       before = @line.byteslice(0, @byte_pointer)
       after = @line.byteslice((@byte_pointer + byte_size)..-1)
       @line = before + new_str + after
@@ -488,7 +488,7 @@ class Reline::LineEditor
 
   private def em_lower_case(key)
     if @line.bytesize > @byte_pointer
-      byte_size = forward_word
+      byte_size = em_forward_word
       part = @line.byteslice(@byte_pointer, byte_size).grapheme_clusters.map { |mbchar|
         mbchar =~ /[A-Z]/ ? mbchar.downcase : mbchar
       }.join
@@ -501,7 +501,7 @@ class Reline::LineEditor
 
   private def em_upper_case(key)
     if @line.bytesize > @byte_pointer
-      byte_size = forward_word
+      byte_size = em_forward_word
       part = @line.byteslice(@byte_pointer, byte_size).grapheme_clusters.map { |mbchar|
         mbchar =~ /[a-z]/ ? mbchar.upcase : mbchar
       }.join

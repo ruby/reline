@@ -31,7 +31,7 @@ module CharProcessing
     end
   end
 
-  private def backward_word
+  private def em_backward_word
     byte_size = 0
     while 0 < (@byte_pointer - byte_size)
       size = prev_byte_size(-byte_size)
@@ -48,7 +48,7 @@ module CharProcessing
     byte_size
   end
 
-  private def forward_word
+  private def em_forward_word
     byte_size = 0
     while @line.bytesize > (@byte_pointer + byte_size)
       size = next_byte_size(byte_size)
@@ -65,7 +65,7 @@ module CharProcessing
     byte_size
   end
 
-  private def forward_word_with_capitalization
+  private def em_forward_word_with_capitalization
     byte_size = 0
     new_str = String.new
     while @line.bytesize > (@byte_pointer + byte_size)
