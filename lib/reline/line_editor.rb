@@ -1,5 +1,4 @@
 require 'reline/kill_ring'
-require 'reline/unicode'
 require 'reline/char_processing'
 
 require 'io/console'
