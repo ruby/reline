@@ -295,7 +295,6 @@ class Reline::LineEditor
       ignite = (@byte_pointer < @line.bytesize)
     end
     if ignite
-      mbchar = @line.byteslice(@byte_pointer, byte_size)
       @byte_pointer += byte_size
     end
     arg -= 1
@@ -372,7 +371,7 @@ class Reline::LineEditor
     if @byte_pointer > 0
       byte_size = prev_byte_size
       @byte_pointer -= byte_size
-      @line, mbchar = byteslice!(@line, @byte_pointer, byte_size)
+      @line, = byteslice!(@line, @byte_pointer, byte_size)
     end
   end
 
@@ -581,7 +580,7 @@ class Reline::LineEditor
 
   private def ed_delete_next_char(key, arg = 1)
     unless @line.empty?
-      @line, mbchar = byteslice!(@line, @byte_pointer, next_byte_size)
+      @line, = byteslice!(@line, @byte_pointer, next_byte_size)
       if @byte_pointer >= @line.bytesize
         @byte_pointer -= byte_size
       end
