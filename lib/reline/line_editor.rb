@@ -465,9 +465,9 @@ class Reline::LineEditor
       if @line.bytesize > @byte_pointer
         @byte_pointer += next_byte_size
       end
-      back1_byte_size = next_byte_size
+      back1_byte_size = prev_byte_size
       if (@byte_pointer - back1_byte_size) > 0
-        back2_byte_size = next_byte_size(-back1_byte_size)
+        back2_byte_size = prev_byte_size(-back1_byte_size)
         back2_pointer = @byte_pointer - back1_byte_size - back2_byte_size
         @line, back2_mbchar = byteslice!(@line, back2_pointer, back2_byte_size)
         @line = byteinsert(@line, @byte_pointer - back2_byte_size, back2_mbchar)
