@@ -180,7 +180,7 @@ module Reline
           res << c if c
         end
       end
-      m = res.match /(?<row>\d+);(?<column>\d+)/
+      m = res.match(/(?<row>\d+);(?<column>\d+)/)
       CursorPos.new(m[:column].to_i - 1, m[:row].to_i - 1)
     end
 
