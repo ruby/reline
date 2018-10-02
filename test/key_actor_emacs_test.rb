@@ -457,7 +457,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
   def test_ed_transpose_chars
     input_keys("abc\C-a")
     assert_equal(0, @line_editor.instance_variable_get(:@byte_pointer))
-    #input_keys("\C-t")
+    input_keys("\C-t")
     assert_equal(0, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal('abc', @line_editor.line)
     input_keys("\C-f\C-t")
