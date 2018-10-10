@@ -15,8 +15,6 @@ module Reline
     IS_WINDOWS = false
   end
 
-  CursorPos = Struct.new(:x, :y)
-
   class << self
     attr_accessor :basic_quote_characters
     attr_accessor :basic_word_break_characters
@@ -147,19 +145,15 @@ module Reline
       # do nothing
     end
   else
-    @@buf = []
-
     def self.getc
-      return @@buf.shift unless @@buf.empty?
-      return nil if @line_editor.finished?
-      while select([$stdin], [], [], 0.00001).nil?
-      end
       c = nil
-      until select([$stdin], [], [], 0.00001).nil?
-        @@buf << $stdin.read(1).ord
+      until c
+        return nil if @line_editor.finished?
+        result = select([$stdin], [], [], 0.1)
+        next if result.nil?
+        c = $stdin.read(1)
       end
-      c = @@buf.shift
-      return c
+      c.ord
     end
 
     def self.get_screen_size
@@ -180,7 +174,7 @@ module Reline
           res << c if c
         end
       end
-      m = res.match(/(?<row>\d+);(?<column>\d+)/)
+      m = res.match /(?<row>\d+);(?<column>\d+)/
       CursorPos.new(m[:column].to_i - 1, m[:row].to_i - 1)
     end
 
@@ -230,7 +224,7 @@ module Reline
   def self.readline(prompt = '', add_hist = false)
     otio = prep
 
-    @line_editor = Reline::LineEditor.new(Reline::KeyActor::ViInsert, prompt)
+    @line_editor = Reline::LineEditor.new(Reline::KeyActor::Emacs, prompt)
     @line_editor.completion_proc = @completion_proc
     @line_editor.retrieve_completion_block = method(:retrieve_completion_block)
     @line_editor.rerender
