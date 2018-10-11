@@ -1022,6 +1022,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
   end
 
   def test_completion
+    $stdout = StringIO.new
     @line_editor.completion_proc = proc { |word|
       %w{
         foo_foo
@@ -1035,16 +1036,24 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_equal(2, @line_editor.instance_variable_get(:@cursor))
     assert_equal(2, @line_editor.instance_variable_get(:@cursor_max))
     assert_equal('fo', @line_editor.line)
+    assert_equal('', $stdout.string)
     input_keys("\C-i")
     assert_equal(4, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(4, @line_editor.instance_variable_get(:@cursor))
     assert_equal(4, @line_editor.instance_variable_get(:@cursor_max))
     assert_equal('foo_', @line_editor.line)
+    assert_equal('', $stdout.string)
     input_keys("\C-i")
     assert_equal(4, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(4, @line_editor.instance_variable_get(:@cursor))
     assert_equal(4, @line_editor.instance_variable_get(:@cursor_max))
     assert_equal('foo_', @line_editor.line)
+    assert_equal(<<~OUTPUT, $stdout.string)
+
+      foo_foo
+      foo_bar
+      foo_baz
+    OUTPUT
     input_keys("a\C-i")
     assert_equal(5, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(5, @line_editor.instance_variable_get(:@cursor))
@@ -1055,6 +1064,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_equal(6, @line_editor.instance_variable_get(:@cursor))
     assert_equal(6, @line_editor.instance_variable_get(:@cursor_max))
     assert_equal('foo_ba', @line_editor.line)
+    $stdout = STDOUT
   end
 
   def test_completion_in_middle_of_line
