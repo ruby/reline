@@ -21,6 +21,8 @@ class Reline::Unicode
 
   def self.get_mbchar_width(mbchar)
     case mbchar
+    when "\u{2E3B}"
+      3
     when /^\p{M}/
       0
     when EastAsianWidth::TYPE_F, EastAsianWidth::TYPE_W, EastAsianWidth::TYPE_A
