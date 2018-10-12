@@ -20,7 +20,7 @@ class Reline::Unicode
   end
 
   def self.get_mbchar_width(mbchar)
-    case mbchar
+    case mbchar.encode('UTF-8')
     when "\u{2E3B}"
       3
     when /^\p{M}/
