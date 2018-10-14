@@ -166,7 +166,7 @@ class Reline::LineEditor
     end
   end
 
-  def normal_char(key)
+  private def normal_char(key)
     @multibyte_buffer << key
     if @multibyte_buffer.size > 1
       if @multibyte_buffer.dup.force_encoding(Encoding.default_external).valid_encoding?
