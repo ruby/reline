@@ -15,6 +15,8 @@ module Reline
     IS_WINDOWS = false
   end
 
+  CursorPos = Struct.new(:x, :y)
+
   class << self
     attr_accessor :basic_quote_characters
     attr_accessor :basic_word_break_characters
