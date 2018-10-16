@@ -73,11 +73,11 @@ class Reline::LineEditor
       print "\e[1;1H"
       @cleared = false
     end
-    print "\e[2K"
-    print "\e[1G"
+    Reline.move_cursor_column(0)
+    Reline.erase_after_cursor
     print prompt
     print @line
-    print "\e[#{prompt_width + @cursor + 1}G" unless @line.end_with?("\n")
+    Reline.move_cursor_column(prompt_width + @cursor) unless @line.end_with?("\n")
   end
 
   private def menu(target, list)
