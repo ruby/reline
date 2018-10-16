@@ -25,7 +25,9 @@ class Reline::Unicode
       3
     when /^\p{M}/
       0
-    when EastAsianWidth::TYPE_F, EastAsianWidth::TYPE_W, EastAsianWidth::TYPE_A
+    when EastAsianWidth::TYPE_A
+      Reline.ambiguous_width
+    when EastAsianWidth::TYPE_F, EastAsianWidth::TYPE_W
       2
     when EastAsianWidth::TYPE_H, EastAsianWidth::TYPE_NA, EastAsianWidth::TYPE_N
       1

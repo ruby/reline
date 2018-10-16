@@ -30,6 +30,8 @@ module Reline
     attr_writer :output
   end
 
+  @@ambiguous_width = nil
+
   @basic_quote_characters = '"\''
   @basic_word_break_characters = " \t\n`><=;|&{("
   @completer_quote_characters
@@ -248,5 +250,18 @@ module Reline
     deprep(otio)
 
     @line_editor.line
+  end
+
+  def self.may_req_ambiguous_char_width
+    move_cursor_column(0)
+    print "\u{25bd}"
+    @@ambiguous_width = cursor_pos.x
+    move_cursor_column(0)
+    erase_after_cursor
+  end
+  may_req_ambiguous_char_width # call immediately
+
+  def self.ambiguous_width
+    @@ambiguous_width
   end
 end
