@@ -228,6 +228,7 @@ module Reline
   def self.readline(prompt = '', add_hist = false)
     otio = prep
 
+    may_req_ambiguous_char_width
     @line_editor = Reline::LineEditor.new(Reline::KeyActor::Emacs, prompt)
     @line_editor.completion_proc = @completion_proc
     @line_editor.retrieve_completion_block = method(:retrieve_completion_block)
@@ -253,13 +254,13 @@ module Reline
   end
 
   def self.may_req_ambiguous_char_width
+    return if @@ambiguous_width
     move_cursor_column(0)
     print "\u{25bd}"
     @@ambiguous_width = cursor_pos.x
     move_cursor_column(0)
     erase_after_cursor
   end
-  may_req_ambiguous_char_width # call immediately
 
   def self.ambiguous_width
     @@ambiguous_width
