@@ -119,6 +119,26 @@ class Reline::Unicode
     [byte_size, width]
   end
 
+  def self.em_big_backward_word(line, byte_pointer)
+    width = 0
+    byte_size = 0
+    while 0 < (byte_pointer - byte_size)
+      size = get_prev_mbchar_size(line, byte_pointer - byte_size)
+      mbchar = line.byteslice(byte_pointer - byte_size - size, size)
+      break if mbchar =~ /\S/
+      width += get_mbchar_width(mbchar)
+      byte_size += size
+    end
+    while 0 < (byte_pointer - byte_size)
+      size = get_prev_mbchar_size(line, byte_pointer - byte_size)
+      mbchar = line.byteslice(byte_pointer - byte_size - size, size)
+      break if mbchar =~ /\s/
+      width += get_mbchar_width(mbchar)
+      byte_size += size
+    end
+    [byte_size, width]
+  end
+
   def self.vi_big_forward_word(line, byte_pointer)
     width = 0
     byte_size = 0

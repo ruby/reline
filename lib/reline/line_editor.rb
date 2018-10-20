@@ -570,6 +570,17 @@ class Reline::LineEditor
     end
   end
 
+  private def em_kill_region(key)
+    if @byte_pointer > 0
+      byte_size, width = Reline::Unicode.em_big_backward_word(@line, @byte_pointer)
+      @line, deleted = byteslice!(@line, @byte_pointer - byte_size, byte_size)
+      @byte_pointer -= byte_size
+      @cursor -= width
+      @cursor_max -= width
+      @kill_ring.append(deleted)
+    end
+  end
+
   private def vi_insert(key)
     @key_actor = Reline::KeyActor::ViInsert
   end
