@@ -1091,11 +1091,11 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
   end
 
   def test_em_kill_region
-    input_keys("abc   def{bbb}ccc   ddd")
-    assert_equal(23, @line_editor.instance_variable_get(:@byte_pointer))
-    assert_equal(23, @line_editor.instance_variable_get(:@cursor))
-    assert_equal(23, @line_editor.instance_variable_get(:@cursor_max))
-    assert_equal('abc   def{bbb}ccc   ddd', @line_editor.line)
+    input_keys('abc   def{bbb}ccc   ddd   ')
+    assert_equal(26, @line_editor.instance_variable_get(:@byte_pointer))
+    assert_equal(26, @line_editor.instance_variable_get(:@cursor))
+    assert_equal(26, @line_editor.instance_variable_get(:@cursor_max))
+    assert_equal('abc   def{bbb}ccc   ddd   ', @line_editor.line)
     input_keys("\C-w")
     assert_equal(20, @line_editor.instance_variable_get(:@byte_pointer))
     assert_equal(20, @line_editor.instance_variable_get(:@cursor))
