@@ -11,7 +11,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     @line_editor.retrieve_completion_block = Reline.method(:retrieve_completion_block)
   end
 
-  def test_ed_insert_one#(data)
+  def test_ed_insert_one
     input_keys('a')
     assert_line('a')
     assert_byte_pointer_size('a')
