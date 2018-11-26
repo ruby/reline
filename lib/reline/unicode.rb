@@ -20,7 +20,7 @@ class Reline::Unicode
   end
 
   def self.get_mbchar_width(mbchar)
-    case mbchar.encode('UTF-8')
+    case mbchar.encode(Encoding::UTF_8)
     when "\u{2E3B}" # THREE-EM DASH
       3
     when /^\p{M}/
@@ -56,14 +56,14 @@ class Reline::Unicode
     while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
-      break if mbchar =~ /\p{Word}/
+      break if mbchar.encode(Encoding::UTF_8) =~ /\p{Word}/
       width += get_mbchar_width(mbchar)
       byte_size += size
     end
     while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
-      break if mbchar =~ /\P{Word}/
+      break if mbchar.encode(Encoding::UTF_8) =~ /\P{Word}/
       width += get_mbchar_width(mbchar)
       byte_size += size
     end
@@ -77,7 +77,7 @@ class Reline::Unicode
     while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
-      break if mbchar =~ /\p{Word}/
+      break if mbchar.encode(Encoding::UTF_8) =~ /\p{Word}/
       new_str += mbchar
       width += get_mbchar_width(mbchar)
       byte_size += size
@@ -86,7 +86,7 @@ class Reline::Unicode
     while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
-      break if mbchar =~ /\P{Word}/
+      break if mbchar.encode(Encoding::UTF_8) =~ /\P{Word}/
       if first
         new_str += mbchar.upcase
         first = false
@@ -105,14 +105,14 @@ class Reline::Unicode
     while 0 < (byte_pointer - byte_size)
       size = get_prev_mbchar_size(line, byte_pointer - byte_size)
       mbchar = line.byteslice(byte_pointer - byte_size - size, size)
-      break if mbchar =~ /\p{Word}/
+      break if mbchar.encode(Encoding::UTF_8) =~ /\p{Word}/
       width += get_mbchar_width(mbchar)
       byte_size += size
     end
     while 0 < (byte_pointer - byte_size)
       size = get_prev_mbchar_size(line, byte_pointer - byte_size)
       mbchar = line.byteslice(byte_pointer - byte_size - size, size)
-      break if mbchar =~ /\P{Word}/
+      break if mbchar.encode(Encoding::UTF_8) =~ /\P{Word}/
       width += get_mbchar_width(mbchar)
       byte_size += size
     end

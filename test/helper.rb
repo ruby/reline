@@ -3,7 +3,8 @@ require 'reline'
 require 'test-unit'
 
 class Reline::TestCase < Test::Unit::TestCase
-  def input_keys(input)
+  def input_keys(input, convert = true)
+    input.encode!(@line_editor.instance_variable_get(:@encoding)) if convert
     input.chars.each do |c|
       if c.bytesize == 1
         eighth_bit = 0b10000000
@@ -19,5 +20,32 @@ class Reline::TestCase < Test::Unit::TestCase
         end
       end
     end
+  rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
+    input.unicode_normalize!(:nfc)
+    retry
+  end
+
+  def assert_line(expected)
+    expected.encode!(@line_editor.instance_variable_get(:@encoding))
+    assert_equal(expected, @line_editor.line)
+  rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
+    expected.unicode_normalize!(:nfc)
+    retry
+  end
+
+  def assert_byte_pointer_size(expected)
+    expected.encode!(@line_editor.instance_variable_get(:@encoding))
+    assert_equal(expected.bytesize, @line_editor.instance_variable_get(:@byte_pointer))
+  rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
+    expected.unicode_normalize!(:nfc)
+    retry
+  end
+
+  def assert_cursor(expected)
+    assert_equal(expected, @line_editor.instance_variable_get(:@cursor))
+  end
+
+  def assert_cursor_max(expected)
+    assert_equal(expected, @line_editor.instance_variable_get(:@cursor_max))
   end
 end

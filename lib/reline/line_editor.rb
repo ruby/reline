@@ -39,13 +39,14 @@ class Reline::LineEditor
 
   CompletionJourneyData = Struct.new('CompletionJourneyData', :preposing, :postposing, :list, :pointer)
 
-  def initialize(key_actor, prompt)
+  def initialize(key_actor, prompt, encoding = Encoding.default_external)
     @prompt = prompt
     @prompt_width = calculate_width(@prompt)
     @cursor = 0
     @cursor_max = 0
     @byte_pointer = 0
-    @line = String.new(encoding: Encoding.default_external)
+    @encoding = encoding
+    @line = String.new(encoding: @encoding)
     @key_actor = key_actor
     @finished = false
     @cleared = false
@@ -169,8 +170,8 @@ class Reline::LineEditor
   private def normal_char(key)
     @multibyte_buffer << key
     if @multibyte_buffer.size > 1
-      if @multibyte_buffer.dup.force_encoding(Encoding.default_external).valid_encoding?
-        key = @multibyte_buffer.dup.force_encoding(Encoding.default_external)
+      if @multibyte_buffer.dup.force_encoding(@encoding).valid_encoding?
+        key = @multibyte_buffer.dup.force_encoding(@encoding)
         @multibyte_buffer.clear
       else
         # invalid
@@ -267,7 +268,7 @@ class Reline::LineEditor
   end
 
   private def calculate_width(str)
-    str.encode('UTF-8').grapheme_clusters.inject(0) { |width, gc| width + Reline::Unicode.get_mbchar_width(gc) }
+    str.encode(Encoding::UTF_8).grapheme_clusters.inject(0) { |width, gc| width + Reline::Unicode.get_mbchar_width(gc) }
   end
 
   private def ed_insert(key)
