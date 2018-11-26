@@ -4,7 +4,8 @@ require 'rake/testtask'
 ENCODING_LIST = {
   test_shift_jis: Encoding::UTF_8,
   test_euc_jp: Encoding::EUC_JP,
-  test_utf_8: Encoding::Shift_JIS
+  test_utf_8: Encoding::Shift_JIS,
+  test_cp932: Encoding::Windows_31J
 }
 
 ENCODING_LIST.each_pair do |task_name, encoding|
