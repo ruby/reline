@@ -9,6 +9,14 @@ Rake::TestTask.new(:test_shift_jis) do |t|
   t.pattern = 'test/**/*_test.rb'
 end
 
+Rake::TestTask.new(:test_euc_jp) do |t|
+  t.ruby_opts << %q{-I. -e "RELINE_TEST_ENCODING=Encoding::EUC_JP"}
+  t.libs << 'test'
+  t.libs << 'lib'
+  t.loader = :direct
+  t.pattern = 'test/**/*_test.rb'
+end
+
 Rake::TestTask.new(:test_utf_8) do |t|
   t.ruby_opts << %q{-I. -e "RELINE_TEST_ENCODING=Encoding::Shift_JIS"}
   t.libs << 'test'
@@ -17,6 +25,6 @@ Rake::TestTask.new(:test_utf_8) do |t|
   t.pattern = 'test/**/*_test.rb'
 end
 
-task test: [:test_shift_jis, :test_utf_8]
+task test: [:test_shift_jis, :test_euc_jp, :test_utf_8]
 
 task default: :test
