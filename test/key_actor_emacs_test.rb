@@ -3,11 +3,9 @@ require 'helper'
 class Reline::KeyActor::Emacs::Test < Reline::TestCase
   def setup
     @prompt = '> '
-    if defined?(RELINE_TEST_ENCODING)
-      @line_editor = Reline::LineEditor.new(Reline::KeyActor::Emacs, @prompt, RELINE_TEST_ENCODING)
-    else
-      @line_editor = Reline::LineEditor.new(Reline::KeyActor::Emacs, @prompt)
-    end
+    @line_editor = Reline::LineEditor.new(
+      Reline::KeyActor::Emacs, @prompt,
+      (RELINE_TEST_ENCODING rescue Encoding.default_external))
     @line_editor.retrieve_completion_block = Reline.method(:retrieve_completion_block)
   end
 
