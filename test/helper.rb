@@ -2,6 +2,8 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'reline'
 require 'test-unit'
 
+RELINE_TEST_ENCODING = Encoding.find(ENV['RELINE_TEST_ENCODING']) if ENV['RELINE_TEST_ENCODING']
+
 class Reline::TestCase < Test::Unit::TestCase
   def input_keys(input, convert = true)
     input.encode!(@line_editor.instance_variable_get(:@encoding)) if convert
