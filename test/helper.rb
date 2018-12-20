@@ -5,8 +5,20 @@ require 'test-unit'
 RELINE_TEST_ENCODING = Encoding.find(ENV['RELINE_TEST_ENCODING']) if ENV['RELINE_TEST_ENCODING']
 
 class Reline::TestCase < Test::Unit::TestCase
+  private def convert_str(input, options = {}, normalized = nil)
+    input.encode!(@line_editor.instance_variable_get(:@encoding), Encoding::UTF_8, options)
+  rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
+    input.unicode_normalize!(:nfc)
+    if normalized
+      options[:undef] = :replace
+      options[:replace] = '?'
+    end
+    normalized = true
+    retry
+  end
+
   def input_keys(input, convert = true)
-    input.encode!(@line_editor.instance_variable_get(:@encoding)) if convert
+    input = convert_str(input) if convert
     input.chars.each do |c|
       if c.bytesize == 1
         eighth_bit = 0b10000000
@@ -22,25 +34,16 @@ class Reline::TestCase < Test::Unit::TestCase
         end
       end
     end
-  rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
-    input.unicode_normalize!(:nfc)
-    retry
   end
 
   def assert_line(expected)
-    expected.encode!(@line_editor.instance_variable_get(:@encoding))
+    expected = convert_str(expected)
     assert_equal(expected, @line_editor.line)
-  rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
-    expected.unicode_normalize!(:nfc)
-    retry
   end
 
   def assert_byte_pointer_size(expected)
-    expected.encode!(@line_editor.instance_variable_get(:@encoding))
+    expected = convert_str(expected)
     assert_equal(expected.bytesize, @line_editor.instance_variable_get(:@byte_pointer))
-  rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
-    expected.unicode_normalize!(:nfc)
-    retry
   end
 
   def assert_cursor(expected)
