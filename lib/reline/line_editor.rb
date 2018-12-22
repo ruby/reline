@@ -20,6 +20,7 @@ class Reline::LineEditor
     ed_prev_history
     ed_prev_line#
     ed_prev_word
+    ed_quoted_insert
     vi_to_column
     vi_next_word
     vi_prev_word
@@ -294,6 +295,13 @@ class Reline::LineEditor
     end
   end
   alias_method :ed_digit, :ed_insert
+
+  private def ed_quoted_insert(str, arg = 1)
+    @waiting_proc = proc { |key|
+      ed_insert(key)
+      @waiting_proc = nil
+    }
+  end
 
   private def ed_next_char(key, arg = 1)
     byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
