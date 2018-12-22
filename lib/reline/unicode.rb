@@ -21,7 +21,7 @@ class Reline::Unicode
 
   def self.get_mbchar_width(mbchar)
     case mbchar.encode(Encoding::UTF_8)
-    when "\u{2E3B}" # THREE-EM DASH
+    when /^\u{2E3B}/ # THREE-EM DASH
       3
     when /^\p{M}/
       0
