@@ -76,6 +76,14 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_cursor_max(6)
   end
 
+  def test_ed_quoted_insert_with_vi_arg
+    input_keys("ab\C-[3\C-v\C-aacd")
+    assert_line("a\C-a\C-a\C-abcd")
+    assert_byte_pointer_size("a\C-a\C-a\C-abcd")
+    assert_cursor(10)
+    assert_cursor_max(10)
+  end
+
   def test_vi_delete_prev_char
     input_keys('ab')
     assert_byte_pointer_size('ab')

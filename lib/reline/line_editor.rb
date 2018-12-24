@@ -310,7 +310,9 @@ class Reline::LineEditor
 
   private def ed_quoted_insert(str, arg = 1)
     @waiting_proc = proc { |key|
-      ed_insert(key)
+      arg.times do
+        ed_insert(key)
+      end
       @waiting_proc = nil
     }
   end
