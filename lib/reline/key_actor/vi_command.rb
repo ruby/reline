@@ -45,7 +45,7 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     #  21 ^U
     :vi_kill_line_prev,
     #  22 ^V
-    :ed_unassigned,
+    :ed_quoted_insert,
     #  23 ^W
     :ed_delete_prev_word,
     #  24 ^X

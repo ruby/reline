@@ -6,7 +6,13 @@ RELINE_TEST_ENCODING = Encoding.find(ENV['RELINE_TEST_ENCODING']) if ENV['RELINE
 
 class Reline::TestCase < Test::Unit::TestCase
   private def convert_str(input, options = {}, normalized = nil)
-    input.encode!(@line_editor.instance_variable_get(:@encoding), Encoding::UTF_8, options)
+    input.chars.map { |c|
+      if Reline::Unicode::EscapedChars.include?(c.ord)
+        c
+      else
+        c.encode(@line_editor.instance_variable_get(:@encoding), Encoding::UTF_8, options)
+      end
+    }.join
   rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
     input.unicode_normalize!(:nfc)
     if normalized

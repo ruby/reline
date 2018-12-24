@@ -77,9 +77,20 @@ class Reline::LineEditor
     end
     Reline.move_cursor_column(0)
     Reline.erase_after_cursor
-    print prompt
-    print @line
+    escaped_print prompt
+    escaped_print @line
     Reline.move_cursor_column(prompt_width + @cursor) unless @line.end_with?("\n")
+  end
+
+  private def escaped_print(str)
+    print str.chars.map { |gr|
+      escaped = Reline::Unicode::EscapedPairs[gr.ord]
+      if escaped
+        escaped
+      else
+        gr
+      end
+    }.join
   end
 
   private def menu(target, list)
@@ -289,9 +300,10 @@ class Reline::LineEditor
       else
         @line = byteinsert(@line, @byte_pointer, key.chr)
       end
+      width = Reline::Unicode.get_mbchar_width(key.chr)
       @byte_pointer += 1
-      @cursor += 1
-      @cursor_max += 1
+      @cursor += width
+      @cursor_max += width
     end
   end
   alias_method :ed_digit, :ed_insert
