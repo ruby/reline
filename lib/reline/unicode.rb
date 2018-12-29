@@ -8,7 +8,7 @@ class Reline::Unicode
     0x05 => '^E',
     0x06 => '^F',
     0x07 => '^G',
-    0x08 => '^H', # BackS
+    0x08 => '^H', # Backspace
     0x09 => '^I',
     0x0A => '^J',
     0x0B => '^K',
