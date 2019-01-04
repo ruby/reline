@@ -206,7 +206,7 @@ class Reline::LineEditor
         ed_argument_digit(key)
       else
         if ARGUMENTABLE.include?(method_symbol) and method_obj
-          method_obj.(key, @vi_arg)
+          method_obj.(key, arg: @vi_arg)
         elsif @waiting_proc
           @waiting_proc.(key)
         elsif method_obj
@@ -308,7 +308,7 @@ class Reline::LineEditor
   end
   alias_method :ed_digit, :ed_insert
 
-  private def ed_quoted_insert(str, arg = 1)
+  private def ed_quoted_insert(str, arg: 1)
     @waiting_proc = proc { |key|
       arg.times do
         ed_insert(key)
@@ -317,7 +317,7 @@ class Reline::LineEditor
     }
   end
 
-  private def ed_next_char(key, arg = 1)
+  private def ed_next_char(key, arg: 1)
     byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
     if Reline::KeyActor::ViCommand == @key_actor
       ignite = ((@byte_pointer + byte_size) < @line.bytesize)
@@ -334,7 +334,7 @@ class Reline::LineEditor
     ed_next_char(key, arg) if arg > 0
   end
 
-  private def ed_prev_char(key, arg = 1)
+  private def ed_prev_char(key, arg: 1)
     if @cursor > 0
       byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer)
       @byte_pointer -= byte_size
@@ -368,7 +368,7 @@ class Reline::LineEditor
     end
   end
 
-  private def ed_prev_history(key, arg = 1)
+  private def ed_prev_history(key, arg: 1)
     if Reline::HISTORY.empty?
       return
     end
@@ -391,7 +391,7 @@ class Reline::LineEditor
     ed_prev_history(key, arg) if arg > 0
   end
 
-  private def ed_next_history(key, arg = 1)
+  private def ed_next_history(key, arg: 1)
     if @history_pointer.nil?
       return
     elsif @history_pointer == (Reline::HISTORY.size - 1)
@@ -501,7 +501,7 @@ class Reline::LineEditor
     end
   end
 
-  private def ed_prev_word(key, arg = 1)
+  private def ed_prev_word(key, arg: 1)
     if @byte_pointer > 0
       byte_size, width = Reline::Unicode.em_backward_word(@line, @byte_pointer)
       @byte_pointer -= byte_size
@@ -520,7 +520,7 @@ class Reline::LineEditor
     end
   end
 
-  private def ed_delete_prev_word(key, arg = 1)
+  private def ed_delete_prev_word(key, arg: 1)
     if @byte_pointer > 0
       byte_size, width = Reline::Unicode.em_backward_word(@line, @byte_pointer)
       @line, word = byteslice!(@line, @byte_pointer - byte_size, byte_size)
@@ -682,7 +682,7 @@ class Reline::LineEditor
     @cursor = 0
   end
 
-  private def ed_delete_next_char(key, arg = 1)
+  private def ed_delete_next_char(key, arg: 1)
     unless @line.empty?
       byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
       @line, mbchar = byteslice!(@line, @byte_pointer, byte_size)
@@ -741,7 +741,7 @@ class Reline::LineEditor
     end
   end
 
-  private def vi_to_column(key, arg = 0)
+  private def vi_to_column(key, arg: 0)
     @byte_pointer, @cursor = @line.grapheme_clusters.inject([0, 0]) { |total, gc|
       # total has [byte_size, cursor]
       mbchar_width = Reline::Unicode.get_mbchar_width(gc)
@@ -756,7 +756,7 @@ class Reline::LineEditor
     }
   end
 
-  private def vi_next_char(key, arg = 1)
+  private def vi_next_char(key, arg: 1)
     @waiting_proc = ->(key_for_proc) { search_next_char(key_for_proc, arg) }
   end
 
