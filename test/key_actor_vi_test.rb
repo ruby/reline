@@ -386,4 +386,21 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_cursor_max(23)
     assert_line('abcde foo_bar_baz ABCDE')
   end
+
+  def test_ed_move_to_beg
+    input_keys("abcde\C-[^")
+    assert_byte_pointer_size('')
+    assert_cursor(0)
+    assert_cursor_max(5)
+    input_keys("0\C-ki")
+    input_keys(" abcde\C-[^")
+    assert_byte_pointer_size(' ')
+    assert_cursor(1)
+    assert_cursor_max(6)
+    input_keys("0\C-ki")
+    input_keys("   abcde  ABCDE  \C-[^")
+    assert_byte_pointer_size('   ')
+    assert_cursor(3)
+    assert_cursor_max(17)
+  end
 end

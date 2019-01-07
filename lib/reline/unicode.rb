@@ -381,6 +381,21 @@ class Reline::Unicode
     end
     [byte_size, width]
   end
+
+  def self.ed_move_to_begin(line)
+    width = 0
+    byte_size = 0
+    while (line.bytesize - 1) > byte_size
+      size = get_next_mbchar_size(line, byte_size)
+      mbchar = line.byteslice(byte_size, size)
+      if mbchar =~ /\S/
+        break
+      end
+      width += get_mbchar_width(mbchar)
+      byte_size += size
+    end
+    [byte_size, width]
+  end
 end
 
 require 'reline/unicode/east_asian_width'

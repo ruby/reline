@@ -347,8 +347,7 @@ class Reline::LineEditor
   end
 
   private def ed_move_to_beg(key)
-    @byte_pointer = 0
-    @cursor = 0
+    @byte_pointer, @cursor = Reline::Unicode.ed_move_to_begin(@line)
   end
 
   private def ed_move_to_end(key)
