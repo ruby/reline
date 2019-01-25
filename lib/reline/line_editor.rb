@@ -331,7 +331,7 @@ class Reline::LineEditor
       @byte_pointer += byte_size
     end
     arg -= 1
-    ed_next_char(key, arg) if arg > 0
+    ed_next_char(key, arg: arg) if arg > 0
   end
 
   private def ed_prev_char(key, arg: 1)
@@ -343,7 +343,7 @@ class Reline::LineEditor
       @cursor -= width
     end
     arg -= 1
-    ed_prev_char(key, arg) if arg > 0
+    ed_prev_char(key, arg: arg) if arg > 0
   end
 
   private def ed_move_to_beg(key)
@@ -387,7 +387,7 @@ class Reline::LineEditor
       @byte_pointer = @line.bytesize
     end
     arg -= 1
-    ed_prev_history(key, arg) if arg > 0
+    ed_prev_history(key, arg: arg) if arg > 0
   end
 
   private def ed_next_history(key, arg: 1)
@@ -406,7 +406,7 @@ class Reline::LineEditor
       @byte_pointer = @line.bytesize
     end
     arg -= 1
-    ed_next_history(key, arg) if arg > 0
+    ed_next_history(key, arg: arg) if arg > 0
   end
 
   private def ed_newline(key)
@@ -507,7 +507,7 @@ class Reline::LineEditor
       @cursor -= width
     end
     arg -= 1
-    ed_prev_word(key, arg) if arg > 0
+    ed_prev_word(key, arg: arg) if arg > 0
   end
 
   private def em_delete_next_word(key)
@@ -529,7 +529,7 @@ class Reline::LineEditor
       @cursor_max -= width
     end
     arg -= 1
-    ed_delete_prev_word(key, arg) if arg > 0
+    ed_delete_prev_word(key, arg: arg) if arg > 0
   end
 
   private def ed_transpose_chars(key)
@@ -617,52 +617,64 @@ class Reline::LineEditor
     @key_actor = Reline::KeyActor::ViCommand
   end
 
-  private def vi_next_word(key)
+  private def vi_next_word(key, arg: 1)
     if @line.bytesize > @byte_pointer
       byte_size, width = Reline::Unicode.vi_forward_word(@line, @byte_pointer)
       @byte_pointer += byte_size
       @cursor += width
     end
+    arg -= 1
+    vi_next_word(key, arg: arg) if arg > 0
   end
 
-  private def vi_prev_word(key)
+  private def vi_prev_word(key, arg: 1)
     if @byte_pointer > 0
       byte_size, width = Reline::Unicode.vi_backward_word(@line, @byte_pointer)
       @byte_pointer -= byte_size
       @cursor -= width
     end
+    arg -= 1
+    vi_prev_word(key, arg: arg) if arg > 0
   end
 
-  private def vi_end_word(key)
+  private def vi_end_word(key, arg: 1)
     if @line.bytesize > @byte_pointer
       byte_size, width = Reline::Unicode.vi_forward_end_word(@line, @byte_pointer)
       @byte_pointer += byte_size
       @cursor += width
     end
+    arg -= 1
+    vi_end_word(key, arg: arg) if arg > 0
   end
 
-  private def vi_next_big_word(key)
+  private def vi_next_big_word(key, arg: 1)
     if @line.bytesize > @byte_pointer
       byte_size, width = Reline::Unicode.vi_big_forward_word(@line, @byte_pointer)
       @byte_pointer += byte_size
       @cursor += width
     end
+    arg -= 1
+    vi_next_big_word(key, arg: arg) if arg > 0
   end
 
-  private def vi_prev_big_word(key)
+  private def vi_prev_big_word(key, arg: 1)
     if @byte_pointer > 0
       byte_size, width = Reline::Unicode.vi_big_backward_word(@line, @byte_pointer)
       @byte_pointer -= byte_size
       @cursor -= width
     end
+    arg -= 1
+    vi_prev_big_word(key, arg: arg) if arg > 0
   end
 
-  private def vi_end_big_word(key)
+  private def vi_end_big_word(key, arg: 1)
     if @line.bytesize > @byte_pointer
       byte_size, width = Reline::Unicode.vi_big_forward_end_word(@line, @byte_pointer)
       @byte_pointer += byte_size
       @cursor += width
     end
+    arg -= 1
+    vi_end_big_word(key, arg: arg) if arg > 0
   end
 
   private def vi_delete_prev_char(key)
@@ -693,7 +705,7 @@ class Reline::LineEditor
       end
     end
     arg -= 1
-    ed_delete_next_char(key, arg) if arg > 0
+    ed_delete_next_char(key, arg: arg) if arg > 0
   end
 
   private def vi_to_history_line(key)
