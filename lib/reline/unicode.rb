@@ -303,37 +303,51 @@ class Reline::Unicode
     else
       return [0, 0]
     end
-    while (line.bytesize - 1) > (byte_pointer + byte_size)
+    if (line.bytesize - 1) > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
-      case started_by
-      when :word
-        break if mbchar =~ /\W/
-      when :space
-        break if mbchar =~ /\S/
-      when :non_word_printable
-        break if mbchar =~ /\w|\s/
+      if mbchar =~ /\w/
+        second = :word
+      elsif mbchar =~ /\s/
+        second = :space
+      else
+        second = :non_word_printable
       end
-      width += get_mbchar_width(mbchar)
-      byte_size += size
+      second_width = get_mbchar_width(mbchar)
+      second_byte_size = size
+    else
+      return [byte_size, width]
     end
-    while (line.bytesize - 1) > (byte_pointer + byte_size)
-      size = get_next_mbchar_size(line, byte_pointer + byte_size)
-      mbchar = line.byteslice(byte_pointer + byte_size, size)
-      if mbchar =~ /\S/
-        if mbchar =~ /\w/
-          started_by = :word
-        else
-          started_by = :non_word_printable
+    if second == :space
+      width += second_width
+      byte_size += second_byte_size
+      while (line.bytesize - 1) > (byte_pointer + byte_size)
+        size = get_next_mbchar_size(line, byte_pointer + byte_size)
+        mbchar = line.byteslice(byte_pointer + byte_size, size)
+        if mbchar =~ /\S/
+          if mbchar =~ /\w/
+            started_by = :word
+          else
+            started_by = :non_word_printable
+          end
+          break
         end
-        break
+        width += get_mbchar_width(mbchar)
+        byte_size += size
       end
-      width += get_mbchar_width(mbchar)
-      byte_size += size
+    else
+      case [started_by, second]
+      when [:word, :non_word_printable], [:non_word_printable, :word]
+        started_by = second
+      else
+        width += second_width
+        byte_size += second_byte_size
+        started_by = second
+      end
     end
     prev_width = width
     prev_byte_size = byte_size
-    while (line.bytesize - 1) > (byte_pointer + byte_size)
+    while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
       case started_by
