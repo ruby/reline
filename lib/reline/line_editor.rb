@@ -500,14 +500,12 @@ class Reline::LineEditor
     end
   end
 
-  private def ed_prev_word(key, arg: 1)
+  private def ed_prev_word(key)
     if @byte_pointer > 0
       byte_size, width = Reline::Unicode.em_backward_word(@line, @byte_pointer)
       @byte_pointer -= byte_size
       @cursor -= width
     end
-    arg -= 1
-    ed_prev_word(key, arg: arg) if arg > 0
   end
 
   private def em_delete_next_word(key)
@@ -519,7 +517,7 @@ class Reline::LineEditor
     end
   end
 
-  private def ed_delete_prev_word(key, arg: 1)
+  private def ed_delete_prev_word(key)
     if @byte_pointer > 0
       byte_size, width = Reline::Unicode.em_backward_word(@line, @byte_pointer)
       @line, word = byteslice!(@line, @byte_pointer - byte_size, byte_size)
@@ -528,8 +526,6 @@ class Reline::LineEditor
       @cursor -= width
       @cursor_max -= width
     end
-    arg -= 1
-    ed_delete_prev_word(key, arg: arg) if arg > 0
   end
 
   private def ed_transpose_chars(key)
