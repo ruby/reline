@@ -107,6 +107,29 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_cursor_max(19)
   end
 
+  def test_vi_end_big_word
+    input_keys("aaa   b{b}}}b   ccc\C-[0")
+    assert_byte_pointer_size('')
+    assert_cursor(0)
+    assert_cursor_max(19)
+    input_keys('E')
+    assert_byte_pointer_size('aa')
+    assert_cursor(2)
+    assert_cursor_max(19)
+    input_keys('E')
+    assert_byte_pointer_size('aaa   b{b}}}')
+    assert_cursor(12)
+    assert_cursor_max(19)
+    input_keys('E')
+    assert_byte_pointer_size('aaa   b{b}}}b   cc')
+    assert_cursor(18)
+    assert_cursor_max(19)
+    input_keys('E')
+    assert_byte_pointer_size('aaa   b{b}}}b   cc')
+    assert_cursor(18)
+    assert_cursor_max(19)
+  end
+
   def test_ed_quoted_insert
     input_keys("ab\C-v\C-acd")
     assert_line("ab\C-acd")

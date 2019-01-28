@@ -215,7 +215,7 @@ class Reline::Unicode
     end
     prev_width = width
     prev_byte_size = byte_size
-    while (line.bytesize - 1) > (byte_pointer + byte_size)
+    while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
       break if mbchar =~ /\s/
