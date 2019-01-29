@@ -29,6 +29,34 @@ class Reline::LineEditor
     vi_prev_big_word
     vi_end_big_word
     vi_next_char
+    vi_delete_meta
+  }
+
+  VI_OPERATORS = %i{
+    vi_change_meta
+    vi_delete_meta
+    vi_yank
+  }
+
+  VI_MOTIONS = %i{
+    ed_prev_char
+    ed_next_char
+    vi_zero
+    ed_move_to_beg
+    ed_move_to_end
+    vi_to_column
+    vi_next_char
+    vi_prev_char
+    vi_next_word
+    vi_prev_word
+    vi_to_next_char
+    vi_to_prev_char
+    vi_end_word
+    vi_next_big_word
+    vi_prev_big_word
+    vi_end_big_word
+    vi_repeat_next_char
+    vi_repeat_prev_char
   }
 
   module CompletionState
@@ -58,6 +86,7 @@ class Reline::LineEditor
     @multibyte_buffer = String.new(encoding: 'ASCII-8BIT')
     @meta_prefix = false
     @waiting_proc = nil
+    @waiting_operator_proc = nil
     @completion_journey_data = nil
     @completion_state = CompletionState::NORMAL
   end
@@ -179,6 +208,72 @@ class Reline::LineEditor
     end
   end
 
+  private def run_for_operators(key, method_symbol, &block)
+    if @waiting_operator_proc
+      if VI_MOTIONS.include?(method_symbol)
+        old_cursor, old_byte_pointer = @cursor, @byte_pointer
+        block.()
+        unless @waiting_proc
+          cursor_diff, byte_pointer_diff = @cursor - old_cursor, @byte_pointer - old_byte_pointer
+          @cursor, @byte_pointer = old_cursor, old_byte_pointer
+          @waiting_operator_proc.(cursor_diff, byte_pointer_diff)
+        else
+          old_waiting_proc = @waiting_proc
+          old_waiting_operator_proc = @waiting_operator_proc
+          @waiting_proc = proc { |key|
+            old_cursor, old_byte_pointer = @cursor, @byte_pointer
+            old_waiting_proc.(key)
+            cursor_diff, byte_pointer_diff = @cursor - old_cursor, @byte_pointer - old_byte_pointer
+            @cursor, @byte_pointer = old_cursor, old_byte_pointer
+            @waiting_operator_proc.(cursor_diff, byte_pointer_diff)
+          }
+        end
+      else
+        # Ignores operator when not motion is given.
+        block.()
+      end
+      @waiting_operator_proc = nil
+    else
+      block.()
+    end
+  end
+
+  private def process_key(key, method_symbol, method_obj)
+    if @vi_arg
+      if key.chr =~ /[0-9]/
+        ed_argument_digit(key)
+      else
+        if ARGUMENTABLE.include?(method_symbol) and method_obj
+          run_for_operators(key, method_symbol) do
+            method_obj.(key, arg: @vi_arg)
+          end
+        elsif @waiting_proc
+          @waiting_proc.(key)
+        elsif method_obj
+          method_obj.(key)
+        else
+          ed_insert(key)
+        end
+        @kill_ring.process
+        @vi_arg = nil
+      end
+    elsif @waiting_proc
+      @waiting_proc.(key)
+      @kill_ring.process
+    elsif method_obj
+      if method_symbol == :ed_argument_digit
+        method_obj.(key)
+      else
+        run_for_operators(key, method_symbol) do
+          method_obj.(key)
+        end
+      end
+      @kill_ring.process
+    else
+      ed_insert(key)
+    end
+  end
+
   private def normal_char(key)
     @multibyte_buffer << key
     if @multibyte_buffer.size > 1
@@ -201,31 +296,7 @@ class Reline::LineEditor
       end
       @multibyte_buffer.clear
     end
-    if @vi_arg
-      if key.chr =~ /[0-9]/
-        ed_argument_digit(key)
-      else
-        if ARGUMENTABLE.include?(method_symbol) and method_obj
-          method_obj.(key, arg: @vi_arg)
-        elsif @waiting_proc
-          @waiting_proc.(key)
-        elsif method_obj
-          method_obj.(key)
-        else
-          ed_insert(key)
-        end
-        @kill_ring.process
-        @vi_arg = nil
-      end
-    elsif @waiting_proc
-      @waiting_proc.(key)
-      @kill_ring.process
-    elsif method_obj
-      method_obj.(key)
-      @kill_ring.process
-    else
-      ed_insert(key)
-    end
+    process_key(key, method_symbol, method_obj)
   end
 
   def input_key(key)
@@ -687,6 +758,25 @@ class Reline::LineEditor
   private def vi_zero(key)
     @byte_pointer = 0
     @cursor = 0
+  end
+
+  private def vi_change_meta(key)
+  end
+
+  private def vi_delete_meta(key)
+    @waiting_operator_proc = proc { |cursor_diff, byte_pointer_diff|
+      if byte_pointer_diff > 0
+        @line, cut = byteslice!(@line, @byte_pointer, byte_pointer_diff)
+      elsif byte_pointer_diff < 0
+        @line, cut = byteslice!(@line, @byte_pointer + byte_pointer_diff, -byte_pointer_diff)
+      end
+      @cursor += cursor_diff if cursor_diff < 0
+      @cursor_max -= cursor_diff.abs
+      @byte_pointer += byte_pointer_diff if byte_pointer_diff < 0
+    }
+  end
+
+  private def vi_yank(key)
   end
 
   private def ed_delete_next_char(key, arg: 1)

@@ -676,4 +676,22 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_cursor(3)
     assert_cursor_max(17)
   end
+
+  def test_vi_delete_meta
+    input_keys("aaa bbb ccc ddd eee\C-[02w")
+    assert_byte_pointer_size('aaa bbb ')
+    assert_cursor(8)
+    assert_cursor_max(19)
+    assert_line('aaa bbb ccc ddd eee')
+    input_keys('dw')
+    assert_byte_pointer_size('aaa bbb ')
+    assert_cursor(8)
+    assert_cursor_max(15)
+    assert_line('aaa bbb ddd eee')
+    input_keys('db')
+    assert_byte_pointer_size('aaa ')
+    assert_cursor(4)
+    assert_cursor_max(11)
+    assert_line('aaa ddd eee')
+  end
 end
