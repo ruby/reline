@@ -49,7 +49,10 @@ class Reline::TestCase < Test::Unit::TestCase
 
   def assert_byte_pointer_size(expected)
     expected = convert_str(expected)
-    assert_equal(expected.bytesize, @line_editor.instance_variable_get(:@byte_pointer))
+    byte_pointer = @line_editor.instance_variable_get(:@byte_pointer)
+    assert_equal(
+      expected.bytesize, byte_pointer,
+      "<#{expected.inspect}> expected but was\n<#{@line_editor.line.byteslice(0, byte_pointer).inspect}>")
   end
 
   def assert_cursor(expected)
