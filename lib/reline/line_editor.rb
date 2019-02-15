@@ -297,6 +297,13 @@ class Reline::LineEditor
       @multibyte_buffer.clear
     end
     process_key(key, method_symbol, method_obj)
+    if Reline::KeyActor::ViCommand == @key_actor and @cursor > 0 and @cursor == @cursor_max
+      byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer)
+      @byte_pointer -= byte_size
+      mbchar = @line.byteslice(@byte_pointer, byte_size)
+      width = Reline::Unicode.get_mbchar_width(mbchar)
+      @cursor -= width
+    end
   end
 
   def input_key(key)
@@ -390,12 +397,7 @@ class Reline::LineEditor
 
   private def ed_next_char(key, arg: 1)
     byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
-    if Reline::KeyActor::ViCommand == @key_actor
-      ignite = ((@byte_pointer + byte_size) < @line.bytesize)
-    else
-      ignite = (@byte_pointer < @line.bytesize)
-    end
-    if ignite
+    if (@byte_pointer < @line.bytesize)
       mbchar = @line.byteslice(@byte_pointer, byte_size)
       width = Reline::Unicode.get_mbchar_width(mbchar)
       @cursor += width if width
@@ -433,9 +435,6 @@ class Reline::LineEditor
       end
       @byte_pointer += byte_size
     end
-    if Reline::KeyActor::ViCommand == @key_actor
-      ed_prev_char(key)
-    end
   end
 
   private def ed_prev_history(key, arg: 1)
@@ -446,16 +445,19 @@ class Reline::LineEditor
       @history_pointer = Reline::HISTORY.size - 1
       @line_backup_in_history = @line
       @line = Reline::HISTORY[@history_pointer]
-      @cursor_max = @cursor = calculate_width(@line)
-      @byte_pointer = @line.bytesize
     elsif @history_pointer.zero?
       return
     else
       Reline::HISTORY[@history_pointer] = @line
       @history_pointer -= 1
       @line = Reline::HISTORY[@history_pointer]
+    end
+    if @key_actor == Reline::KeyActor::Emacs
       @cursor_max = @cursor = calculate_width(@line)
       @byte_pointer = @line.bytesize
+    elsif @key_actor == Reline::KeyActor::ViCommand
+      @byte_pointer = @cursor = 0
+      @cursor_max = calculate_width(@line)
     end
     arg -= 1
     ed_prev_history(key, arg: arg) if arg > 0
@@ -467,14 +469,17 @@ class Reline::LineEditor
     elsif @history_pointer == (Reline::HISTORY.size - 1)
       @history_pointer = nil
       @line = @line_backup_in_history
-      @cursor_max = @cursor = calculate_width(@line)
-      @byte_pointer = @line.bytesize
     else
       Reline::HISTORY[@history_pointer] = @line
       @history_pointer += 1
       @line = Reline::HISTORY[@history_pointer]
+    end
+    if @key_actor == Reline::KeyActor::Emacs
       @cursor_max = @cursor = calculate_width(@line)
       @byte_pointer = @line.bytesize
+    elsif @key_actor == Reline::KeyActor::ViCommand
+      @byte_pointer = @cursor = 0
+      @cursor_max = calculate_width(@line)
     end
     arg -= 1
     ed_next_history(key, arg: arg) if arg > 0
@@ -785,7 +790,7 @@ class Reline::LineEditor
       @line, mbchar = byteslice!(@line, @byte_pointer, byte_size)
       width = Reline::Unicode.get_mbchar_width(mbchar)
       @cursor_max -= width
-      if @cursor >= @cursor_max
+      if @cursor > 0 and @cursor >= @cursor_max
         @byte_pointer -= byte_size
         @cursor -= width
       end
