@@ -133,6 +133,34 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_cursor_max(0)
   end
 
+  def test_vi_paste_prev
+    input_keys("abcde\C-[3h")
+    assert_line('abcde')
+    assert_byte_pointer_size('a')
+    assert_cursor(1)
+    assert_cursor_max(5)
+    input_keys('P')
+    assert_line('abcde')
+    assert_byte_pointer_size('a')
+    assert_cursor(1)
+    assert_cursor_max(5)
+    input_keys('d$')
+    assert_line('a')
+    assert_byte_pointer_size('')
+    assert_cursor(0)
+    assert_cursor_max(1)
+    input_keys('P')
+    assert_line('bcdea')
+    assert_byte_pointer_size('bcd')
+    assert_cursor(3)
+    assert_cursor_max(5)
+    input_keys('2P')
+    assert_line('bcdbcdbcdeeea')
+    assert_byte_pointer_size('bcdbcdbcd')
+    assert_cursor(9)
+    assert_cursor_max(13)
+  end
+
   def test_vi_prev_next_word
     input_keys("aaa b{b}b ccc\C-[0")
     assert_byte_pointer_size('')

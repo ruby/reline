@@ -30,6 +30,7 @@ class Reline::LineEditor
     vi_end_big_word
     vi_next_char
     vi_delete_meta
+    vi_paste_prev
   }
 
   VI_OPERATORS = %i{
@@ -82,6 +83,7 @@ class Reline::LineEditor
     @history_pointer = nil
     @line_backup_in_history = nil
     @kill_ring = Reline::KillRing.new
+    @vi_clipboard = ''
     @vi_arg = nil
     @multibyte_buffer = String.new(encoding: 'ASCII-8BIT')
     @meta_prefix = false
@@ -675,6 +677,12 @@ class Reline::LineEditor
     end
   end
 
+  private def copy_for_vi(text)
+    if @key_actor == Reline::KeyActor::ViInsert or @key_actor == Reline::KeyActor::ViCommand
+      @vi_clipboard = text
+    end
+  end
+
   private def vi_insert(key)
     @key_actor = Reline::KeyActor::ViInsert
   end
@@ -775,6 +783,7 @@ class Reline::LineEditor
       elsif byte_pointer_diff < 0
         @line, cut = byteslice!(@line, @byte_pointer + byte_pointer_diff, -byte_pointer_diff)
       end
+      copy_for_vi(cut)
       @cursor += cursor_diff if cursor_diff < 0
       @cursor_max -= cursor_diff.abs
       @byte_pointer += byte_pointer_diff if byte_pointer_diff < 0
@@ -788,6 +797,7 @@ class Reline::LineEditor
     unless @line.empty?
       byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
       @line, mbchar = byteslice!(@line, @byte_pointer, byte_size)
+      copy_for_vi(mbchar)
       width = Reline::Unicode.get_mbchar_width(mbchar)
       @cursor_max -= width
       if @cursor > 0 and @cursor >= @cursor_max
@@ -831,6 +841,18 @@ class Reline::LineEditor
     @line = Pathname.new(path).read
     finish
     @line += "\n"
+  end
+
+  private def vi_paste_prev(key, arg: 1)
+    if @vi_clipboard.size > 0
+      @line = byteinsert(@line, @byte_pointer, @vi_clipboard)
+      @cursor_max += calculate_width(@vi_clipboard)
+      cursor_point = @vi_clipboard.grapheme_clusters[0..-2].join
+      @cursor += calculate_width(cursor_point)
+      @byte_pointer += cursor_point.bytesize
+    end
+    arg -= 1
+    vi_paste_prev(key, arg: arg) if arg > 0
   end
 
   private def ed_argument_digit(key)
