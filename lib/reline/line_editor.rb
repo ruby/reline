@@ -31,6 +31,7 @@ class Reline::LineEditor
     vi_next_char
     vi_delete_meta
     vi_paste_prev
+    vi_paste_next
   }
 
   VI_OPERATORS = %i{
@@ -853,6 +854,18 @@ class Reline::LineEditor
     end
     arg -= 1
     vi_paste_prev(key, arg: arg) if arg > 0
+  end
+
+  private def vi_paste_next(key, arg: 1)
+    if @vi_clipboard.size > 0
+      byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
+      @line = byteinsert(@line, @byte_pointer + byte_size, @vi_clipboard)
+      @cursor_max += calculate_width(@vi_clipboard)
+      @cursor += calculate_width(@vi_clipboard)
+      @byte_pointer += @vi_clipboard.bytesize
+    end
+    arg -= 1
+    vi_paste_next(key, arg: arg) if arg > 0
   end
 
   private def ed_argument_digit(key)
