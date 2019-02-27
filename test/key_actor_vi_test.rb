@@ -589,6 +589,29 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_line("か\u3099")
   end
 
+  def test_vi_delete_prev_char
+    input_keys("abcdefg\C-[h")
+    assert_byte_pointer_size('abcde')
+    assert_cursor(5)
+    assert_cursor_max(7)
+    assert_line('abcdefg')
+    input_keys('X')
+    assert_byte_pointer_size('abcd')
+    assert_cursor(4)
+    assert_cursor_max(6)
+    assert_line('abcdfg')
+    input_keys('3X')
+    assert_byte_pointer_size('a')
+    assert_cursor(1)
+    assert_cursor_max(3)
+    assert_line('afg')
+    input_keys('p')
+    assert_byte_pointer_size('abcd')
+    assert_cursor(4)
+    assert_cursor_max(6)
+    assert_line('afbcdg')
+  end
+
   def test_ed_delete_prev_word
     input_keys('abc def{bbb}ccc')
     assert_byte_pointer_size('abc def{bbb}ccc')

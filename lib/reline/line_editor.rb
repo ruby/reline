@@ -11,7 +11,7 @@ class Reline::LineEditor
 
   ARGUMENTABLE = %i{
     ed_delete_next_char
-    ed_delete_prev_char#
+    ed_delete_prev_char
     ed_delete_prev_word
     ed_next_char
     ed_next_history
@@ -767,6 +767,22 @@ class Reline::LineEditor
       @cursor -= width
       @cursor_max -= width
     end
+  end
+
+  private def ed_delete_prev_char(key, arg: 1)
+    deleted = ''
+    arg.times do
+      if @cursor > 0
+        byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer)
+        @byte_pointer -= byte_size
+        @line, mbchar = byteslice!(@line, @byte_pointer, byte_size)
+        deleted.prepend(mbchar)
+        width = Reline::Unicode.get_mbchar_width(mbchar)
+        @cursor -= width
+        @cursor_max -= width
+      end
+    end
+    copy_for_vi(deleted)
   end
 
   private def vi_zero(key)
