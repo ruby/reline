@@ -589,7 +589,7 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_line("か\u3099")
   end
 
-  def test_vi_delete_prev_char
+  def test_ed_delete_prev_char
     input_keys("abcdefg\C-[h")
     assert_byte_pointer_size('abcde')
     assert_cursor(5)
