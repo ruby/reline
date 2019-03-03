@@ -20,7 +20,7 @@ class Reline::Config
     lines.each do |line|
       if line[0, 1] == '$'
         handle_directive(line[1..-1])
-        return 0
+        next
       end
 
       return if @skip_section
@@ -28,7 +28,7 @@ class Reline::Config
       if line.match(/^set +([^ ]+) +([^ ]+)/i)
         var, value = $1.downcase, $2.downcase
         bind_variable(var, value)
-        return 0
+        next
       end
 
       if line =~ /"(.*)"\s*:\s*(.*)$/
