@@ -2,7 +2,8 @@ class Reline::Config
   DEFAULT_PATH = Pathname.new(Dir.home).join('.inputrc')
 
   def initialize
-    @skip_section = false
+    @skip_section = nil
+    @if_stack = []
   end
 
   def read(path = DEFAULT_PATH)
@@ -42,8 +43,25 @@ class Reline::Config
     directive, args = directive.split(' ')
     case directive
     when 'if'
+      condition = false
+      case args.first
+      when 'mode'
+      when 'term'
+      when 'version'
+      when 'application'
+      when 'variable'
+      end
+      unless @skip_section.nil?
+        @if_stack << @skip_section
+      end
+      @skip_section = !condition
     when 'else'
+      @skip_section = !@skip_section
     when 'endif'
+      @skip_section = nil
+      unless @if_stack.empty?
+        @skip_section = @if_stack.pop
+      end
     when 'include'
     end
   end
