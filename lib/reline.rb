@@ -61,13 +61,13 @@ module Reline
   if IS_WINDOWS
     VK_LMENU = 0xA4
     STD_OUTPUT_HANDLE = -11
-    @@getwch = Win32API.new("msvcrt", "_getwch", [], 'I')
-    @@kbhit = Win32API.new("msvcrt", "_kbhit", [], 'I')
-    @@GetKeyState = Win32API.new("user32","GetKeyState",['L'],'L')
-    @@GetConsoleScreenBufferInfo = Win32API.new("kernel32", "GetConsoleScreenBufferInfo", ['L', 'P'], 'L')
-    @@SetConsoleCursorPosition = Win32API.new("kernel32", "SetConsoleCursorPosition" , ['L', 'L'], 'L')
-    @@GetStdHandle = Win32API.new("kernel32", "GetStdHandle", ['L'], 'L')
-    @@FillConsoleOutputCharacter = Win32API.new("kernel32","FillConsoleOutputCharacter",['L','L','L','L','P'],'L')
+    @@getwch = Win32API.new('msvcrt', '_getwch', [], 'I')
+    @@kbhit = Win32API.new('msvcrt', '_kbhit', [], 'I')
+    @@GetKeyState = Win32API.new('user32', 'GetKeyState', ['L'], 'L')
+    @@GetConsoleScreenBufferInfo = Win32API.new('kernel32', 'GetConsoleScreenBufferInfo', ['L', 'P'], 'L')
+    @@SetConsoleCursorPosition = Win32API.new('kernel32', 'SetConsoleCursorPosition', ['L', 'L'], 'L')
+    @@GetStdHandle = Win32API.new('kernel32', 'GetStdHandle', ['L'], 'L')
+    @@FillConsoleOutputCharacter = Win32API.new('kernel32', 'FillConsoleOutputCharacter', ['L', 'L', 'L', 'L', 'P'], 'L')
     @@hConsoleHandle = @@GetStdHandle.call(STD_OUTPUT_HANDLE)
     @@buf = []
 
