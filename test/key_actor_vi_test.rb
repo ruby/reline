@@ -553,6 +553,34 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_line('')
   end
 
+  def test_vi_delete_next_char_for_mbchar
+    input_keys("あいう\C-[h")
+    assert_byte_pointer_size('あ')
+    assert_cursor(2)
+    assert_cursor_max(6)
+    assert_line('あいう')
+    input_keys('x')
+    assert_byte_pointer_size('あ')
+    assert_cursor(2)
+    assert_cursor_max(4)
+    assert_line('あう')
+    input_keys('x')
+    assert_byte_pointer_size('')
+    assert_cursor(0)
+    assert_cursor_max(2)
+    assert_line('あ')
+    input_keys('x')
+    assert_byte_pointer_size('')
+    assert_cursor(0)
+    assert_cursor_max(0)
+    assert_line('')
+    input_keys('x')
+    assert_byte_pointer_size('')
+    assert_cursor(0)
+    assert_cursor_max(0)
+    assert_line('')
+  end
+
   def test_vi_delete_prev_char
     input_keys('ab')
     assert_byte_pointer_size('ab')
