@@ -21,6 +21,5 @@ on_finish:
 deploy: off
 
 environment:
-  NOBENCHMARK: 1
   matrix:
     - ruby_version: _trunk
