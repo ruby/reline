@@ -110,8 +110,13 @@ class Reline::LineEditor
     Reline.move_cursor_column(0)
     Reline.erase_after_cursor
     escaped_print prompt
-    escaped_print @line
-    Reline.move_cursor_column(prompt_width + @cursor) unless @line.end_with?("\n")
+    if @line.end_with?("\n")
+      escaped_print @line.delete_suffix("\n")
+      puts
+    else
+      escaped_print @line
+      Reline.move_cursor_column(prompt_width + @cursor)
+    end
   end
 
   private def escaped_print(str)
