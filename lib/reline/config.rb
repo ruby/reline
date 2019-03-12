@@ -1,3 +1,5 @@
+require 'pathname'
+
 class Reline::Config
   DEFAULT_PATH = Pathname.new(Dir.home).join('.inputrc')
 
