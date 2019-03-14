@@ -13,5 +13,10 @@ class Reline::Config::Test < Reline::TestCase
   end
 
   def test_read_lines
+    @config.read_lines(<<~LINES.split(/(?<=\n)/))
+      set bell-style on
+    LINES
+
+    assert_equal :audible, @config.instance_variable_get(:@bell_style)
   end
 end
