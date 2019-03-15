@@ -8,15 +8,22 @@ class Reline::Config
     @if_stack = []
   end
 
-  def read(path = DEFAULT_PATH)
-    f = File.open(path, 'rt')
-    unless f
-      $stderr.puts "no such file #{path}"
+  def read(file = DEFAULT_PATH)
+    if file.respond_to?(:readlines)
+      lines = file.readlines
+    else
+      begin
+        File.open(file, 'rt') do |f|
+          lines = f.readlines
+        end
+      rescue Errno::ENOENT
+        $stderr.puts "no such file #{file}"
+        return nil
+      end
     end
-    lines = f.readlines
-    f.close
 
     read_lines(lines)
+    self
   end
 
   def read_lines(lines)
