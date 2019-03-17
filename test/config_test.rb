@@ -19,4 +19,11 @@ class Reline::Config::Test < Reline::TestCase
 
     assert_equal :audible, @config.instance_variable_get(:@bell_style)
   end
+
+  def test_bind_key
+    key, func = @config.bind_key('"input"', '"abcde"')
+
+    assert_equal 'input', key
+    assert_equal 'abcde', func
+  end
 end

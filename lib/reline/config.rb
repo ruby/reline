@@ -42,7 +42,7 @@ class Reline::Config
         next
       end
 
-      if line =~ /"(.*)"\s*:\s*(.*)$/
+      if line =~ /\s*(.*)\s*:\s*(.*)\s*$/
         key, func_name = $1, $2
         bind_key(key, func_name)
       end
@@ -141,5 +141,48 @@ class Reline::Config
   end
 
   def bind_key(key, func_name)
+    if key =~ /"(.*)"/
+      keyseq = parse_keyseq($1)
+    else
+      keyseq = nil
+    end
+    if func_name =~ /"(.*)"/
+      func = parse_keyseq($1)
+    else
+      func = func_name.to_sym
+    end
+    [keyseq, func]
+  end
+
+  def key_notation_to_char(notation)
+    case notation
+    when /\\C-[a-z_]/
+    when /\\M-[a-z_]/
+    when /\\C-M-[a-z_]/, /\\M-C-[a-z_]/
+    when "\\\d{1,3}"
+    when "\\x\h{1,2}"
+    when "\e" then ?\e
+    when "\\\\" then ?\
+    when "\\\"" then ?"
+    when "\\'" then ?'
+    when "\\a" then ?\a
+    when "\\b" then ?\b
+    when "\\d" then ?\d
+    when "\\f" then ?\f
+    when "\\n" then ?\n
+    when "\\r" then ?\r
+    when "\\t" then ?\t
+    when "\\v" then ?\v
+    else notation
+    end
+  end
+
+  def parse_keyseq(str)
+    ret = String.new(encoding: 'ASCII-8BIT')
+    while str =~ /(\\C-[a-z_]|\\M-[a-z_]|\\C-M-[a-z_]|\\M-C-[a-z_]|\e|\\\\|\\"|\\'|\\a|\\b|\\d|\\f|\\n|\\r|\\t|\\v|\\\d{1,3}|\\x\h{1,2}|.)/
+      ret << key_notation_to_char($&)
+      str = $'
+    end
+    ret
   end
 end
