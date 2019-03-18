@@ -149,7 +149,7 @@ class Reline::Config
     if func_name =~ /"(.*)"/
       func = parse_keyseq($1)
     else
-      func = func_name.to_sym
+      func = func_name.to_sym # It must be macro.
     end
     [keyseq, func]
   end

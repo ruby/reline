@@ -26,4 +26,11 @@ class Reline::Config::Test < Reline::TestCase
     assert_equal 'input', key
     assert_equal 'abcde', func
   end
+
+  def test_bind_key_with_macro
+    key, func = @config.bind_key('"input"', 'abcde')
+
+    assert_equal 'input', key
+    assert_equal :abcde, func
+  end
 end
