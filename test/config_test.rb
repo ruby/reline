@@ -33,4 +33,9 @@ class Reline::Config::Test < Reline::TestCase
     assert_equal 'input', key
     assert_equal :abcde, func
   end
+
+  def test_bind_key_with_escaped_chars
+    #assert_equal ['input', "\e \\"], @config.bind_key('"input"', '"\\e \\\\"')
+    assert_equal ['input', "\e \\ \" ' \a \b \d \f \n \r \t \v"], @config.bind_key('"input"', '"\\e \\\\ \\" \\\' \\a \\b \\d \\f \\n \\r \\t \\v"')
+  end
 end

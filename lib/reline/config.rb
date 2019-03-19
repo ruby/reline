@@ -161,8 +161,8 @@ class Reline::Config
     when /\\C-M-[a-z_]/, /\\M-C-[a-z_]/
     when "\\\d{1,3}"
     when "\\x\h{1,2}"
-    when "\e" then ?\e
-    when "\\\\" then ?\
+    when "\\e" then ?\e
+    when "\\\\" then ?\\
     when "\\\"" then ?"
     when "\\'" then ?'
     when "\\a" then ?\a
@@ -179,7 +179,7 @@ class Reline::Config
 
   def parse_keyseq(str)
     ret = String.new(encoding: 'ASCII-8BIT')
-    while str =~ /(\\C-[a-z_]|\\M-[a-z_]|\\C-M-[a-z_]|\\M-C-[a-z_]|\e|\\\\|\\"|\\'|\\a|\\b|\\d|\\f|\\n|\\r|\\t|\\v|\\\d{1,3}|\\x\h{1,2}|.)/
+    while str =~ /(\\C-[a-z_]|\\M-[a-z_]|\\C-M-[a-z_]|\\M-C-[a-z_]|\\e|\\\\|\\"|\\'|\\a|\\b|\\d|\\f|\\n|\\r|\\t|\\v|\\\d{1,3}|\\x\h{1,2}|.)/
       ret << key_notation_to_char($&)
       str = $'
     end
