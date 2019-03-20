@@ -42,10 +42,12 @@ class Reline::Config::Test < Reline::TestCase
     assert_equal ['input', "\1"], @config.bind_key('"input"', '"\1"')
     assert_equal ['input', "\12"], @config.bind_key('"input"', '"\12"')
     assert_equal ['input', "\123"], @config.bind_key('"input"', '"\123"')
+    assert_equal ['input', ["\123", '4'].join], @config.bind_key('"input"', '"\1234"')
   end
 
   def test_bind_key_with_hexadecimal_number
     assert_equal ['input', "\x4"], @config.bind_key('"input"', '"\x4"')
     assert_equal ['input', "\x45"], @config.bind_key('"input"', '"\x45"')
+    assert_equal ['input', ["\x45", '6'].join], @config.bind_key('"input"', '"\x456"')
   end
 end
