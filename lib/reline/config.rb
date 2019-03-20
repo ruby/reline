@@ -159,8 +159,8 @@ class Reline::Config
     when /\\C-[a-z_]/
     when /\\M-[a-z_]/
     when /\\C-M-[a-z_]/, /\\M-C-[a-z_]/
-    when "\\\d{1,3}"
-    when "\\x\h{1,2}"
+    when /\\(\d{1,3})/ then $1.to_i(8).chr # octal
+    when /\\x(\h{1,2})/ then $1.to_i(16).chr # hexadecimal
     when "\\e" then ?\e
     when "\\\\" then ?\\
     when "\\\"" then ?"
