@@ -38,6 +38,14 @@ class Reline::Config::Test < Reline::TestCase
     assert_equal ['input', "\e \\ \" ' \a \b \d \f \n \r \t \v"], @config.bind_key('"input"', '"\\e \\\\ \\" \\\' \\a \\b \\d \\f \\n \\r \\t \\v"')
   end
 
+  def test_bind_key_with_ctrl_chars
+    assert_equal ['input', "\C-h\C-h"], @config.bind_key('"input"', '"\C-h\C-H"')
+  end
+
+  def test_bind_key_with_meta_chars
+    assert_equal ['input', "\M-h\M-H".force_encoding('ASCII-8BIT')], @config.bind_key('"input"', '"\M-h\M-H"')
+  end
+
   def test_bind_key_with_octal_number
     assert_equal ['input', "\1"], @config.bind_key('"input"', '"\1"')
     assert_equal ['input', "\12"], @config.bind_key('"input"', '"\12"')

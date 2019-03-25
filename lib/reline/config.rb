@@ -156,9 +156,22 @@ class Reline::Config
 
   def key_notation_to_char(notation)
     case notation
-    when /\\C-[a-z_]/
-    when /\\M-[a-z_]/
-    when /\\C-M-[a-z_]/, /\\M-C-[a-z_]/
+    when /\\C-([A-Za-z_])/
+      (1 + $1.downcase.ord - ?a.ord).chr('ASCII-8BIT')
+    when /\\M-([0-9A-Za-z_])/
+      modified_key = $1
+      code =
+        case $1
+        when /[0-9]/
+          ?\M-0.bytes.first + (modified_key.ord - ?0.ord)
+        when /[A-Z]/
+          ?\M-A.bytes.first + (modified_key.ord - ?A.ord)
+        when /[a-z]/
+          ?\M-a.bytes.first + (modified_key.ord - ?a.ord)
+        end
+      code.chr('ASCII-8BIT')
+    when /\\C-M-[A-Za-z_]/, /\\M-C-[A-Za-z_]/
+    # 129 M-^A
     when /\\(\d{1,3})/ then $1.to_i(8).chr # octal
     when /\\x(\h{1,2})/ then $1.to_i(16).chr # hexadecimal
     when "\\e" then ?\e
@@ -179,7 +192,7 @@ class Reline::Config
 
   def parse_keyseq(str)
     ret = String.new(encoding: 'ASCII-8BIT')
-    while str =~ /(\\C-[a-z_]|\\M-[a-z_]|\\C-M-[a-z_]|\\M-C-[a-z_]|\\e|\\\\|\\"|\\'|\\a|\\b|\\d|\\f|\\n|\\r|\\t|\\v|\\\d{1,3}|\\x\h{1,2}|.)/
+    while str =~ /(\\C-[A-Za-z_]|\\M-[0-9A-Za-z_]|\\C-M-[A-Za-z_]|\\M-C-[A-Za-z_]|\\e|\\\\|\\"|\\'|\\a|\\b|\\d|\\f|\\n|\\r|\\t|\\v|\\\d{1,3}|\\x\h{1,2}|.)/
       ret << key_notation_to_char($&)
       str = $'
     end
