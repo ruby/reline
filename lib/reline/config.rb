@@ -95,6 +95,7 @@ class Reline::Config
         @skip_section = @if_stack.pop
       end
     when 'include'
+      read(args)
     end
   end
 
