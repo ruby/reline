@@ -5,6 +5,7 @@ require 'tempfile'
 require 'pathname'
 
 class Reline::LineEditor
+  # TODO: undo
   attr_reader :line
   attr_accessor :completion_proc
   attr_writer :retrieve_completion_block
