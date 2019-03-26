@@ -3,20 +3,24 @@ require 'helper'
 class Reline::KeyActor::ViInsert::Test < Reline::TestCase
   def setup
     @prompt = '> '
+    @config = Reline::Config.new
+    @config.read_lines(<<~LINES.split(/(?<=\n)/))
+      set editing-mode vi
+    LINES
     @line_editor = Reline::LineEditor.new(
-      Reline::KeyActor::ViInsert, @prompt,
+      @config, @prompt,
       (RELINE_TEST_ENCODING rescue Encoding.default_external))
     @line_editor.retrieve_completion_block = Reline.method(:retrieve_completion_block)
   end
 
   def test_vi_command_mode
     input_keys("\C-[")
-    assert_equal(Reline::KeyActor::ViCommand, @line_editor.instance_variable_get(:@key_actor))
+    assert_instance_of(Reline::KeyActor::ViCommand, @config.editing_mode)
   end
 
   def test_vi_command_mode_with_input
     input_keys("abc\C-[")
-    assert_equal(Reline::KeyActor::ViCommand, @line_editor.instance_variable_get(:@key_actor))
+    assert_instance_of(Reline::KeyActor::ViCommand, @config.editing_mode)
     assert_line('abc')
   end
 

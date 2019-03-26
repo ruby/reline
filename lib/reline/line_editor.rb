@@ -70,7 +70,8 @@ class Reline::LineEditor
 
   CompletionJourneyData = Struct.new('CompletionJourneyData', :preposing, :postposing, :list, :pointer)
 
-  def initialize(key_actor, prompt, encoding = Encoding.default_external)
+  def initialize(config, prompt, encoding = Encoding.default_external)
+    @config = config
     @prompt = prompt
     @prompt_width = calculate_width(@prompt)
     @cursor = 0
@@ -78,7 +79,6 @@ class Reline::LineEditor
     @byte_pointer = 0
     @encoding = encoding
     @line = String.new(encoding: @encoding)
-    @key_actor = key_actor
     @finished = false
     @cleared = false
     @history_pointer = nil
@@ -117,6 +117,10 @@ class Reline::LineEditor
       escaped_print @line
       Reline.move_cursor_column(prompt_width + @cursor)
     end
+  end
+
+  def editing_mode
+    @config.editing_mode
   end
 
   private def escaped_print(str)
@@ -298,14 +302,14 @@ class Reline::LineEditor
         key |= 0b10000000 if key.nobits?(0b10000000)
         @meta_prefix = false
       end
-      method_symbol = @key_actor.get_method(key)
+      method_symbol = @config.editing_mode.get_method(key)
       if method_symbol and respond_to?(method_symbol, true)
         method_obj = method(method_symbol)
       end
       @multibyte_buffer.clear
     end
     process_key(key, method_symbol, method_obj)
-    if Reline::KeyActor::ViCommand == @key_actor and @cursor > 0 and @cursor == @cursor_max
+    if @config.editing_mode_is?(:vi_command) and @cursor > 0 and @cursor == @cursor_max
       byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer)
       @byte_pointer -= byte_size
       mbchar = @line.byteslice(@byte_pointer, byte_size)
@@ -316,19 +320,19 @@ class Reline::LineEditor
 
   def input_key(key)
     completion_occurs = false
-    if [Reline::KeyActor::Emacs, Reline::KeyActor::ViInsert].include?(@key_actor) and key == "\C-i".ord
+    if @config.editing_mode_is?(:emacs, :vi_insert) and key == "\C-i".ord
       result = @completion_proc&.(@line)
       if result.is_a?(Array)
         completion_occurs = true
         complete(result)
       end
-    elsif Reline::KeyActor::ViInsert == @key_actor and ["\C-p".ord, "\C-n".ord].include?(key)
+    elsif @config.editing_mode_is?(:vi_insert) and ["\C-p".ord, "\C-n".ord].include?(key)
       result = @completion_proc&.(@line)
       if result.is_a?(Array)
         completion_occurs = true
         move_completed_list(result, "\C-p".ord == key ? :up : :down)
       end
-    elsif Reline::KeyActor::Emacs == @key_actor and key == "\e".ord # meta key
+    elsif @config.editing_mode_is?(:emacs) and key == "\e".ord # meta key
       if @meta_prefix
         # escape twice
         @meta_prefix = false
@@ -460,10 +464,10 @@ class Reline::LineEditor
       @history_pointer -= 1
       @line = Reline::HISTORY[@history_pointer]
     end
-    if @key_actor == Reline::KeyActor::Emacs
+    if @config.editing_mode_is?(:emacs)
       @cursor_max = @cursor = calculate_width(@line)
       @byte_pointer = @line.bytesize
-    elsif @key_actor == Reline::KeyActor::ViCommand
+    elsif @config.editing_mode_is?(:vi_command)
       @byte_pointer = @cursor = 0
       @cursor_max = calculate_width(@line)
     end
@@ -482,10 +486,10 @@ class Reline::LineEditor
       @history_pointer += 1
       @line = Reline::HISTORY[@history_pointer]
     end
-    if @key_actor == Reline::KeyActor::Emacs
+    if @config.editing_mode_is?(:emacs)
       @cursor_max = @cursor = calculate_width(@line)
       @byte_pointer = @line.bytesize
-    elsif @key_actor == Reline::KeyActor::ViCommand
+    elsif @config.editing_mode_is?(:vi_command)
       @byte_pointer = @cursor = 0
       @cursor_max = calculate_width(@line)
     end
@@ -684,23 +688,23 @@ class Reline::LineEditor
   end
 
   private def copy_for_vi(text)
-    if @key_actor == Reline::KeyActor::ViInsert or @key_actor == Reline::KeyActor::ViCommand
+    if @config.editing_mode_is?(:vi_insert) or @config.editing_mode_is?(:vi_command)
       @vi_clipboard = text
     end
   end
 
   private def vi_insert(key)
-    @key_actor = Reline::KeyActor::ViInsert
+    @config.editing_mode = :vi_insert
   end
 
   private def vi_add(key)
-    @key_actor = Reline::KeyActor::ViInsert
+    @config.editing_mode = :vi_insert
     ed_next_char(key)
   end
 
   private def vi_command_mode(key)
     ed_prev_char(key)
-    @key_actor = Reline::KeyActor::ViCommand
+    @config.editing_mode = :vi_command
   end
 
   private def vi_next_word(key, arg: 1)

@@ -6,6 +6,28 @@ class Reline::Config
   def initialize
     @skip_section = nil
     @if_stack = []
+    @editing_mode_label = :emacs
+    @keymap_label = :emacs
+    @key_actors = {}
+    @key_actors[:emacs] = Reline::KeyActor::Emacs.new
+    @key_actors[:vi_insert] = Reline::KeyActor::ViInsert.new
+    @key_actors[:vi_command] = Reline::KeyActor::ViCommand.new
+  end
+
+  def editing_mode
+    @key_actors[@editing_mode_label]
+  end
+
+  def editing_mode=(val)
+    @editing_mode_label = val
+  end
+
+  def editing_mode_is?(*val)
+    (val.respond_to?(:any?) ? val : [val]).any?(@editing_mode_label)
+  end
+
+  def keymap
+    @key_actors[@keymap_label]
   end
 
   def read(file = DEFAULT_PATH)
@@ -121,33 +143,37 @@ class Reline::Config
       @comment_begin = value.dup
     when 'completion-query-items'
       @completion_query_items = value.to_i
+    when 'isearch-terminators'
+      @isearch_terminators = instance_eval(value)
     when 'editing-mode'
       case value
       when 'emacs'
-        @keymap = @emacs_standard_keymap
-        @editing_mode = @emacs_mode
+        @editing_mode_label = :emacs
+        @keymap_label = :emacs
       when 'vi'
+        @editing_mode_label = :vi_insert
+        @keymap_label = :vi_insert
       end
-    when 'isearch-terminators'
-      @isearch_terminators = instance_eval(value)
     when 'keymap'
       case value
       when 'emacs', 'emacs-standard', 'emacs-meta', 'emacs-ctlx'
-        @keymap = @emacs_standard_keymap
+        @keymap_label = :emacs
       when 'vi', 'vi-move', 'vi-command'
+        @keymap_label = :vi_command
       when 'vi-insert'
+        @keymap_label = :vi_insert
       end
     end
   end
 
   def bind_key(key, func_name)
     if key =~ /"(.*)"/
-      keyseq = parse_keyseq($1)
+      keyseq = parse_keyseq($1).force_encoding('ASCII-8BIT')
     else
       keyseq = nil
     end
     if func_name =~ /"(.*)"/
-      func = parse_keyseq($1)
+      func = parse_keyseq($1).force_encoding('ASCII-8BIT')
     else
       func = func_name.to_sym # It must be macro.
     end
