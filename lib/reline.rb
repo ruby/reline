@@ -53,14 +53,6 @@ module Reline
   @completion_proc
   @filename_quote_characters
 
-  def self.vi_editing_mode
-    nil
-  end
-
-  def self.emacs_editing_mode
-    nil
-  end
-
   if IS_WINDOWS
     VK_LMENU = 0xA4
     STD_OUTPUT_HANDLE = -11
