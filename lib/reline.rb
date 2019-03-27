@@ -32,8 +32,7 @@ module Reline
   end
 
   @@ambiguous_width = nil
-  @@config = Reline::Config.new
-  @@config.read
+  @@config = nil
 
   @basic_quote_characters = '"\''
   @basic_word_break_characters = " \t\n`><=;|&{("
@@ -221,6 +220,10 @@ module Reline
   end
 
   def self.readline(prompt = '', add_hist = false)
+    if @@config.nil?
+      @@config = Reline::Config.new
+      @@config.read
+    end
     otio = prep
 
     may_req_ambiguous_char_width
