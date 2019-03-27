@@ -71,4 +71,28 @@ class Reline::Config::Test < Reline::TestCase
 
     assert_equal :audible, @config.instance_variable_get(:@bell_style)
   end
+
+  def test_if
+    @config.read_lines(<<~LINES.split(/(?<=\n)/))
+      $if Ruby
+      set bell-style audible
+      $else
+      set bell-style visible
+      $endif
+    LINES
+
+    assert_equal :audible, @config.instance_variable_get(:@bell_style)
+  end
+
+  def test_if_with_false
+    @config.read_lines(<<~LINES.split(/(?<=\n)/))
+      $if Python
+      set bell-style audible
+      $else
+      set bell-style visible
+      $endif
+    LINES
+
+    assert_equal :visible, @config.instance_variable_get(:@bell_style)
+  end
 end

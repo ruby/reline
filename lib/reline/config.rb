@@ -56,7 +56,7 @@ class Reline::Config
         next
       end
 
-      return if @skip_section
+      next if @skip_section
 
       if line.match(/^set +([^ ]+) +([^ ]+)/i)
         var, value = $1.downcase, $2.downcase
@@ -76,12 +76,14 @@ class Reline::Config
     case directive
     when 'if'
       condition = false
-      case args.first
+      case args
       when 'mode'
       when 'term'
       when 'version'
       when 'application'
       when 'variable'
+      else # application name
+        condition = true if args == 'Ruby'
       end
       unless @skip_section.nil?
         @if_stack << @skip_section
