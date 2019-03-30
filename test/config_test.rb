@@ -95,4 +95,17 @@ class Reline::Config::Test < Reline::TestCase
 
     assert_equal :visible, @config.instance_variable_get(:@bell_style)
   end
+
+  def test_if_with_indent
+    @config.read_lines(<<~LINES.split(/(?<=\n)/))
+      set bell-style none
+        $if Ruby
+          set bell-style audible
+        $else
+          set bell-style visible
+        $endif
+    LINES
+
+    assert_equal :audible, @config.instance_variable_get(:@bell_style)
+  end
 end

@@ -50,7 +50,7 @@ class Reline::Config
 
   def read_lines(lines)
     lines.each do |line|
-      line = line.chomp
+      line = line.chomp.gsub(/^\s*/, '')
       if line[0, 1] == '$'
         handle_directive(line[1..-1])
         next
