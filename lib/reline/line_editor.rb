@@ -95,7 +95,7 @@ class Reline::LineEditor
     @completion_state = CompletionState::NORMAL
   end
 
-  def rerender
+  def rerender # TODO: support physical and logical lines
     if @vi_arg
       prompt = "(arg: #{@vi_arg}) "
       prompt_width = calculate_width(prompt)

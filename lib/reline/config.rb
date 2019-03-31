@@ -76,7 +76,7 @@ class Reline::Config
     case directive
     when 'if'
       condition = false
-      case args
+      case args # TODO: variables
       when 'mode'
       when 'term'
       when 'version'
@@ -218,6 +218,7 @@ class Reline::Config
   end
 
   def parse_keyseq(str)
+    # TODO: Control- and Meta-
     ret = String.new(encoding: 'ASCII-8BIT')
     while str =~ /(\\C-[A-Za-z_]|\\M-[0-9A-Za-z_]|\\C-M-[A-Za-z_]|\\M-C-[A-Za-z_]|\\e|\\\\|\\"|\\'|\\a|\\b|\\d|\\f|\\n|\\r|\\t|\\v|\\\d{1,3}|\\x\h{1,2}|.)/
       ret << key_notation_to_char($&)
