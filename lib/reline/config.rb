@@ -80,8 +80,6 @@ class Reline::Config
       when 'mode'
       when 'term'
       when 'version'
-      when 'application'
-      when 'variable'
       else # application name
         condition = true if args == 'Ruby'
       end
