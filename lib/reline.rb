@@ -2,6 +2,7 @@ require 'io/console'
 require 'reline/version'
 require 'reline/config'
 require 'reline/key_actor'
+require 'reline/key_stroke'
 require 'reline/line_editor'
 
 module Reline
@@ -85,11 +86,24 @@ module Reline
     @line_editor.completion_proc = @completion_proc
     @line_editor.retrieve_completion_block = method(:retrieve_completion_block)
     @line_editor.rerender
+    config = {
+      key_mapping: {
+        # TODO
+        # "a" => "bb",
+        # "z" => "aa",
+        # "y" => "ak",
+      }
+    }
+    key_stroke = Reline::KeyStroke.new(config)
     begin
       while c = getc
-        @line_editor.input_key(c)
-        @line_editor.rerender
-        break if @line_editor.finished?
+        key_stroke.input_to!(c)&.then { |inputs|
+          inputs.each { |c|
+            @line_editor.input_key(c)
+            @line_editor.rerender
+            break if @line_editor.finished?
+          }
+        }
       end
       move_cursor_column(0)
       if add_hist and @line_editor.line and @line_editor.line.chomp.size > 0
