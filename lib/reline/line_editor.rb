@@ -413,7 +413,9 @@ class Reline::LineEditor
   end
 
   private def calculate_width(str)
-    str.encode(Encoding::UTF_8).grapheme_clusters.inject(0) { |width, gc| width + Reline::Unicode.get_mbchar_width(gc) }
+    str.encode(Encoding::UTF_8).grapheme_clusters.inject(0) { |width, gc|
+      width + Reline::Unicode.get_mbchar_width(gc)
+    }
   end
 
   private def ed_insert(key)
