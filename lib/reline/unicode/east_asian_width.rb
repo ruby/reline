@@ -70,8 +70,7 @@ class Reline::Unicode::EastAsianWidth
     [\u{31C0}-\u{31E3}] |
     [\u{31F0}-\u{321E}] |
     [\u{3220}-\u{3247}] |
-    [\u{3250}-\u{32FE}] |
-    [\u{3300}-\u{4DBF}] |
+    [\u{3250}-\u{4DBF}] |
     [\u{4E00}-\u{A48C}] |
     [\u{A490}-\u{A4C6}] |
     [\u{A960}-\u{A97C}] |
