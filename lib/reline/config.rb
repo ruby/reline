@@ -31,17 +31,17 @@ class Reline::Config
   end
 
   def read(file = DEFAULT_PATH)
-    if file.respond_to?(:readlines)
-      lines = file.readlines
-    else
-      begin
-        File.open(file, 'rt') do |f|
-          lines = f.readlines
-        end
-      rescue Errno::ENOENT
-        $stderr.puts "no such file #{file}"
-        return nil
+    begin
+      if file.respond_to?(:readlines)
+        lines = file.readlines
+      else
+          File.open(file, 'rt') do |f|
+            lines = f.readlines
+          end
       end
+    rescue Errno::ENOENT
+      $stderr.puts "no such file #{file}"
+      return nil
     end
 
     read_lines(lines)
