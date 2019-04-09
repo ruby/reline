@@ -101,9 +101,9 @@ module Reline
           inputs.each { |c|
             @line_editor.input_key(c)
             @line_editor.rerender
-            break if @line_editor.finished?
           }
         }
+        break if @line_editor.finished?
       end
       move_cursor_column(0)
       if add_hist and @line_editor.line and @line_editor.line.chomp.size > 0
