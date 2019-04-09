@@ -46,9 +46,6 @@ open(ARGV.first, 'rt') do |f|
   grouped = list.group_by { |item| item[:type] }.map { |item| [item.first, item.last.map { |row| row[:range] }] }.to_h
   grouped = %i{F H W Na A N}.map { |type| [type, grouped[type]] }
   puts <<EOH
-require 'reline'
-require 'reline/unicode'
-
 class Reline::Unicode::EastAsianWidth
   # This is based on EastAsianWidth.txt
   # http://www.unicode.org/Public/10.0.0/ucd/EastAsianWidth.txt
