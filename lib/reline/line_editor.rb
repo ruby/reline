@@ -93,6 +93,37 @@ class Reline::LineEditor
     @waiting_operator_proc = nil
     @completion_journey_data = nil
     @completion_state = CompletionState::NORMAL
+    @screen_size = Reline.get_screen_size
+    @started_from = 0
+    @highest_lines = 1
+  end
+
+  private def calculate_height_by_width(width)
+    return 1 if width.zero?
+    height = 1
+    max_width = @screen_size.last
+    while width > max_width * height
+      height += 1
+    end
+    height += 1 if (width % max_width).zero?
+    height
+  end
+
+  private def split_by_width(str, max_width)
+    lines = [String.new(encoding: @encoding)]
+    width = 0
+    str.encode(Encoding::UTF_8).grapheme_clusters.each do |gc|
+      mbchar_width = Reline::Unicode.get_mbchar_width(gc)
+      width += mbchar_width
+      if width > max_width
+        width = mbchar_width
+        lines << String.new(encoding: @encoding)
+      end
+      lines.last << gc
+    end
+    # The cursor moves to next line in first
+    lines << String.new(encoding: @encoding) if width == max_width
+    lines
   end
 
   def rerender # TODO: support physical and logical lines
@@ -108,15 +139,26 @@ class Reline::LineEditor
       print "\e[1;1H"
       @cleared = false
     end
-    Reline.move_cursor_column(0)
-    Reline.erase_after_cursor
-    escaped_print prompt
     if @line.end_with?("\n")
       escaped_print @line.delete_suffix("\n")
       puts
     else
-      escaped_print @line
-      Reline.move_cursor_column(prompt_width + @cursor)
+      lines = split_by_width(prompt + @line, @screen_size.last)
+      if lines.size > @highest_lines
+        Reline.scroll_down(lines.size - @highest_lines)
+        @highest_lines = lines.size
+        Reline.move_cursor_up(1)
+      end
+      Reline.move_cursor_up(@started_from)
+      @started_from = calculate_height_by_width(prompt_width + @cursor) - 1
+      lines.each_with_index do |line, index|
+        Reline.move_cursor_column(0)
+        escaped_print line
+        Reline.erase_after_cursor
+        Reline.move_cursor_down(1) if index < (lines.size - 1)
+      end
+      Reline.move_cursor_up((lines.size - 1) - @started_from)
+      Reline.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
     end
   end
 

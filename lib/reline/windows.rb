@@ -8,6 +8,7 @@ module Reline
   @@SetConsoleCursorPosition = Win32API.new('kernel32', 'SetConsoleCursorPosition', ['L', 'L'], 'L')
   @@GetStdHandle = Win32API.new('kernel32', 'GetStdHandle', ['L'], 'L')
   @@FillConsoleOutputCharacter = Win32API.new('kernel32', 'FillConsoleOutputCharacter', ['L', 'L', 'L', 'L', 'P'], 'L')
+  @@ScrollConsoleScreenBuffer = Win32API.new('kernel32', 'ScrollConsoleScreenBuffer', ['L', 'P', 'P', 'L', 'P'], 'L')
   @@hConsoleHandle = @@GetStdHandle.call(STD_OUTPUT_HANDLE)
   @@buf = []
 
@@ -64,8 +65,16 @@ module Reline
     CursorPos.new(x, y)
   end
 
-  def self.move_cursor_column(x)
-    @@SetConsoleCursorPosition.call(@@hConsoleHandle, cursor_pos.y * 65536 + x)
+  def self.move_cursor_column(val)
+    @@SetConsoleCursorPosition.call(@@hConsoleHandle, cursor_pos.y * 65536 + val)
+  end
+
+  def self.move_cursor_up(val)
+    @@SetConsoleCursorPosition.call(@@hConsoleHandle, (cursor_pos.y - val) * 65536 + cursor_pos.x)
+  end
+
+  def self.move_cursor_down(val)
+    @@SetConsoleCursorPosition.call(@@hConsoleHandle, (cursor_pos.y + val) * 65536 + cursor_pos.x)
   end
 
   def self.erase_after_cursor
@@ -74,6 +83,13 @@ module Reline
     cursor = csbi[4, 4].unpack('L').first
     written = 0.chr * 4
     @@FillConsoleOutputCharacter.call(@@hConsoleHandle, 0x20, get_screen_size.first - cursor_pos.x, cursor, written)
+  end
+
+  def self.scroll_down(x)
+    scroll_rectangle = [0, x, get_screen_size.last, get_screen_size.first].pack('s4')
+    destination_origin = 0 # y * 65536 + x
+    fill = [' '.ord, 0].pack('SS')
+    @@ScrollConsoleScreenBuffer.call(@@hConsoleHandle, scroll_rectangle, nil, destination_origin, fill)
   end
 
   def self.set_screen_size(rows, columns)

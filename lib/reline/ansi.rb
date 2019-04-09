@@ -36,8 +36,20 @@ module Reline
     print "\e[#{x + 1}G"
   end
 
+  def self.move_cursor_up(x)
+    print "\e[#{x}A" if x > 0
+  end
+
+  def self.move_cursor_down(x)
+    print "\e[#{x}B" if x > 0
+  end
+
   def self.erase_after_cursor
     print "\e[J"
+  end
+
+  def self.scroll_down(x)
+    print "\e[#{x}S"
   end
 
   def self.prep
