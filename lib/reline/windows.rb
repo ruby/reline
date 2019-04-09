@@ -85,8 +85,8 @@ module Reline
     @@FillConsoleOutputCharacter.call(@@hConsoleHandle, 0x20, get_screen_size.first - cursor_pos.x, cursor, written)
   end
 
-  def self.scroll_down(x)
-    scroll_rectangle = [0, x, get_screen_size.last, get_screen_size.first].pack('s4')
+  def self.scroll_down(val)
+    scroll_rectangle = [0, val, get_screen_size.last, get_screen_size.first].pack('s4')
     destination_origin = 0 # y * 65536 + x
     fill = [' '.ord, 0].pack('SS')
     @@ScrollConsoleScreenBuffer.call(@@hConsoleHandle, scroll_rectangle, nil, destination_origin, fill)
