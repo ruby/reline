@@ -139,24 +139,25 @@ class Reline::LineEditor
       print "\e[1;1H"
       @cleared = false
     end
+    # FIXME: end of logical line sometimes breaks
+    whole_line = prompt + (@line.end_with?("\n") ? @line.delete_suffix("\n") : @line)
+    lines = split_by_width(whole_line, @screen_size.last)
+    if lines.size > @highest_lines
+      Reline.scroll_down(lines.size - @highest_lines)
+      @highest_lines = lines.size
+      Reline.move_cursor_up(1)
+    end
+    Reline.move_cursor_up(@started_from)
+    @started_from = calculate_height_by_width(prompt_width + @cursor) - 1
+    lines.each_with_index do |line, index|
+      Reline.move_cursor_column(0)
+      escaped_print line
+      Reline.erase_after_cursor
+      Reline.move_cursor_down(1) if index < (lines.size - 1)
+    end
     if @line.end_with?("\n")
-      escaped_print @line.delete_suffix("\n")
       puts
     else
-      lines = split_by_width(prompt + @line, @screen_size.last)
-      if lines.size > @highest_lines
-        Reline.scroll_down(lines.size - @highest_lines)
-        @highest_lines = lines.size
-        Reline.move_cursor_up(1)
-      end
-      Reline.move_cursor_up(@started_from)
-      @started_from = calculate_height_by_width(prompt_width + @cursor) - 1
-      lines.each_with_index do |line, index|
-        Reline.move_cursor_column(0)
-        escaped_print line
-        Reline.erase_after_cursor
-        Reline.move_cursor_down(1) if index < (lines.size - 1)
-      end
       Reline.move_cursor_up((lines.size - 1) - @started_from)
       Reline.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
     end
