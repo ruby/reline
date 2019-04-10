@@ -45,7 +45,7 @@ module Reline
   end
 
   def self.erase_after_cursor
-    print "\e[J"
+    print "\e[K"
   end
 
   def self.scroll_down(x)
