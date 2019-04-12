@@ -103,7 +103,6 @@ class Reline::LineEditor
     @started_from = 0
     @highest_in_this = 1
     @highest_in_all = 1
-    @rest_height = (Reline.get_screen_size.first - 1) - Reline.cursor_pos.y
   end
 
   def multiline_on
@@ -150,6 +149,7 @@ class Reline::LineEditor
   end
 
   private def scroll_down(val)
+    @rest_height ||= (Reline.get_screen_size.first - 1) - Reline.cursor_pos.y
     if val <= @rest_height
       Reline.move_cursor_down(val)
       @rest_height -= val
