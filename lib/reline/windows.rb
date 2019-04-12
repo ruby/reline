@@ -70,11 +70,19 @@ module Reline
   end
 
   def self.move_cursor_up(val)
-    @@SetConsoleCursorPosition.call(@@hConsoleHandle, (cursor_pos.y - val) * 65536 + cursor_pos.x)
+    if val > 0
+      @@SetConsoleCursorPosition.call(@@hConsoleHandle, (cursor_pos.y - val) * 65536 + cursor_pos.x)
+    elsif val < 0
+      move_cursor_down(-val)
+    end
   end
 
   def self.move_cursor_down(val)
-    @@SetConsoleCursorPosition.call(@@hConsoleHandle, (cursor_pos.y + val) * 65536 + cursor_pos.x)
+    if val > 0
+      @@SetConsoleCursorPosition.call(@@hConsoleHandle, (cursor_pos.y + val) * 65536 + cursor_pos.x)
+    elsif val < 0
+      move_cursor_up(-val)
+    end
   end
 
   def self.erase_after_cursor
@@ -86,6 +94,7 @@ module Reline
   end
 
   def self.scroll_down(val)
+    return if val.zero?
     scroll_rectangle = [0, val, get_screen_size.last, get_screen_size.first].pack('s4')
     destination_origin = 0 # y * 65536 + x
     fill = [' '.ord, 0].pack('SS')

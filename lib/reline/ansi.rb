@@ -37,11 +37,19 @@ module Reline
   end
 
   def self.move_cursor_up(x)
-    print "\e[#{x}A" if x > 0
+    if x > 0
+      print "\e[#{x}A" if x > 0
+    elsif x < 0
+      move_cursor_down(-x)
+    end
   end
 
   def self.move_cursor_down(x)
-    print "\e[#{x}B" if x > 0
+    if x > 0
+      print "\e[#{x}B" if x > 0
+    elsif x < 0
+      move_cursor_up(-x)
+    end
   end
 
   def self.erase_after_cursor
@@ -49,6 +57,7 @@ module Reline
   end
 
   def self.scroll_down(x)
+    return if x.zero?
     print "\e[#{x}S"
   end
 

@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require 'reline'
+
+begin
+  stty_save = `stty -g`.chomp
+rescue
+end
+
+begin
+  puts 'Multiline REPL.'
+  while line = Reline.readline('prompt> ', true, multiline: true)
+    case line.chomp
+    when 'exit', 'quit', 'q'
+      exit 0
+    when ''
+      # NOOP
+    else
+      puts line
+    end
+  end
+rescue Interrupt
+  puts '^C'
+  `stty #{stty_save}` if stty_save
+  exit 0
+end
+puts

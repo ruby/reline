@@ -74,7 +74,7 @@ module Reline
     [preposing, block, postposing]
   end
 
-  def self.readline(prompt = '', add_hist = false)
+  def self.readline(prompt = '', add_hist = false, multiline: false)
     if @@config.nil?
       @@config = Reline::Config.new
       @@config.read
@@ -83,6 +83,7 @@ module Reline
 
     may_req_ambiguous_char_width
     @line_editor = Reline::LineEditor.new(@@config, prompt)
+    @line_editor.multiline_on if multiline
     @line_editor.completion_proc = @completion_proc
     @line_editor.retrieve_completion_block = method(:retrieve_completion_block)
     @line_editor.rerender

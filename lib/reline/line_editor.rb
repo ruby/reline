@@ -79,7 +79,11 @@ class Reline::LineEditor
     @cursor_max = 0
     @byte_pointer = 0
     @encoding = encoding
-    @line = String.new(encoding: @encoding)
+    @buffer_of_lines = [String.new(encoding: @encoding)]
+    @line_index = 0
+    @previous_line_index = nil
+    @line = @buffer_of_lines[0]
+    @is_multiline = false
     @finished = false
     @cleared = false
     @history_pointer = nil
@@ -94,8 +98,27 @@ class Reline::LineEditor
     @completion_journey_data = nil
     @completion_state = CompletionState::NORMAL
     @screen_size = Reline.get_screen_size
+    @first_line_started_from = 0
+    @move_up = 0
     @started_from = 0
-    @highest_lines = 1
+    @highest_in_this = 1
+    @highest_in_all = 1
+    @rest_height = (Reline.get_screen_size.first - 1) - Reline.cursor_pos.y
+  end
+
+  def multiline_on
+    @is_multiline = true
+  end
+
+  def multiline_off
+    @is_multiline = false
+  end
+
+  def insert_new_line(cursor_line, next_line)
+    @line = cursor_line
+    @buffer_of_lines.insert(@line_index + 1, String.new(next_line, encoding: @encoding))
+    @previous_line_index = @line_index
+    @line_index += 1
   end
 
   private def calculate_height_by_width(width)
@@ -126,6 +149,17 @@ class Reline::LineEditor
     lines
   end
 
+  private def scroll_down(val)
+    if val <= @rest_height
+      Reline.move_cursor_down(val)
+      @rest_height -= val
+    else
+      Reline.scroll_down(@rest_height)
+      Reline.move_cursor_down(val - @rest_height)
+      @rest_height = 0
+    end
+  end
+
   def rerender # TODO: support physical and logical lines
     if @vi_arg
       prompt = "(arg: #{@vi_arg}) "
@@ -140,27 +174,79 @@ class Reline::LineEditor
       @cleared = false
     end
     # FIXME: end of logical line sometimes breaks
-    whole_line = prompt + (@line.end_with?("\n") ? @line.delete_suffix("\n") : @line)
-    lines = split_by_width(whole_line, @screen_size.last)
-    if lines.size > @highest_lines
-      Reline.scroll_down(lines.size - @highest_lines)
-      @highest_lines = lines.size
-      Reline.move_cursor_up(1)
+    if @previous_line_index
+      previous_line = @line
+      all_height = @buffer_of_lines.inject(0) { |result, line|
+        result + calculate_height_by_width(@prompt_width + calculate_width(line))
+      }
+      diff = all_height - @highest_in_all
+      if diff > 0
+        @highest_in_all = all_height
+        scroll_down(diff)
+        Reline.move_cursor_up(@first_line_started_from + @started_from + diff)
+        back = 0
+        @buffer_of_lines.each_with_index do |line, index|
+          line = @line if index == @previous_line_index
+          height = render_partial(prompt, prompt_width, line, false)
+          if index < (@buffer_of_lines.size - 1)
+            Reline.move_cursor_down(height)
+            back += height
+          end
+        end
+        Reline.move_cursor_up(back)
+      else
+        render_partial(prompt, prompt_width, previous_line)
+        Reline.move_cursor_up(@first_line_started_from + @started_from)
+      end
+      @buffer_of_lines[@previous_line_index] = @line
+      @line = @buffer_of_lines[@line_index]
+      @first_line_started_from =
+        if @line_index.zero?
+          0
+        else
+          @buffer_of_lines[0..(@line_index - 1)].inject(0) { |result, line|
+            result + calculate_height_by_width(@prompt_width + calculate_width(line))
+          }
+        end
+      Reline.move_cursor_down(@first_line_started_from)
+      @cursor_max = calculate_width(@line)
+      @highest_in_this = calculate_height_by_width(@prompt_width + @cursor_max)
+      @started_from = @byte_pointer = @cursor = 0
+      @previous_line_index = nil
     end
-    Reline.move_cursor_up(@started_from)
-    @started_from = calculate_height_by_width(prompt_width + @cursor) - 1
-    lines.each_with_index do |line, index|
+    render_partial(prompt, prompt_width, @line)
+  end
+
+  private def render_partial(prompt, prompt_width, line_to_render, with_control = true)
+    processed_line = line_to_render.end_with?("\n") ? line_to_render.delete_suffix("\n") : line_to_render
+    whole_line = prompt + processed_line
+    visual_lines = split_by_width(whole_line, @screen_size.last)
+    if with_control
+      if visual_lines.size > @highest_in_this
+        diff = visual_lines.size - @highest_in_this
+        scroll_down(diff)
+        @highest_in_all += diff
+        @highest_in_this = visual_lines.size
+        Reline.move_cursor_up(1)
+      end
+      Reline.move_cursor_up(@started_from)
+      @started_from = calculate_height_by_width(prompt_width + @cursor) - 1
+    end
+    visual_lines.each_with_index do |line, index|
       Reline.move_cursor_column(0)
       escaped_print line
       Reline.erase_after_cursor
-      Reline.move_cursor_down(1) if index < (lines.size - 1)
+      Reline.move_cursor_down(1) if index < (visual_lines.size - 1)
     end
-    if @line.end_with?("\n")
-      puts
-    else
-      Reline.move_cursor_up((lines.size - 1) - @started_from)
-      Reline.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
+    if with_control
+      if line_to_render.end_with?("\n")
+        puts
+      else
+        Reline.move_cursor_up((visual_lines.size - 1) - @started_from)
+        Reline.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
+      end
     end
+    visual_lines.size
   end
 
   def editing_mode
@@ -496,6 +582,11 @@ class Reline::LineEditor
   end
 
   private def ed_prev_history(key, arg: 1)
+    if @is_multiline and @line_index > 0
+      @previous_line_index = @line_index
+      @line_index -= 1
+      return
+    end
     if Reline::HISTORY.empty?
       return
     end
@@ -522,6 +613,11 @@ class Reline::LineEditor
   end
 
   private def ed_next_history(key, arg: 1)
+    if @is_multiline and @line_index < (@buffer_of_lines.size - 1)
+      @previous_line_index = @line_index
+      @line_index += 1
+      return
+    end
     if @history_pointer.nil?
       return
     elsif @history_pointer == (Reline::HISTORY.size - 1)
@@ -544,6 +640,12 @@ class Reline::LineEditor
   end
 
   private def ed_newline(key)
+    if @is_multiline
+      next_line = @line.byteslice(@byte_pointer, @line.bytesize - @byte_pointer)
+      cursor_line = @line.byteslice(0, @byte_pointer)
+      insert_new_line(cursor_line, next_line)
+      return
+    end
     if @history_pointer
       Reline::HISTORY[@history_pointer] = @line
       @history_pointer = nil
