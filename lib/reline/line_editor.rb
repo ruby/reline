@@ -113,7 +113,7 @@ class Reline::LineEditor
     @is_multiline = false
   end
 
-  def insert_new_line(cursor_line, next_line)
+  private def insert_new_line(cursor_line, next_line)
     @line = cursor_line
     @buffer_of_lines.insert(@line_index + 1, String.new(next_line, encoding: @encoding))
     @previous_line_index = @line_index
