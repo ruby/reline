@@ -154,8 +154,8 @@ class Reline::LineEditor
       Reline.move_cursor_down(val)
       @rest_height -= val
     else
-      Reline.scroll_down(@rest_height)
-      Reline.move_cursor_down(val - @rest_height)
+      Reline.move_cursor_down(@rest_height)
+      Reline.scroll_down(val - @rest_height)
       @rest_height = 0
     end
   end
