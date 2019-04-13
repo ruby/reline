@@ -170,8 +170,7 @@ class Reline::LineEditor
       prompt_width = @prompt_width
     end
     if @cleared
-      print "\e[2J"
-      print "\e[1;1H"
+      Reline.clear_screen
       @cleared = false
       back = 0
       @buffer_of_lines.each_with_index do |line, index|

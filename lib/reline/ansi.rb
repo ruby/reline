@@ -61,6 +61,11 @@ module Reline
     print "\e[#{x}S"
   end
 
+  def self.clear_screen
+    print "\e[2J"
+    print "\e[1;1H"
+  end
+
   def self.prep
     int_handle = Signal.trap('INT', 'IGNORE')
     otio = `stty -g`.chomp

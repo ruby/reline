@@ -101,6 +101,12 @@ module Reline
     @@ScrollConsoleScreenBuffer.call(@@hConsoleHandle, scroll_rectangle, nil, destination_origin, fill)
   end
 
+  def self.clear_screen
+    # TODO: Use FillConsoleOutputCharacter and FillConsoleOutputAttribute
+    print "\e[2J"
+    print "\e[1;1H"
+  end
+
   def self.set_screen_size(rows, columns)
     raise NotImplementedError
   end
