@@ -482,7 +482,7 @@ class Reline::LineEditor
     unless completion_occurs
       @completion_state = CompletionState::NORMAL
     end
-    if @previous_line_index and @confirm_multiline_termination_proc
+    if @previous_line_index and @confirm_multiline_termination_proc and @line_index == (@buffer_of_lines.size - 1)
       temp_lines = @buffer_of_lines.dup
       temp_lines[@previous_line_index] = @line
       finish if @confirm_multiline_termination_proc.(temp_lines.join("\n"))
