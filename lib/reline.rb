@@ -82,11 +82,11 @@ module Reline
     otio = prep
 
     may_req_ambiguous_char_width
-    @line_editor = Reline::LineEditor.new(@@config, prompt)
-    @line_editor.multiline_on if multiline
-    @line_editor.completion_proc = @completion_proc
-    @line_editor.retrieve_completion_block = method(:retrieve_completion_block)
-    @line_editor.rerender
+    line_editor = Reline::LineEditor.new(@@config, prompt)
+    line_editor.multiline_on if multiline
+    line_editor.completion_proc = @completion_proc
+    line_editor.retrieve_completion_block = method(:retrieve_completion_block)
+    line_editor.rerender
     config = {
       key_mapping: {
         # TODO
@@ -100,15 +100,15 @@ module Reline
       while c = getc
         key_stroke.input_to!(c)&.then { |inputs|
           inputs.each { |c|
-            @line_editor.input_key(c)
-            @line_editor.rerender
+            line_editor.input_key(c)
+            line_editor.rerender
           }
         }
-        break if @line_editor.finished?
+        break if line_editor.finished?
       end
       move_cursor_column(0)
-      if add_hist and @line_editor.line and @line_editor.line.chomp.size > 0
-        Reline::HISTORY << @line_editor.line.chomp
+      if add_hist and line_editor.line and line_editor.line.chomp.size > 0
+        Reline::HISTORY << line_editor.line.chomp
       end
     rescue StandardError => e
       deprep(otio)
@@ -117,7 +117,7 @@ module Reline
 
     deprep(otio)
 
-    @line_editor.line
+    line_editor.line
   end
 
   def self.may_req_ambiguous_char_width
