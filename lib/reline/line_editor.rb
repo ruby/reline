@@ -7,6 +7,7 @@ require 'pathname'
 class Reline::LineEditor
   # TODO: undo
   attr_reader :line
+  attr_accessor :confirm_multiline_termination_proc
   attr_accessor :completion_proc
   attr_writer :retrieve_completion_block
 
@@ -215,6 +216,11 @@ class Reline::LineEditor
       @previous_line_index = nil
     end
     render_partial(prompt, prompt_width, @line)
+    if finished?
+      scroll_down(1) unless @buffer_of_lines.last.empty?
+      Reline.move_cursor_column(0)
+      Reline.erase_after_cursor
+    end
   end
 
   private def render_partial(prompt, prompt_width, line_to_render, with_control = true)
@@ -476,6 +482,17 @@ class Reline::LineEditor
     unless completion_occurs
       @completion_state = CompletionState::NORMAL
     end
+    if @previous_line_index and @confirm_multiline_termination_proc
+      temp_lines = @buffer_of_lines.dup
+      temp_lines[@previous_line_index] = @line
+      finish if @confirm_multiline_termination_proc.(temp_lines.join("\n"))
+    end
+  end
+
+  def whole_buffer
+    temp_lines = @buffer_of_lines.dup
+    temp_lines[@line_index] = @line
+    temp_lines.join("\n")
   end
 
   def finished?

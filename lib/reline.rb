@@ -74,7 +74,23 @@ module Reline
     [preposing, block, postposing]
   end
 
-  def self.readline(prompt = '', add_hist = false, multiline: false)
+  def self.readmultiline(prompt = '', add_hist = false, &confirm_multiline_termination)
+    if block_given?
+      inner_readline(prompt, add_hist, true, &confirm_multiline_termination)
+    else
+      inner_readline(prompt, add_hist, true)
+    end
+
+    @line_editor.whole_buffer
+  end
+
+  def self.readline(prompt = '', add_hist = false)
+    inner_readline(prompt, add_hist, false)
+
+    @line_editor.line
+  end
+
+  def self.inner_readline(prompt = '', add_hist = false, multiline, &confirm_multiline_termination)
     if @@config.nil?
       @@config = Reline::Config.new
       @@config.read
@@ -83,7 +99,12 @@ module Reline
 
     may_req_ambiguous_char_width
     @line_editor = Reline::LineEditor.new(@@config, prompt)
-    @line_editor.multiline_on if multiline
+    if multiline
+      @line_editor.multiline_on
+      if block_given?
+        @line_editor.confirm_multiline_termination_proc = confirm_multiline_termination
+      end
+    end
     @line_editor.completion_proc = @completion_proc
     @line_editor.retrieve_completion_block = method(:retrieve_completion_block)
     @line_editor.rerender
@@ -116,8 +137,6 @@ module Reline
     end
 
     deprep(otio)
-
-    @line_editor.line
   end
 
   def self.may_req_ambiguous_char_width

@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'reline'
+require_relative 'termination_checker'
 
 begin
   stty_save = `stty -g`.chomp
@@ -9,14 +10,16 @@ end
 
 begin
   puts 'Multiline REPL.'
-  while line = Reline.readline('prompt> ', true, multiline: true)
-    case line.chomp
+  checker = TerminationChecker.new
+  while code = Reline.readmultiline('prompt> ', true) { |code| checker.terminated?(code) }
+    case code.chomp
     when 'exit', 'quit', 'q'
       exit 0
     when ''
       # NOOP
     else
-      puts line
+      result = eval(code)
+      puts "=> #{result.inspect}"
     end
   end
 rescue Interrupt
