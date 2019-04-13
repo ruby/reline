@@ -173,6 +173,19 @@ class Reline::LineEditor
       print "\e[2J"
       print "\e[1;1H"
       @cleared = false
+      back = 0
+      @buffer_of_lines.each_with_index do |line, index|
+        line = @line if index == @line_index
+        height = render_partial(prompt, prompt_width, line, false)
+        if index < (@buffer_of_lines.size - 1)
+          Reline.move_cursor_down(height)
+          back += height
+        end
+      end
+      Reline.move_cursor_up(back)
+      Reline.move_cursor_down(@first_line_started_from + @started_from)
+      Reline.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
+      return
     end
     # FIXME: end of logical line sometimes breaks
     if @previous_line_index
