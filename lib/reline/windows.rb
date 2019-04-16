@@ -12,14 +12,14 @@ module Reline
   @@hConsoleHandle = @@GetStdHandle.call(STD_OUTPUT_HANDLE)
   @@buf = []
 
-  def self.getwch
+  def getwch
     while @@kbhit.call == 0
       sleep(0.001)
     end
     @@getwch.call.chr(Encoding::UTF_8).encode(Encoding.default_external).bytes
   end
 
-  def self.getc
+  def getc
     unless @@buf.empty?
       return @@buf.shift
     end
@@ -111,12 +111,12 @@ module Reline
     raise NotImplementedError
   end
 
-  def self.prep
+  def prep
     # do nothing
     nil
   end
 
-  def self.deprep(otio)
+  def deprep(otio)
     # do nothing
   end
 end

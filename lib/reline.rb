@@ -6,6 +6,7 @@ require 'reline/key_stroke'
 require 'reline/line_editor'
 
 module Reline
+  extend self
   FILENAME_COMPLETION_PROC = nil
   USERNAME_COMPLETION_PROC = nil
   HISTORY = Array.new
@@ -61,7 +62,7 @@ module Reline
     require 'reline/ansi'
   end
 
-  def self.retrieve_completion_block(line, byte_pointer)
+  def retrieve_completion_block(line, byte_pointer)
     break_regexp = /[#{Regexp.escape(@basic_word_break_characters)}]/
     before_pointer = line.byteslice(0, byte_pointer)
     break_point = before_pointer.rindex(break_regexp)
@@ -76,7 +77,7 @@ module Reline
     [preposing, block, postposing]
   end
 
-  def self.readmultiline(prompt = '', add_hist = false, &confirm_multiline_termination)
+  def readmultiline(prompt = '', add_hist = false, &confirm_multiline_termination)
     if block_given?
       inner_readline(prompt, add_hist, true, &confirm_multiline_termination)
     else
@@ -86,13 +87,13 @@ module Reline
     @line_editor.whole_buffer
   end
 
-  def self.readline(prompt = '', add_hist = false)
+  def readline(prompt = '', add_hist = false)
     inner_readline(prompt, add_hist, false)
 
     @line_editor.line
   end
 
-  def self.inner_readline(prompt = '', add_hist = false, multiline, &confirm_multiline_termination)
+  def inner_readline(prompt = '', add_hist = false, multiline, &confirm_multiline_termination)
     if @@config.nil?
       @@config = Reline::Config.new
       @@config.read
@@ -131,7 +132,7 @@ module Reline
         }
         break if @line_editor.finished?
       end
-      move_cursor_column(0)
+      Reline.move_cursor_column(0)
       if add_hist and @line_editor.line and @line_editor.line.chomp.size > 0
         Reline::HISTORY << @line_editor.line.chomp
       end
@@ -143,13 +144,13 @@ module Reline
     deprep(otio)
   end
 
-  def self.may_req_ambiguous_char_width
+  def may_req_ambiguous_char_width
     return if @@ambiguous_width
-    move_cursor_column(0)
+    Reline.move_cursor_column(0)
     print "\u{25bd}"
-    @@ambiguous_width = cursor_pos.x
-    move_cursor_column(0)
-    erase_after_cursor
+    @@ambiguous_width = Reline.cursor_pos.x
+    Reline.move_cursor_column(0)
+    Reline.erase_after_cursor
   end
 
   def self.ambiguous_width

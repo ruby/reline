@@ -1,5 +1,5 @@
 module Reline
-  def self.getc
+  def getc
     c = nil
     until c
       return nil if @line_editor.finished?
@@ -66,7 +66,7 @@ module Reline
     print "\e[1;1H"
   end
 
-  def self.prep
+  def prep
     int_handle = Signal.trap('INT', 'IGNORE')
     otio = `stty -g`.chomp
     setting = ' -echo -icrnl cbreak'
@@ -79,7 +79,7 @@ module Reline
     otio
   end
 
-  def self.deprep(otio)
+  def deprep(otio)
     int_handle = Signal.trap('INT', 'IGNORE')
     `stty #{otio}`
     Signal.trap('INT', int_handle)
