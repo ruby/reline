@@ -760,7 +760,7 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_cursor_max(2)
     refute(@line_editor.finished?)
     input_keys("\C-m")
-    assert_line("ab\n")
+    assert_line('ab')
     assert(@line_editor.finished?)
   end
 
@@ -771,7 +771,7 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_cursor_max(2)
     refute(@line_editor.finished?)
     input_keys("\C-j")
-    assert_line("ab\n")
+    assert_line('ab')
     assert(@line_editor.finished?)
   end
 

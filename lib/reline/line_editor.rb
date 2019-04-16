@@ -236,8 +236,7 @@ class Reline::LineEditor
   end
 
   private def render_partial(prompt, prompt_width, line_to_render, with_control = true)
-    processed_line = line_to_render.end_with?("\n") ? line_to_render.delete_suffix("\n") : line_to_render
-    whole_line = prompt + processed_line
+    whole_line = prompt + line_to_render
     visual_lines = split_by_width(whole_line, @screen_size.last)
     if with_control
       if visual_lines.size > @highest_in_this
@@ -257,7 +256,7 @@ class Reline::LineEditor
       Reline.move_cursor_down(1) if index < (visual_lines.size - 1)
     end
     if with_control
-      if line_to_render.end_with?("\n")
+      if finished?
         puts
       else
         Reline.move_cursor_up((visual_lines.size - 1) - @started_from)
@@ -683,7 +682,6 @@ class Reline::LineEditor
       @history_pointer = nil
     end
     finish
-    @line += "\n"
   end
 
   private def em_delete_prev_char(key)
@@ -1046,7 +1044,6 @@ class Reline::LineEditor
     system("#{ENV['EDITOR']} #{path}")
     @line = Pathname.new(path).read
     finish
-    @line += "\n"
   end
 
   private def vi_paste_prev(key, arg: 1)

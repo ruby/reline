@@ -161,7 +161,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_cursor_max(2)
     refute(@line_editor.finished?)
     input_keys("\C-m", false)
-    assert_line("ab\n")
+    assert_line('ab')
     assert(@line_editor.finished?)
   end
 
@@ -172,7 +172,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_cursor_max(2)
     refute(@line_editor.finished?)
     input_keys("\C-j", false)
-    assert_line("ab\n")
+    assert_line('ab')
     assert(@line_editor.finished?)
   end
 
