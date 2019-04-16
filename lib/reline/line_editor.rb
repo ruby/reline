@@ -236,7 +236,7 @@ class Reline::LineEditor
   end
 
   private def render_partial(prompt, prompt_width, line_to_render, with_control = true)
-    whole_line = prompt + line_to_render
+    whole_line = prompt + (line_to_render.nil? ? '' : line_to_render)
     visual_lines = split_by_width(whole_line, @screen_size.last)
     if with_control
       if visual_lines.size > @highest_in_this
