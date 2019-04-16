@@ -161,6 +161,29 @@ class Reline::LineEditor
     end
   end
 
+  private def calculate_nearest_cursor
+    @cursor_max = calculate_width(line)
+    new_cursor = 0
+    new_byte_pointer = 0
+    height = 1
+    max_width = @screen_size.last
+    @line.encode(Encoding::UTF_8).grapheme_clusters.each do |gc|
+      mbchar_width = Reline::Unicode.get_mbchar_width(gc)
+      now = new_cursor + mbchar_width
+      if now > @cursor_max or now > @cursor
+        break
+      end
+      new_cursor += mbchar_width
+      if new_cursor > max_width * height
+        height += 1
+      end
+      new_byte_pointer += gc.bytesize
+    end
+    @started_from = height - 1
+    @cursor = new_cursor
+    @byte_pointer = new_byte_pointer
+  end
+
   def rerender # TODO: support physical and logical lines
     return if @line.nil?
     if @vi_arg
@@ -223,9 +246,8 @@ class Reline::LineEditor
           }
         end
       Reline.move_cursor_down(@first_line_started_from)
-      @cursor_max = calculate_width(@line)
+      calculate_nearest_cursor
       @highest_in_this = calculate_height_by_width(@prompt_width + @cursor_max)
-      @started_from = @byte_pointer = @cursor = 0
       @previous_line_index = nil
     end
     render_partial(prompt, prompt_width, @line)
