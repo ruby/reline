@@ -4,6 +4,10 @@ class Reline::KeyStroke
       def start_with?(other)
         other.size <= size && other == self.take(other.size)
       end
+
+      def bytes
+        self
+      end
     end
   }
 
