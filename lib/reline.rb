@@ -41,7 +41,9 @@ module Reline
   @completer_word_break_characters = @basic_word_break_characters.dup
   @completion_append_character
   def self.completion_append_character=(val)
-    if val.size == 1
+    if val.nil?
+      @completion_append_character = nil
+    elsif val.size == 1
       @completion_append_character = val
     elsif val.size > 1
       @completion_append_character = val[0]
