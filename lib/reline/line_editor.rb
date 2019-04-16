@@ -435,6 +435,7 @@ class Reline::LineEditor
   end
 
   private def normal_char(key)
+    method_symbol = method_obj = nil
     @multibyte_buffer << key
     if @multibyte_buffer.size > 1
       if @multibyte_buffer.dup.force_encoding(@encoding).valid_encoding?
