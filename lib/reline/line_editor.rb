@@ -162,6 +162,7 @@ class Reline::LineEditor
   end
 
   def rerender # TODO: support physical and logical lines
+    return if @line.nil?
     if @vi_arg
       prompt = "(arg: #{@vi_arg}) "
       prompt_width = calculate_width(prompt)
