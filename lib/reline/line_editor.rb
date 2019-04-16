@@ -488,6 +488,8 @@ class Reline::LineEditor
       else
         @meta_prefix = true
       end
+    elsif Symbol === key and respond_to?(key, true)
+      process_key(key, key, method(key))
     else
       normal_char(key)
     end

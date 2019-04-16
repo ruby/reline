@@ -108,14 +108,16 @@ module Reline
     @line_editor.completion_proc = @completion_proc
     @line_editor.retrieve_completion_block = method(:retrieve_completion_block)
     @line_editor.rerender
+
     config = {
       key_mapping: {
-        # TODO
-        # "a" => "bb",
-        # "z" => "aa",
-        # "y" => "ak",
+        [27, 91, 65] => :ed_prev_history,    # ↑
+        [27, 91, 66] => :ed_next_history,    # ↓
+        [27, 91, 67] => :ed_next_char,       # →
+        [27, 91, 68] => :ed_prev_char        # ←
       }
     }
+
     key_stroke = Reline::KeyStroke.new(config)
     begin
       while c = getc
