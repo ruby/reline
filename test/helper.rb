@@ -6,6 +6,7 @@ RELINE_TEST_ENCODING = Encoding.find(ENV['RELINE_TEST_ENCODING']) if ENV['RELINE
 
 class Reline::TestCase < Test::Unit::TestCase
   private def convert_str(input, options = {}, normalized = nil)
+    return nil if input.nil?
     input.chars.map { |c|
       if Reline::Unicode::EscapedChars.include?(c.ord)
         c

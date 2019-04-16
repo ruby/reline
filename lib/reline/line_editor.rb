@@ -997,6 +997,15 @@ class Reline::LineEditor
   private def vi_yank(key)
   end
 
+  private def vi_list_or_eof(key)
+    if @line.empty?
+      @line = nil
+      finish
+    else
+      # TODO: list
+    end
+  end
+
   private def ed_delete_next_char(key, arg: 1)
     unless @line.empty?
       byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)

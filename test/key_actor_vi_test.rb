@@ -775,6 +775,20 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert(@line_editor.finished?)
   end
 
+  def test_vi_list_or_eof
+    input_keys('a')
+    assert_byte_pointer_size('a')
+    assert_cursor(1)
+    assert_cursor_max(1)
+    refute(@line_editor.finished?)
+    input_keys("\C-d")
+    assert_line('a')
+    refute(@line_editor.finished?)
+    input_keys("\C-h\C-d")
+    assert_line(nil)
+    assert(@line_editor.finished?)
+  end
+
   def test_completion_journey
     @line_editor.completion_proc = proc { |word|
       %w{
