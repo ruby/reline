@@ -22,12 +22,10 @@ module Reline
 
   class << self
     attr_accessor :basic_quote_characters
-    attr_accessor :basic_word_break_characters
     attr_accessor :completer_quote_characters
     attr_accessor :completer_word_break_characters
     attr_reader :completion_append_character
     attr_accessor :completion_case_fold
-    attr_accessor :completion_proc
     attr_accessor :filename_quote_characters
     attr_writer :input
     attr_writer :output
@@ -37,7 +35,6 @@ module Reline
   @@config = nil
 
   @basic_quote_characters = '"\''
-  @basic_word_break_characters = " \t\n`><=;|&{("
   @completer_quote_characters
   @completer_word_break_characters = @basic_word_break_characters.dup
   @completion_append_character
@@ -53,8 +50,23 @@ module Reline
     end
   end
   @completion_case_fold
-  @completion_proc
   @filename_quote_characters
+
+  @@basic_word_break_characters = " \t\n`><=;|&{("
+  def self.basic_word_break_characters
+    @@basic_word_break_characters
+  end
+  def self.basic_word_break_characters=(v)
+    @@basic_word_break_characters = v
+  end
+
+  @@completion_proc = nil
+  def self.completion_proc
+    @@completion_proc
+  end
+  def self.completion_proc=(p)
+    @@completion_proc = p
+  end
 
   if IS_WINDOWS
     require 'reline/windows'
@@ -63,7 +75,7 @@ module Reline
   end
 
   def retrieve_completion_block(line, byte_pointer)
-    break_regexp = /[#{Regexp.escape(@basic_word_break_characters)}]/
+    break_regexp = /[#{Regexp.escape(@@basic_word_break_characters)}]/
     before_pointer = line.byteslice(0, byte_pointer)
     break_point = before_pointer.rindex(break_regexp)
     if break_point
@@ -108,7 +120,7 @@ module Reline
         @line_editor.confirm_multiline_termination_proc = confirm_multiline_termination
       end
     end
-    @line_editor.completion_proc = @completion_proc
+    @line_editor.completion_proc = @@completion_proc
     @line_editor.retrieve_completion_block = method(:retrieve_completion_block)
     @line_editor.rerender
 
