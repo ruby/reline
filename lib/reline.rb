@@ -68,6 +68,14 @@ module Reline
     @@completion_proc = p
   end
 
+  @@dig_perfect_match_proc = nil
+  def self.dig_perfect_match_proc
+    @@dig_perfect_match_proc
+  end
+  def self.dig_perfect_match_proc=(p)
+    @@dig_perfect_match_proc = p
+  end
+
   if IS_WINDOWS
     require 'reline/windows'
   else
@@ -121,6 +129,7 @@ module Reline
       end
     end
     @line_editor.completion_proc = @@completion_proc
+    @line_editor.dig_perfect_match_proc = @@dig_perfect_match_proc
     @line_editor.retrieve_completion_block = method(:retrieve_completion_block)
     @line_editor.rerender
 

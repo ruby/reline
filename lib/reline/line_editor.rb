@@ -9,6 +9,7 @@ class Reline::LineEditor
   attr_reader :line
   attr_accessor :confirm_multiline_termination_proc
   attr_accessor :completion_proc
+  attr_accessor :dig_perfect_match_proc
   attr_writer :retrieve_completion_block
 
   ARGUMENTABLE = %i{
@@ -68,6 +69,7 @@ class Reline::LineEditor
     COMPLETION = :completion
     MENU = :menu
     JOURNEY = :journey
+    PERFECT_MATCH = :perfect_match
   end
 
   CompletionJourneyData = Struct.new('CompletionJourneyData', :preposing, :postposing, :list, :pointer)
@@ -98,6 +100,7 @@ class Reline::LineEditor
     @waiting_operator_proc = nil
     @completion_journey_data = nil
     @completion_state = CompletionState::NORMAL
+    @perfect_matched = nil
     @screen_size = Reline.get_screen_size
     @first_line_started_from = 0
     @move_up = 0
@@ -339,14 +342,20 @@ class Reline::LineEditor
     case @completion_state
     when CompletionState::NORMAL, CompletionState::JOURNEY
       @completion_state = CompletionState::COMPLETION
+    when CompletionState::PERFECT_MATCH
+      @dig_perfect_match_proc&.(@perfect_matched)
     end
     is_menu = (@completion_state == CompletionState::MENU)
     result = complete_internal_proc(list, is_menu)
     return if result.nil?
     target, preposing, completed, postposing = result
     return if completed.nil?
-    if target <= completed and @completion_state == CompletionState::COMPLETION
+    if target <= completed and (@completion_state == CompletionState::COMPLETION or @completion_state == CompletionState::PERFECT_MATCH)
       @completion_state = CompletionState::MENU
+      if list.include?(completed)
+        @completion_state = CompletionState::PERFECT_MATCH
+        @perfect_matched = completed
+      end
       if target < completed
         @line = preposing + completed + postposing
         line_to_pointer = preposing + completed
