@@ -538,7 +538,11 @@ class Reline::LineEditor
   def whole_buffer
     temp_lines = @buffer_of_lines.dup
     temp_lines[@line_index] = @line
-    temp_lines.join("\n")
+    if @buffer_of_lines.size == 1 and @line.nil?
+      nil
+    else
+      temp_lines.join("\n")
+    end
   end
 
   def finished?
