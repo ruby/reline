@@ -14,6 +14,12 @@ class Reline::Config
     @key_actors[:vi_command] = Reline::KeyActor::ViCommand.new
   end
 
+  def reset
+    if editing_mode_is?(:vi_command)
+      @editing_mode_label = :vi_insert
+    end
+  end
+
   def editing_mode
     @key_actors[@editing_mode_label]
   end

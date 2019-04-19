@@ -551,6 +551,7 @@ class Reline::LineEditor
 
   def finish
     @finished = true
+    @config.reset
   end
 
   private def byteslice!(str, byte_pointer, size)
