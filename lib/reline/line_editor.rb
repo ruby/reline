@@ -513,6 +513,9 @@ class Reline::LineEditor
         @meta_prefix = false
       end
       method_symbol = @config.editing_mode.get_method(key)
+      if key.allbits?(0b10000000) and method_symbol == :ed_unassigned
+        return # This is unknown input
+      end
       if method_symbol and respond_to?(method_symbol, true)
         method_obj = method(method_symbol)
       end
