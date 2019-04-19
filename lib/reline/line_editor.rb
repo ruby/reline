@@ -89,6 +89,7 @@ class Reline::LineEditor
     @is_multiline = false
     @finished = false
     @cleared = false
+    @rerender_all = false
     @history_pointer = nil
     @line_backup_in_history = nil
     @kill_ring = Reline::KillRing.new
@@ -252,6 +253,35 @@ class Reline::LineEditor
       calculate_nearest_cursor
       @highest_in_this = calculate_height_by_width(@prompt_width + @cursor_max)
       @previous_line_index = nil
+    elsif @rerender_all
+      Reline.move_cursor_up(@first_line_started_from + @started_from)
+      Reline.move_cursor_column(0)
+      back = 0
+      @buffer_of_lines.each_with_index do |line, index|
+        height = render_partial(prompt, prompt_width, line, false)
+        if index < (@buffer_of_lines.size - 1)
+          Reline.move_cursor_down(height)
+        end
+        back += height
+      end
+      (@highest_in_all - back).times do
+        Reline.move_cursor_down(1)
+        Reline.move_cursor_column(0)
+        Reline.erase_after_cursor
+      end
+      Reline.move_cursor_up(@highest_in_all - 1)
+      @highest_in_all = back
+      @first_line_started_from =
+        if @line_index.zero?
+          0
+        else
+          @buffer_of_lines[0..(@line_index - 1)].inject(0) { |result, line|
+            result + calculate_height_by_width(@prompt_width + calculate_width(line))
+          }
+        end
+      Reline.move_cursor_down(@first_line_started_from)
+      @highest_in_this = calculate_height_by_width(@prompt_width + @cursor_max)
+      @rerender_all = false
     end
     render_partial(prompt, prompt_width, @line) if !@is_multiline or !finished?
     if @is_multiline and finished?
@@ -722,7 +752,16 @@ class Reline::LineEditor
   end
 
   private def em_delete_prev_char(key)
-    if @cursor > 0
+    if @is_multiline and @cursor == 0 and @line_index > 0
+      @buffer_of_lines[@line_index] = @line
+      @cursor = calculate_width(@buffer_of_lines[@line_index - 1])
+      @byte_pointer = @buffer_of_lines[@line_index - 1].bytesize
+      @buffer_of_lines[@line_index - 1] += @buffer_of_lines.delete_at(@line_index)
+      @line_index -= 1
+      @line = @buffer_of_lines[@line_index]
+      @cursor_max = calculate_width(@line)
+      @rerender_all = true
+    elsif @cursor > 0
       byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer)
       @byte_pointer -= byte_size
       @line, mbchar = byteslice!(@line, @byte_pointer, byte_size)
