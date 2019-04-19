@@ -90,6 +90,7 @@ class Reline::LineEditor
     @finished = false
     @cleared = false
     @rerender_all = false
+    @is_confirm_multiline_termination = false
     @history_pointer = nil
     @line_backup_in_history = nil
     @kill_ring = Reline::KillRing.new
@@ -561,10 +562,13 @@ class Reline::LineEditor
     unless completion_occurs
       @completion_state = CompletionState::NORMAL
     end
-    if @previous_line_index and @confirm_multiline_termination_proc and @line_index == (@buffer_of_lines.size - 1)
-      temp_lines = @buffer_of_lines.dup
-      temp_lines[@previous_line_index] = @line
-      finish if @confirm_multiline_termination_proc.(temp_lines.join("\n"))
+    if @is_confirm_multiline_termination and @confirm_multiline_termination_proc
+      @is_confirm_multiline_termination = false
+      temp_buffer = @buffer_of_lines.dup
+      if @previous_line_index and @line_index == (@buffer_of_lines.size - 1)
+        temp_buffer[@previous_line_index] = @line
+      end
+      finish if @confirm_multiline_termination_proc.(temp_buffer.join("\n"))
     end
   end
 
@@ -742,9 +746,18 @@ class Reline::LineEditor
 
   private def ed_newline(key)
     if @is_multiline
-      next_line = @line.byteslice(@byte_pointer, @line.bytesize - @byte_pointer)
-      cursor_line = @line.byteslice(0, @byte_pointer)
-      insert_new_line(cursor_line, next_line)
+      if @config.editing_mode_is?(:vi_command)
+        if @line_index < (@buffer_of_lines.size - 1)
+          ed_next_history(key)
+        else
+          @is_confirm_multiline_termination = true
+        end
+      else
+        next_line = @line.byteslice(@byte_pointer, @line.bytesize - @byte_pointer)
+        cursor_line = @line.byteslice(0, @byte_pointer)
+        insert_new_line(cursor_line, next_line)
+        @is_confirm_multiline_termination = true
+      end
       return
     end
     if @history_pointer

@@ -2,6 +2,7 @@ require 'ripper'
 
 class TerminationChecker
   def terminated?(code)
+    code.gsub!(/\n*$/, '').concat("\n")
     @tokens = Ripper.lex(code)
     continue = process_continue
     code_block_open = check_code_block(code)
