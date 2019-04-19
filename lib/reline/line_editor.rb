@@ -1038,7 +1038,16 @@ class Reline::LineEditor
   end
 
   private def vi_delete_prev_char(key)
-    if @cursor > 0
+    if @is_multiline and @cursor == 0 and @line_index > 0
+      @buffer_of_lines[@line_index] = @line
+      @cursor = calculate_width(@buffer_of_lines[@line_index - 1])
+      @byte_pointer = @buffer_of_lines[@line_index - 1].bytesize
+      @buffer_of_lines[@line_index - 1] += @buffer_of_lines.delete_at(@line_index)
+      @line_index -= 1
+      @line = @buffer_of_lines[@line_index]
+      @cursor_max = calculate_width(@line)
+      @rerender_all = true
+    elsif @cursor > 0
       byte_size = Reline::Unicode.get_prev_mbchar_size(@line, @byte_pointer)
       @byte_pointer -= byte_size
       @line, mbchar = byteslice!(@line, @byte_pointer, byte_size)
