@@ -253,8 +253,8 @@ class Reline::LineEditor
       @highest_in_this = calculate_height_by_width(@prompt_width + @cursor_max)
       @previous_line_index = nil
     end
-    render_partial(prompt, prompt_width, @line)
-    if finished?
+    render_partial(prompt, prompt_width, @line) if !@is_multiline or !finished?
+    if @is_multiline and finished?
       scroll_down(1) unless @buffer_of_lines.last.empty?
       Reline.move_cursor_column(0)
       Reline.erase_after_cursor
