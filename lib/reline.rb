@@ -104,16 +104,24 @@ module Reline
       inner_readline(prompt, add_hist, true)
     end
 
+    if add_hist and @line_editor.whole_buffer and @line_editor.whole_buffer.chomp.size > 0
+      Reline::HISTORY << @line_editor.whole_buffer
+    end
+
     @line_editor.whole_buffer
   end
 
   def readline(prompt = '', add_hist = false)
     inner_readline(prompt, add_hist, false)
 
+    if add_hist and @line_editor.line and @line_editor.line.chomp.size > 0
+      Reline::HISTORY << @line_editor.line.chomp
+    end
+
     @line_editor.line
   end
 
-  def inner_readline(prompt = '', add_hist = false, multiline, &confirm_multiline_termination)
+  def inner_readline(prompt, add_hist, multiline, &confirm_multiline_termination)
     if @@config.nil?
       @@config = Reline::Config.new
       @@config.read
@@ -154,9 +162,6 @@ module Reline
         break if @line_editor.finished?
       end
       Reline.move_cursor_column(0)
-      if add_hist and @line_editor.line and @line_editor.line.chomp.size > 0
-        Reline::HISTORY << @line_editor.line.chomp
-      end
     rescue StandardError => e
       deprep(otio)
       raise e
