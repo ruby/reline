@@ -141,14 +141,25 @@ module Reline
     @line_editor.retrieve_completion_block = method(:retrieve_completion_block)
     @line_editor.rerender
 
-    config = {
-      key_mapping: {
-        [27, 91, 65] => :ed_prev_history,    # ↑
-        [27, 91, 66] => :ed_next_history,    # ↓
-        [27, 91, 67] => :ed_next_char,       # →
-        [27, 91, 68] => :ed_prev_char        # ←
+    if IS_WINDOWS
+      config = {
+        key_mapping: {
+          [224, 72] => :ed_prev_history,    # ↑
+          [224, 80] => :ed_next_history,    # ↓
+          [224, 77] => :ed_next_char,       # →
+          [224, 75] => :ed_prev_char        # ←
+        }
       }
-    }
+    else
+      config = {
+        key_mapping: {
+          [27, 91, 65] => :ed_prev_history,    # ↑
+          [27, 91, 66] => :ed_next_history,    # ↓
+          [27, 91, 67] => :ed_next_char,       # →
+          [27, 91, 68] => :ed_prev_char        # ←
+        }
+      }
+    end
 
     key_stroke = Reline::KeyStroke.new(config)
     begin

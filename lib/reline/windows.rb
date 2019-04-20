@@ -16,7 +16,17 @@ module Reline
     while @@kbhit.call == 0
       sleep(0.001)
     end
-    @@getwch.call.chr(Encoding::UTF_8).encode(Encoding.default_external).bytes
+    result = []
+    until @@kbhit.call == 0
+      ret = @@getwch.call
+      begin
+        result.concat(ret.chr(Encoding::UTF_8).encode(Encoding.default_external).bytes)
+      rescue Encoding::UndefinedConversionError
+        result << ret
+        result << @@getwch.call if ret == 224
+      end
+    end
+    result
   end
 
   def getc
