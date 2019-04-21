@@ -1,5 +1,4 @@
 require_relative 'helper'
-require 'stringio'
 
 class Reline::KeyActor::Emacs::Test < Reline::TestCase
   def setup
@@ -1050,7 +1049,6 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
   end
 
   def test_completion
-    $stdout = StringIO.new
     @line_editor.completion_proc = proc { |word|
       %w{
         foo_foo
@@ -1064,24 +1062,19 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_cursor(2)
     assert_cursor_max(2)
     assert_line('fo')
-    assert_equal('', $stdout.string)
+    assert_equal(nil, @line_editor.instance_variable_get(:@menu_info))
     input_keys("\C-i", false)
     assert_byte_pointer_size('foo_')
     assert_cursor(4)
     assert_cursor_max(4)
     assert_line('foo_')
-    assert_equal('', $stdout.string)
+    assert_equal(nil, @line_editor.instance_variable_get(:@menu_info))
     input_keys("\C-i", false)
     assert_byte_pointer_size('foo_')
     assert_cursor(4)
     assert_cursor_max(4)
     assert_line('foo_')
-    assert_equal(<<~OUTPUT, $stdout.string)
-
-      foo_foo
-      foo_bar
-      foo_baz
-    OUTPUT
+    assert_equal(%w{foo_foo foo_bar foo_baz}, @line_editor.instance_variable_get(:@menu_info).list)
     input_keys('a')
     input_keys("\C-i", false)
     assert_byte_pointer_size('foo_a')
@@ -1095,8 +1088,6 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_cursor(6)
     assert_cursor_max(6)
     assert_line('foo_ba')
-  ensure
-    $stdout = STDOUT
   end
 
   def test_completion_in_middle_of_line

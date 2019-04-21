@@ -73,6 +73,7 @@ class Reline::LineEditor
   end
 
   CompletionJourneyData = Struct.new('CompletionJourneyData', :preposing, :postposing, :list, :pointer)
+  MenuInfo = Struct.new('MenuInfo', :target, :list)
 
   def initialize(config, prompt, encoding = Encoding.default_external)
     @config = config
@@ -109,6 +110,7 @@ class Reline::LineEditor
     @started_from = 0
     @highest_in_this = 1
     @highest_in_all = 1
+    @menu_info = nil
   end
 
   def multiline_on
@@ -209,6 +211,13 @@ class Reline::LineEditor
 
   def rerender # TODO: support physical and logical lines
     @rest_height ||= (Reline.get_screen_size.first - 1) - Reline.cursor_pos.y
+    if @menu_info
+      puts
+      @menu_info.list.each do |item|
+        puts item
+      end
+      @menu_info = nil
+    end
     return if @line.nil?
     if @vi_arg
       prompt = "(arg: #{@vi_arg}) "
@@ -369,10 +378,7 @@ class Reline::LineEditor
   end
 
   private def menu(target, list)
-    puts
-    list.each do |item|
-      puts item
-    end
+    @menu_info = MenuInfo.new(target, list)
   end
 
   private def complete_internal_proc(list, is_menu)
