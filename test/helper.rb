@@ -2,7 +2,12 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'reline'
 require 'test/unit'
 
-RELINE_TEST_ENCODING = (Encoding.find(ENV['RELINE_TEST_ENCODING']) if ENV['RELINE_TEST_ENCODING'])
+RELINE_TEST_ENCODING =
+  if ENV['RELINE_TEST_ENCODING']
+    Encoding.find(ENV['RELINE_TEST_ENCODING'])
+  else
+    Encoding.default_external
+  end
 
 class Reline::TestCase < Test::Unit::TestCase
   private def convert_str(input, options = {}, normalized = nil)
