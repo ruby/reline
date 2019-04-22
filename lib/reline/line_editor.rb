@@ -1295,6 +1295,7 @@ class Reline::LineEditor
       inputed_char = key.chr
     end
     total = nil
+    found = false
     @line.byteslice(@byte_pointer..-1).grapheme_clusters.each do |mbchar|
       # total has [byte_size, cursor]
       unless total
@@ -1305,6 +1306,7 @@ class Reline::LineEditor
         if inputed_char == mbchar
           arg -= 1
           if arg.zero?
+            found = true
             break
           end
         end
@@ -1312,7 +1314,7 @@ class Reline::LineEditor
         total = [total.first + mbchar.bytesize, total.last + width]
       end
     end
-    if total
+    if found and total
       byte_size, width = total
       @byte_pointer += byte_size
       @cursor += width

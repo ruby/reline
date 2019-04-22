@@ -529,6 +529,24 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_cursor_max(10)
   end
 
+  def test_vi_next_char
+    input_keys("abcdef\C-[0")
+    assert_line('abcdef')
+    assert_byte_pointer_size('')
+    assert_cursor(0)
+    assert_cursor_max(6)
+    input_keys('fz')
+    assert_line('abcdef')
+    assert_byte_pointer_size('')
+    assert_cursor(0)
+    assert_cursor_max(6)
+    input_keys('fe')
+    assert_line('abcdef')
+    assert_byte_pointer_size('abcd')
+    assert_cursor(4)
+    assert_cursor_max(6)
+  end
+
   def test_vi_delete_next_char
     input_keys("abc\C-[h")
     assert_byte_pointer_size('a')
