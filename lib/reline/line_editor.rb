@@ -590,6 +590,8 @@ class Reline::LineEditor
       else
         @meta_prefix = true
       end
+    elsif @config.editing_mode_is?(:vi_command) and key == "\e".ord
+      # suppress ^[ when command_mode
     elsif Symbol === key and respond_to?(key, true)
       process_key(key, key, method(key))
     else
