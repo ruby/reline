@@ -384,7 +384,7 @@ class Reline::LineEditor
 
   private def complete_internal_proc(list, is_menu)
     preposing, target, postposing = @retrieve_completion_block.(@line, @byte_pointer)
-    list = list.select { |i| i.start_with?(target) }
+    list = list.select { |i| i&.start_with?(target) }
     if is_menu
       menu(target, list)
       return nil
