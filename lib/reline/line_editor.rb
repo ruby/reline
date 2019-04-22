@@ -1170,6 +1170,13 @@ class Reline::LineEditor
   private def vi_yank(key)
   end
 
+  private def vi_end_of_transmission(key)
+    if @line.empty?
+      @line = nil
+      finish
+    end
+  end
+
   private def vi_list_or_eof(key)
     if @line.empty?
       @line = nil

@@ -9,7 +9,7 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     #   3 ^C
     :ed_ignore,
     #   4 ^D
-    :ed_unassigned,
+    :vi_end_of_transmission,
     #   5 ^E
     :ed_move_to_end,
     #   6 ^F
