@@ -35,9 +35,11 @@ module Reline
   @@config = nil
 
   @basic_quote_characters = '"\''
-  @completer_quote_characters
-  @completer_word_break_characters = @basic_word_break_characters.dup
-  @completion_append_character
+  # TODO implement below
+  #@completer_quote_characters
+  #@completion_append_character
+  #@completion_case_fold
+  #@filename_quote_characters
   def self.completion_append_character=(val)
     if val.nil?
       @completion_append_character = nil
@@ -49,8 +51,6 @@ module Reline
       @completion_append_character = val
     end
   end
-  @completion_case_fold
-  @filename_quote_characters
 
   @@basic_word_break_characters = " \t\n`><=;|&{("
   def self.basic_word_break_characters
