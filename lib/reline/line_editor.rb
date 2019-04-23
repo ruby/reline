@@ -305,7 +305,7 @@ class Reline::LineEditor
         move_cursor_up(@highest_in_all)
       end
       @buffer_of_lines.each_with_index do |line, index|
-        height = render_partial(prompt, prompt_width, line, false)
+        render_partial(prompt, prompt_width, line, false)
         if index < (@buffer_of_lines.size - 1)
           move_cursor_down(1)
         end
@@ -485,6 +485,7 @@ class Reline::LineEditor
             cursor_diff, byte_pointer_diff = @cursor - old_cursor, @byte_pointer - old_byte_pointer
             @cursor, @byte_pointer = old_cursor, old_byte_pointer
             @waiting_operator_proc.(cursor_diff, byte_pointer_diff)
+            @waiting_operator_proc = old_waiting_operator_proc
           }
         end
       else
