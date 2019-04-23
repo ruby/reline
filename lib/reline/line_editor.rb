@@ -105,7 +105,6 @@ class Reline::LineEditor
     @completion_journey_data = nil
     @completion_state = CompletionState::NORMAL
     @perfect_matched = nil
-    @screen_size = Reline.get_screen_size
     @first_line_started_from = 0
     @move_up = 0
     @started_from = 0
@@ -212,6 +211,7 @@ class Reline::LineEditor
 
   def rerender # TODO: support physical and logical lines
     @rest_height ||= (Reline.get_screen_size.first - 1) - Reline.cursor_pos.y
+    @screen_size ||= Reline.get_screen_size
     if @menu_info
       puts
       @menu_info.list.each do |item|
