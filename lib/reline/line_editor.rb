@@ -831,7 +831,9 @@ class Reline::LineEditor
         next_line = @line.byteslice(@byte_pointer, @line.bytesize - @byte_pointer)
         cursor_line = @line.byteslice(0, @byte_pointer)
         insert_new_line(cursor_line, next_line)
-        @is_confirm_multiline_termination = true
+        if @line_index == (@buffer_of_lines.size - 1)
+          @is_confirm_multiline_termination = true
+        end
       end
       return
     end
