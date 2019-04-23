@@ -60,6 +60,8 @@ module Reline
     @@basic_word_break_characters = v
   end
 
+  @@completer_word_break_characters = @@basic_word_break_characters.dup
+
   @@completion_proc = nil
   def self.completion_proc
     @@completion_proc
