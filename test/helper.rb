@@ -10,6 +10,8 @@ RELINE_TEST_ENCODING ||=
   end
 
 class Reline::TestCase < Test::Unit::TestCase
+  puts "Test encoding is #{RELINE_TEST_ENCODING}"
+
   private def convert_str(input, options = {}, normalized = nil)
     return nil if input.nil?
     input.chars.map { |c|
