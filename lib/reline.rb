@@ -12,7 +12,6 @@ module Reline
   HISTORY = Array.new
 
   if RUBY_PLATFORM =~ /mswin|mingw/
-    require 'Win32API'
     IS_WINDOWS = true
   else
     IS_WINDOWS = false

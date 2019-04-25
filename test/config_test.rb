@@ -4,7 +4,12 @@ class Reline::Config::Test < Reline::TestCase
   def setup
     @pwd = Dir.pwd
     @tmpdir = File.join(Dir.tmpdir, "test_reline_config_#{$$}")
-    Dir.mkdir(@tmpdir)
+    begin
+      Dir.mkdir(@tmpdir)
+    rescue Errno::EEXIST
+      FileUtils.rm_rf(@tmpdir)
+      Dir.mkdir(@tmpdir)
+    end
     Dir.chdir(@tmpdir)
     @config = Reline::Config.new
   end
