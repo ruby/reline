@@ -4,11 +4,7 @@ require 'test/unit'
 
 RELINE_TEST_ENCODING ||=
   if ENV['RELINE_TEST_ENCODING']
-    begin
-      Encoding.find(ENV['RELINE_TEST_ENCODING'])
-    rescue ArgumentError
-      Encoding.const_get(ENV['RELINE_TEST_ENCODING'].tr('-', '_').to_sym)
-    end
+    Encoding.find(ENV['RELINE_TEST_ENCODING'])
   else
     Encoding.default_external
   end
