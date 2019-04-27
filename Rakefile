@@ -15,7 +15,7 @@ ENCODING_LIST.each_pair do |task_name, encoding|
     t.libs << 'test'
     t.libs << 'lib'
     t.loader = :direct
-    t.pattern = 'test/**/*_test.rb'
+    t.pattern = 'test/**/test_*.rb'
   end
 end
 
