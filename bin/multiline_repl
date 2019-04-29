@@ -18,8 +18,16 @@ begin
     when ''
       # NOOP
     else
-      result = eval(code)
-      puts "=> #{result.inspect}"
+      begin
+        result = eval(code)
+        puts "=> #{result.inspect}"
+      rescue ScriptError, StandardError => e
+        puts "Traceback (most recent call last):"
+        e.backtrace.reverse_each do |f|
+          puts "        #{f}"
+        end
+        puts e.message
+      end
     end
   end
 rescue Interrupt
