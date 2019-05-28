@@ -52,7 +52,6 @@ module Reline
 
     private def check_index(index)
       index += size if index < 0
-      raise RangeError.new("index=<#{index}>") if index < -@@config.history_size or @@config.history_size < index
       raise IndexError.new("index=<#{index}>") if index < 0 or size <= index
       index
     end
