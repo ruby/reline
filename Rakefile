@@ -21,4 +21,18 @@ end
 
 task test: ENCODING_LIST.keys
 
+
+ENCODING_LIST.each_pair do |task_name, encoding|
+  Rake::TestTask.new("ci-#{task_name}") do |t|
+    t.ruby_opts << %Q{-I. -e "RELINE_TEST_ENCODING=Encoding.find('#{encoding.name}')"}
+    t.libs << 'test'
+    t.libs << 'lib'
+    t.libs << 'test/lib'
+    t.loader = :direct
+    t.pattern = 'test/**/test_*.rb'
+  end
+end
+
+task "ci-test": ENCODING_LIST.keys.map { |task_name| "ci-#{task_name}" }
+
 task default: :test
