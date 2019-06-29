@@ -6,5 +6,8 @@
 /pkg/
 /spec/reports/
 /tmp/
+/test/ext/
+/test/lib/
+/tool/
 *.swp
 Gemfile.lock

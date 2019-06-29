@@ -5,4 +5,5 @@ rvm:
 before_install:
   - gem update --system
   - gem update bundler
-script: rake
+  - sh ./download-test_readline.sh
+script: rake ci-test
