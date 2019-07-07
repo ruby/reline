@@ -13,7 +13,7 @@ class Reline::TestCase < Test::Unit::TestCase
   private def convert_str(input, options = {}, normalized = nil)
     return nil if input.nil?
     input.chars.map { |c|
-      if Reline::Unicode::EscapedChars.include?(c.ord)
+      if Reline::Unicode::ESCAPED_PAIRS.include?(c.ord)
         c
       else
         c.encode(@line_editor.instance_variable_get(:@encoding), Encoding::UTF_8, options)
