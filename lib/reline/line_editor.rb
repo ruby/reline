@@ -36,7 +36,7 @@ class Reline::LineEditor
     vi_end_big_word
     vi_repeat_next_char
     vi_repeat_prev_char
-  }
+  }.freeze
 
   module CompletionState
     NORMAL = :normal
@@ -49,11 +49,11 @@ class Reline::LineEditor
   CompletionJourneyData = Struct.new('CompletionJourneyData', :preposing, :postposing, :list, :pointer)
   MenuInfo = Struct.new('MenuInfo', :target, :list)
 
-  CSI_REGEXP = /\e\[[\d;]*[ABCDEFGHJKSTfminsuhl]/
-  OSC_REGEXP = /\e\]\d+(?:;[^;]+)*\a/
-  NON_PRINTING_START = "\1"
-  NON_PRINTING_END = "\2"
-  WIDTH_SCANNER = /\G(?:#{NON_PRINTING_START}|#{NON_PRINTING_END}|#{CSI_REGEXP}|#{OSC_REGEXP}|\X)/
+  CSI_REGEXP = /\e\[[\d;]*[ABCDEFGHJKSTfminsuhl]/.freeze
+  OSC_REGEXP = /\e\]\d+(?:;[^;]+)*\a/.freeze
+  NON_PRINTING_START = "\1".freeze
+  NON_PRINTING_END = "\2".freeze
+  WIDTH_SCANNER = /\G(?:#{NON_PRINTING_START}|#{NON_PRINTING_END}|#{CSI_REGEXP}|#{OSC_REGEXP}|\X)/.freeze
 
   def initialize(config)
     @config = config

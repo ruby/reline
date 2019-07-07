@@ -1,5 +1,5 @@
 class Reline::Unicode
-  EscapedPairs = {
+  ESCAPED_PAIRS = {
     0x00 => '^@',
     0x01 => '^A', # C-a
     0x02 => '^B',
@@ -32,8 +32,8 @@ class Reline::Unicode
     0x1E => '^^', # C-~ C-6
     0x1F => '^_', # C-_ C-7
     0x7F => '^?', # C-? C-8
-  }
-  EscapedChars = EscapedPairs.keys.map(&:chr)
+  }.each_key(&:freeze).freeze
+  ESCAPED_CHARS = ESCAPED_PAIRS.keys.map(&:chr).freeze
 
   def self.get_mbchar_byte_size_by_first_char(c)
     # Checks UTF-8 character byte size
@@ -57,7 +57,7 @@ class Reline::Unicode
 
   def self.escape_for_print(str)
     str.chars.map! { |gr|
-      escaped = EscapedPairs[gr.ord]
+      escaped = ESCAPED_PAIRS[gr.ord]
       if escaped && gr != -"\n" && gr != -"\t"
         escaped
       else
@@ -68,7 +68,7 @@ class Reline::Unicode
 
   def self.get_mbchar_width(mbchar)
     case mbchar.encode(Encoding::UTF_8)
-    when *EscapedChars # ^ + char, such as ^M, ^H, ^[, ...
+    when *ESCAPED_CHARS # ^ + char, such as ^M, ^H, ^[, ...
       2
     when /^\u{2E3B}/ # THREE-EM DASH
       3

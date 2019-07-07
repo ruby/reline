@@ -49,9 +49,9 @@ class Reline::Windows
     end
   end
 
-  VK_MENU = 0x12
-  VK_SHIFT = 0x10
-  STD_OUTPUT_HANDLE = -11
+  VK_MENU = 0x12.freeze
+  VK_SHIFT = 0x10.freeze
+  STD_OUTPUT_HANDLE = -11.freeze
   @@getwch = Win32API.new('msvcrt', '_getwch', [], 'I')
   @@kbhit = Win32API.new('msvcrt', '_kbhit', [], 'I')
   @@GetKeyState = Win32API.new('user32', 'GetKeyState', ['L'], 'L')

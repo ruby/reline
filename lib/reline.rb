@@ -19,6 +19,7 @@ module Reline
   else
     IS_WINDOWS = false
   end
+  IS_WINDOWS.freeze
 
   CursorPos = Struct.new(:x, :y)
 

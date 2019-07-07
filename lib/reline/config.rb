@@ -3,7 +3,7 @@ require 'pathname'
 class Reline::Config
   attr_reader :test_mode
 
-  DEFAULT_PATH = '~/.inputrc'
+  DEFAULT_PATH = '~/.inputrc'.freeze
 
   KEYSEQ_PATTERN = /\\(?:C|Control)-[A-Za-z_]|\\(?:M|Meta)-[0-9A-Za-z_]|\\(?:C|Control)-(?:M|Meta)-[A-Za-z_]|\\(?:M|Meta)-(?:C|Control)-[A-Za-z_]|\\e|\\[\\\"\'abdfnrtv]|\\\d{1,3}|\\x\h{1,2}|./
 
@@ -37,9 +37,8 @@ class Reline::Config
     show-all-if-ambiguous
     show-all-if-unmodified
     visible-stats
-  }
-  VARIABLE_NAME_SYMBOLS = VARIABLE_NAMES.map { |v| :"#{v.tr(?-, ?_)}" }
-  VARIABLE_NAME_SYMBOLS.each do |v|
+  }.freeze
+  VARIABLE_NAMES.map { |v| :"#{v.tr(?-, ?_)}" }.each do |v|
     attr_accessor v
   end
 
