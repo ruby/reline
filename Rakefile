@@ -2,9 +2,9 @@ require 'bundler/gem_tasks'
 require 'rake/testtask'
 
 ENCODING_LIST = {
-  test_shift_jis: Encoding::UTF_8,
+  test_shift_jis: Encoding::Shift_JIS,
   test_euc_jp: Encoding::EUC_JP,
-  test_utf_8: Encoding::Shift_JIS,
+  test_utf_8: Encoding::UTF_8,
   test_cp932: Encoding::Windows_31J,
   #test_ibm437: Encoding::IBM437
 }
