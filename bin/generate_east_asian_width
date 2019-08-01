@@ -48,7 +48,7 @@ open(ARGV.first, 'rt') do |f|
   puts <<EOH
 class Reline::Unicode::EastAsianWidth
   # This is based on EastAsianWidth.txt
-  # http://www.unicode.org/Public/10.0.0/ucd/EastAsianWidth.txt
+  # #{ARGV.first}
 
 EOH
   puts grouped.map { |item|
