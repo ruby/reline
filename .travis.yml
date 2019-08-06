@@ -6,4 +6,4 @@ before_install:
   - gem update --system
   - gem update bundler
   - sh ./download-test_readline.sh
-script: rake ci-test
+script: bundle exec rake ci-test
