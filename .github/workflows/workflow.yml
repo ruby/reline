@@ -1,0 +1,16 @@
+name: workflow
+on: pull_request
+
+jobs:
+  ubuntu:
+    name: Run on ubuntu
+    runs-on: ubuntu-latest
+    strategy:
+      include:
+        - rvm: ruby-head
+    steps:
+      - run: |
+        gem update --system
+        gem update bundler
+        sh ./download-test_readline.sh
+        bundle exec rake ci-test
