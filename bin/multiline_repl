@@ -34,5 +34,7 @@ rescue Interrupt
   puts '^C'
   `stty #{stty_save}` if stty_save
   exit 0
+ensure
+  `stty #{stty_save}` if stty_save
 end
 puts
