@@ -1,4 +1,3 @@
-#!/bin/sh
 ECHO "-- Download test/readline --"
 mkdir test/ext/readline
 bitsadmin.exe /TRANSFER https://raw.githubusercontent.com/ruby/ruby/trunk/test/readline/helper.rb test/ext/readline
