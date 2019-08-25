@@ -24,6 +24,9 @@ jobs:
       run: |
         gem install bundler --no-document
         bundle install
+    - name: Download test readline
+      run: |
+        download-test_readline.bat
     - name: Run test
       run: |
         rake ci-test
