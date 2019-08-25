@@ -26,4 +26,6 @@ bitsadmin.exe /TRANSFER get_readline_test_file https://raw.githubusercontent.com
 
 echo "-- Finish download test/readline --"
 
+tree /f
+
 exit /b 0
