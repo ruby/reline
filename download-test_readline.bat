@@ -14,10 +14,10 @@ bitsadmin.exe /TRANSFER get_readline_test_file https://raw.githubusercontent.com
 bitsadmin.exe /TRANSFER get_readline_test_file https://raw.githubusercontent.com/ruby/ruby/trunk/tool/lib/colorize.rb %CD%\tool\lib\colorize.rb
 bitsadmin.exe /TRANSFER get_readline_test_file https://raw.githubusercontent.com/ruby/ruby/trunk/tool/lib/find_executable.rb %CD%\tool\lib\find_executable.rb
 
-mkdir tool\lib\unit\minitest
+mkdir tool\lib\minitest
 bitsadmin.exe /TRANSFER get_readline_test_file https://raw.githubusercontent.com/ruby/ruby/trunk/tool/lib/minitest/unit.rb %CD%\tool\lib\minitest\unit.rb
 
-mkdir tool\lib\unit\test
+mkdir tool\lib\test\unit
 bitsadmin.exe /TRANSFER get_readline_test_file https://raw.githubusercontent.com/ruby/ruby/trunk/tool/lib/test/unit.rb %CD%\tool\lib\test\unit.rb
 bitsadmin.exe /TRANSFER get_readline_test_file https://raw.githubusercontent.com/ruby/ruby/trunk/tool/lib/test/unit/assertions.rb %CD%\tool\lib\test\unit\assertions.rb
 bitsadmin.exe /TRANSFER get_readline_test_file https://raw.githubusercontent.com/ruby/ruby/trunk/tool/lib/test/unit/core_assertions.rb %CD%\tool\lib\test\unit\core_assertions.rb
