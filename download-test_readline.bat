@@ -1,4 +1,5 @@
-ECHO "-- Download test/readline --"
+@echo off
+echo "-- Download test/readline --"
 mkdir test/ext/readline
 bitsadmin.exe /TRANSFER https://raw.githubusercontent.com/ruby/ruby/trunk/test/readline/helper.rb test/ext/readline
 bitsadmin.exe /TRANSFER https://raw.githubusercontent.com/ruby/ruby/trunk/test/readline/test_readline.rb test/ext/readline
@@ -23,4 +24,6 @@ bitsadmin.exe /TRANSFER https://raw.githubusercontent.com/ruby/ruby/trunk/tool/l
 bitsadmin.exe /TRANSFER https://raw.githubusercontent.com/ruby/ruby/trunk/tool/lib/test/unit/parallel.rb tool/lib/test/unit
 bitsadmin.exe /TRANSFER https://raw.githubusercontent.com/ruby/ruby/trunk/tool/lib/test/unit/testcase.rb tool/lib/test/unit
 
-ECHO "-- Finish download test/readline --"
+echo "-- Finish download test/readline --"
+
+exit /b 0
