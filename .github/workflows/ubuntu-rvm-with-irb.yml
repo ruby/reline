@@ -1,0 +1,44 @@
+name: ubuntu-rvm
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: [ 'ruby-head' ]
+    steps:
+    - uses: actions/checkout@master
+    - name: Set up RVM
+      run: |
+        curl -sSL https://get.rvm.io | bash
+    - name: Set up Ruby
+      run: |
+        source $HOME/.rvm/scripts/rvm
+        rvm install ${{ matrix.ruby }} --binary
+        rvm --default use ${{ matrix.ruby }}
+    - name: Install dependencies
+      run: |
+        source $HOME/.rvm/scripts/rvm
+        gem install bundler --no-document
+        bundle install
+    - name: Install reline
+      run: |
+        rake build
+        rake install
+    - name: Download ruby/irb
+      run: |
+        git clone https://github.com/ruby/irb
+    - name: Setup ruby/irb
+      run: |
+        cd irb
+        bundle install
+    - name: Run irb test
+        rake test
