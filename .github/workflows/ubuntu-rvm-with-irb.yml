@@ -31,6 +31,7 @@ jobs:
         bundle install
     - name: Install reline
       run: |
+        source $HOME/.rvm/scripts/rvm
         rake build
         rake install
     - name: Download ruby/irb
@@ -39,7 +40,9 @@ jobs:
     - name: Setup ruby/irb
       run: |
         cd irb
+        source $HOME/.rvm/scripts/rvm
         bundle install
     - name: Run irb test
       run: |
-        rake test
+        source $HOME/.rvm/scripts/rvm
+        bundle exec rake test
