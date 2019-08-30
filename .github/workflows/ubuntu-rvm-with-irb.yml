@@ -41,4 +41,5 @@ jobs:
         cd irb
         bundle install
     - name: Run irb test
+      run: |
         rake test
