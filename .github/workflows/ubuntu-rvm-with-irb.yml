@@ -1,4 +1,4 @@
-name: ubuntu-rvm
+name: ubuntu-rvm with irb
 
 on:
   push:
