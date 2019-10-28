@@ -27,6 +27,7 @@ jobs:
     - name: Download test readline
       run: |
         download-test_readline.bat
+      shell: cmd
     - name: Run test
       run: |
         rake ci-test
