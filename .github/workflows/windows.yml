@@ -26,7 +26,7 @@ jobs:
         bundle install
     - name: Download test readline
       run: |
-        download-test_readline.bat
+        download_test_readline.bat
     - name: Run test
       run: |
         rake ci-test
