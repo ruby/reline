@@ -217,11 +217,15 @@ class Reline::Test < Reline::TestCase
   end
 
   def test_readmultiline
-    # TODO
+    # readmultiline is module function
+    assert_equal(true, Reline.methods.include?(:readmultiline))
+    assert_equal(true, Reline.private_instance_methods.include?(:readmultiline))
   end
 
   def test_readline
-    # TODO
+    # readline is module function
+    assert_equal(true, Reline.methods.include?(:readline))
+    assert_equal(true, Reline.private_instance_methods.include?(:readline))
   end
 
   def test_inner_readline
