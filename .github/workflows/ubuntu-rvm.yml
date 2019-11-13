@@ -21,10 +21,12 @@ jobs:
         curl -sSL https://get.rvm.io | bash
     - name: Set up Ruby
       run: |
+        source $HOME/.rvm/scripts/rvm
         rvm install ${{ matrix.ruby }} --binary
         rvm --default use ${{ matrix.ruby }}
     - name: Install dependencies
       run: |
+        source $HOME/.rvm/scripts/rvm
         gem install bundler --no-document
         bundle install
     - name: Download test readline
@@ -32,4 +34,5 @@ jobs:
         sh ./download-test_readline.sh
     - name: Run test
       run: |
+        source $HOME/.rvm/scripts/rvm
         rake ci-test
