@@ -28,6 +28,7 @@ jobs:
       run: |
         source $HOME/.rvm/scripts/rvm
         bundle install
+        gem update bundler
     - name: Download test readline
       run: |
         sh ./download-test_readline.sh
