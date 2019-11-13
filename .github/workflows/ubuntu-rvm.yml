@@ -27,12 +27,13 @@ jobs:
     - name: Install dependencies
       run: |
         source $HOME/.rvm/scripts/rvm
+        gem uninstall -v '>= 2' -i $(rvm gemdir)@global -ax bundler || true
+        gem install bundler -v '< 2'
         bundle install
-        gem update bundler
     - name: Download test readline
       run: |
         sh ./download-test_readline.sh
     - name: Run test
       run: |
-        bundle exec source $HOME/.rvm/scripts/rvm
+        source $HOME/.rvm/scripts/rvm
         rake ci-test
