@@ -21,17 +21,14 @@ jobs:
         curl -sSL https://get.rvm.io | bash
     - name: Set up Ruby
       run: |
-        source $HOME/.rvm/scripts/rvm
         rvm install ${{ matrix.ruby }} --binary
         rvm --default use ${{ matrix.ruby }}
     - name: Install dependencies
       run: |
-        source $HOME/.rvm/scripts/rvm
         gem install bundler --no-document
         bundle install
     - name: Install reline
       run: |
-        source $HOME/.rvm/scripts/rvm
         rake build
         rake install
     - name: Download ruby/irb
@@ -40,9 +37,7 @@ jobs:
     - name: Setup ruby/irb
       run: |
         cd irb
-        source $HOME/.rvm/scripts/rvm
         bundle install
     - name: Run irb test
       run: |
-        source $HOME/.rvm/scripts/rvm
         bundle exec rake test
