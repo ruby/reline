@@ -24,12 +24,14 @@ jobs:
         source $HOME/.rvm/scripts/rvm
         rvm install ${{ matrix.ruby }} --binary
         rvm --default use ${{ matrix.ruby }}
+    - name: Install dependencies
+      run: |
+        source $HOME/.rvm/scripts/rvm
+        gem install bundler --no-document --force
+        bundle install
     - name: Download test readline
       run: |
         sh ./download-test_readline.sh
     - name: Run test
       run: |
         source $HOME/.rvm/scripts/rvm
-        gem install bundler --no-document --force
-        bundle install
-        rake ci-test
