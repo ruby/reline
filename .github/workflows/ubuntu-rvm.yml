@@ -36,4 +36,4 @@ jobs:
     - name: Run test
       run: |
         source $HOME/.rvm/scripts/rvm
-        rake ci-test
+        bundle exec rake ci-test
