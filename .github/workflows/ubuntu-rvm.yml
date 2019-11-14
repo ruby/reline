@@ -27,8 +27,7 @@ jobs:
     - name: Install dependencies
       run: |
         source $HOME/.rvm/scripts/rvm
-        yes | gem update --system
-        gem update bundler
+        gem install bundler --no-document
         bundle install
     - name: Download test readline
       run: |
