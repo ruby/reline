@@ -27,14 +27,13 @@ jobs:
     - name: Install dependencies
       run: |
         source $HOME/.rvm/scripts/rvm
-        yes | gem update --system
-        gem update bundler
+        gem install bundler --no-document
         bundle install
     - name: Install reline
       run: |
         source $HOME/.rvm/scripts/rvm
-        rake build
-        rake install
+        bundle exec rake build
+        bundle exec rake install
     - name: Download ruby/irb
       run: |
         git clone https://github.com/ruby/irb
