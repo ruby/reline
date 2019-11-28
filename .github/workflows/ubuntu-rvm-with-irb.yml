@@ -32,6 +32,7 @@ jobs:
     - name: Install reline
       run: |
         source $HOME/.rvm/scripts/rvm
+        gem uninstall reline
         bundle exec rake build
         bundle exec rake install
     - name: Download ruby/irb
