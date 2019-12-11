@@ -22,5 +22,7 @@ jobs:
           bundle install
       - name: Download test readline
         run:  ./download-test_readline.ps1
-      - name: Run test
-        run: rake ci-test
+      - name: rake test
+        run:  rake test
+      - name: rake ci-test
+        run:  rake ci-test
