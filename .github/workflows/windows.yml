@@ -1,33 +1,26 @@
 name: windows
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - '*'
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
-        ruby: [ '2.6.x', '2.5.x' ]
+        ruby: [ '9.9.x', '2.6.x', '2.5.x' ]
     steps:
-    - uses: actions/checkout@master
-    - name: Set up Ruby
-      uses: actions/setup-ruby@v1
-      with:
-        ruby-version: ${{ matrix.ruby }}
-    - name: Install dependencies
-      run: |
-        gem install bundler --no-document
-        bundle install
-    - name: Download test readline
-      run: |
-        download-test_readline.bat
-      shell: cmd
-    - name: Run test
-      run: |
-        rake ci-test
+      - uses: actions/checkout@master
+      - name: Set up Ruby
+        uses: MSP-Greg/actions-ruby@master
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Install dependencies
+        if: matrix.ruby != '9.9.x'
+        run: |
+          gem install bundler --no-document --conservative
+          bundle install
+      - name: Download test readline
+        run:  ./download-test_readline.ps1
+      - name: Run test
+        run: rake ci-test
