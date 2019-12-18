@@ -1,12 +1,6 @@
 name: macos
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - '*'
+on: [push, pull_request]
 
 jobs:
   build:
@@ -20,6 +14,7 @@ jobs:
     - name: Download test readline
       run: |
         sh ./download-test_readline.sh
-    - name: Run test
-      run: |
-        rake ci-test
+    - name: rake test
+      run:  rake test
+    - name: rake ci-test
+      run:  rake ci-test

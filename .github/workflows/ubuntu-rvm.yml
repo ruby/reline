@@ -1,12 +1,6 @@
 name: ubuntu-rvm
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - '*'
+on: [push, pull_request]
 
 jobs:
   build:
@@ -32,7 +26,11 @@ jobs:
     - name: Download test readline
       run: |
         sh ./download-test_readline.sh
-    - name: Run test
+    - name: rake test
+      run: |
+        source $HOME/.rvm/scripts/rvm
+        bundle exec rake test
+    - name: rake ci-test
       run: |
         source $HOME/.rvm/scripts/rvm
         bundle exec rake ci-test
