@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [ '9.9.x', '2.6.x', '2.5.x' ]
+        ruby: [ '9.9.x' ]
     steps:
       - uses: actions/checkout@master
       - name: Set up Ruby
@@ -20,5 +20,9 @@ jobs:
         run: |
           gem install bundler --no-document --conservative
           bundle install
+      - name: Download test readline
+        run:  ./download-test_readline.ps1
       - name: rake test
         run:  rake test
+      - name: rake ci-test
+        run:  rake ci-test
