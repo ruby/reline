@@ -18,10 +18,5 @@ jobs:
       run: |
         gem install bundler --no-document
         bundle install
-    - name: Download test readline
-      run: |
-        sh ./download-test_readline.sh
     - name: rake test
       run:  rake test
-    - name: rake ci-test
-      run:  rake ci-test
