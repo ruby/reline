@@ -1,4 +1,4 @@
-name: windows
+name: windows with readline
 
 on: [push, pull_request]
 
