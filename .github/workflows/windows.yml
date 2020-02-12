@@ -8,17 +8,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [ '9.9.x', '2.7.x', '2.6.x', '2.5.x' ]
+        ruby: [ 2.7, 2.6, 2.5 ]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - name: Set up Ruby
-        uses: MSP-Greg/actions-ruby@master
+        uses: MSP-Greg/actions-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-      - name: Install dependencies
-        if: matrix.ruby != '9.9.x'
-        run: |
-          gem install bundler --no-document --conservative
-          bundle install
       - name: rake test
         run:  rake test
