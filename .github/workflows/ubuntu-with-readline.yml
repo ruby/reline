@@ -17,8 +17,10 @@ jobs:
     - name: Install dependencies
       run: bundle install
     - name: Download test readline
-      run: sh ./download-test_readline.sh
+      run: ruby download-test_readline.rb
     - name: rake test
       run: bundle exec rake test
     - name: rake ci-test
+      env:
+        TEST_READLINE_OR_RELINE: Reline
       run: bundle exec rake ci-test

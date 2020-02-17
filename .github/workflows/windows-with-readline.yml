@@ -16,8 +16,10 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
       - name: Download test readline
-        run:  ./download-test_readline.ps1
+        run:  ruby download-test_readline.rb
       - name: rake test
         run:  rake test
       - name: rake ci-test
+        env:
+          TEST_READLINE_OR_RELINE: Reline
         run:  rake ci-test
