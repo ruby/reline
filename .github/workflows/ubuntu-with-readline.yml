@@ -1,13 +1,13 @@
-name: macos
+name: ubuntu with readline
 
 on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: [ 2.7, 2.6, 2.5 ]
+        ruby: [ 'ruby-head' ]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Ruby
@@ -16,5 +16,9 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
     - name: Install dependencies
       run: bundle install
+    - name: Download test readline
+      run: sh ./download-test_readline.sh
     - name: rake test
-      run:  rake test
+      run: bundle exec rake test
+    - name: rake ci-test
+      run: bundle exec rake ci-test
