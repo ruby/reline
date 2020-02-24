@@ -18,9 +18,9 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
       - name: Install dependencies
-        run: bundle install
+        run:  bundle install
       - name: rake test
-        run:  rake test
+        run:  bundle exec rake test
 
   readline:
     name: >-
@@ -29,8 +29,10 @@ jobs:
     strategy:
       matrix:
         cfg:
-          - { ruby: ruby-head, os: ubuntu-latest  }
-          - { ruby: ruby-head, os: macos-latest   }
+          - { ruby: head , os: ubuntu-latest  }
+          - { ruby: head , os: macos-latest   }
+          - { ruby: mingw, os: windows-latest }
+          - { ruby: mswin, os: windows-latest }
     steps:
       - uses: actions/checkout@v2
       - name: Set up Ruby
@@ -38,39 +40,15 @@ jobs:
         with:
           ruby-version: ${{ matrix.cfg.ruby }}
       - name: Install dependencies
-        run: bundle install
+        run:  bundle install
       - name: Download test readline
-        run: ruby download-test_readline.rb
+        run:  ruby download-test_readline.rb
       - name: rake test
-        run: bundle exec rake test
+        run:  bundle exec rake test
       - name: rake ci-test
         env:
           TEST_READLINE_OR_RELINE: Reline
         run: bundle exec rake ci-test
-
-  win32:
-    name: >-
-      readline ${{ matrix.cfg.ruby }}  ${{ matrix.cfg.os }}
-    runs-on: ${{ matrix.cfg.os }}
-    strategy:
-      matrix:
-        cfg:
-          - { ruby: mingw, os: windows-latest }
-          - { ruby: mswin, os: windows-latest }
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Ruby
-        uses: MSP-Greg/actions-ruby@v1
-        with:
-          ruby-version: ${{ matrix.cfg.ruby }}
-      - name: Download test readline
-        run:  ruby download-test_readline.rb
-      - name: rake test
-        run:  rake test
-      - name: rake ci-test
-        env:
-          TEST_READLINE_OR_RELINE: Reline
-        run:  rake ci-test
 
   irb:
     name: >-
@@ -78,26 +56,26 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        ruby: [ 'ruby-head' ]
+        ruby: [ head ]
         os: [ ubuntu-latest ]
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ matrix.ruby }}
-    - name: Install dependencies
-      run: bundle install
-    - name: Install reline
-      run: |
-        rake build
-        rake install
-    - name: Download ruby/irb
-      run: |
-        git clone https://github.com/ruby/irb
-    - name: Setup ruby/irb
-      run: |
-        cd irb
-        bundle install
-    - name: Run irb test
-      run: bundle exec rake test
+      - uses: actions/checkout@v2
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Install dependencies
+        run:  bundle install
+      - name: Install reline
+        run:  |
+          rake build
+          rake install
+      - name: Download ruby/irb
+        run:  |
+          git clone https://github.com/ruby/irb
+      - name: Setup ruby/irb
+        run:  |
+          cd irb
+          bundle install
+      - name: Run irb test
+        run:  bundle exec rake test
