@@ -47,13 +47,7 @@ module HTTPS_DL
       CONNECTIONS.times do
         connections << Thread.new do
           Net::HTTP.start(URI_GH.host, URI_GH.port, :use_ssl => true,:verify_mode => OpenSSL::SSL::VERIFY_PEER) do |http|
-            done = false
-            loop do
-              break if files.empty?
-              path, dir, file = files.shift
-              # x,y,z = [].shift => x is nil
-              break if path.nil?
-
+            while (path, dir, file = files.shift)
               uri = URI("#{HOST}/#{BASE}/#{path}/#{file}")
               req = Net::HTTP::Get.new uri.request_uri
               http.request req do |res|
