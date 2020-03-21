@@ -79,3 +79,24 @@ jobs:
           bundle install
       - name: Run irb test
         run:  bundle exec rake test
+
+  win32-yamatanooroti:
+    name: >-
+      win32-yamatanooroti ${{ matrix.os }} ${{ matrix.ruby }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ windows-latest ]
+        ruby: [ 2.7, 2.6, 2.5 ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Install dependencies
+        run:  bundle install
+      - name: Install yamatanooroti
+        run:  gem install yamatanooroti
+      - name: rake test_yamatanooroti
+        run:  rake test_yamatanooroti
