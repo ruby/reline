@@ -35,4 +35,13 @@ end
 
 task "ci-test": ENCODING_LIST.keys.map { |task_name| "ci-#{task_name}" }
 
+
+Rake::TestTask.new(:test_yamatanooroti) do |t|
+  t.libs << 'test'
+  t.libs << 'lib'
+  #t.loader = :direct
+  t.pattern = 'test/reline/yamatanooroti/test_*.rb'
+end
+
+
 task default: :test

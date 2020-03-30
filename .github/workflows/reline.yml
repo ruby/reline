@@ -79,3 +79,33 @@ jobs:
           bundle install
       - name: Run irb test
         run:  bundle exec rake test
+
+  vterm-yamatanooroti:
+    name: >-
+      vterm-yamatanooroti ${{ matrix.os }} ${{ matrix.ruby }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        ruby: [ 2.7, 2.6, 2.5 ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Install dependencies
+        run:  bundle install
+      - name: Install libvterm
+        run: |
+          sudo apt install -y libtool-bin
+          wget http://www.leonerd.org.uk/code/libvterm/libvterm-0.1.3.tar.gz
+          tar xvzf libvterm-0.1.3.tar.gz
+          cd libvterm-0.1.3
+          sed -i -e 's/^PREFIX=.*$/PREFIX=\/usr/g' Makefile
+          make
+          sudo make install
+      - name: Install yamatanooroti
+        run:  gem install yamatanooroti vterm
+      - name: rake test_yamatanooroti
+        run:  rake test_yamatanooroti
