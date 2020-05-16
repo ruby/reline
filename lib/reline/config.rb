@@ -35,6 +35,9 @@ class Reline::Config
     show-all-if-ambiguous
     show-all-if-unmodified
     visible-stats
+    show-mode-in-prompt
+    vi_cmd_mode_icon
+    vi_ins_mode_icon
   }
   VARIABLE_NAME_SYMBOLS = VARIABLE_NAMES.map { |v| :"#{v.tr(?-, ?_)}" }
   VARIABLE_NAME_SYMBOLS.each do |v|
@@ -247,6 +250,10 @@ class Reline::Config
       end
     when 'keyseq-timeout'
       @keyseq_timeout = value.to_i
+    when 'vi-cmd-mode-string'
+      @vi_cmd_mode_icon = value
+    when 'vi-ins-mode-string'
+      @vi_ins_mode_icon = value
     when *VARIABLE_NAMES then
       variable_name = :"@#{name.tr(?-, ?_)}"
       instance_variable_set(variable_name, value.nil? || value == '1' || value == 'on')

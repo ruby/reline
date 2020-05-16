@@ -74,7 +74,7 @@ class Reline::LineEditor
       prompt = @prompt
     end
     if @prompt_proc
-      prompt_list = @prompt_proc.(buffer)
+      prompt_list = @prompt_proc.(buffer, @prompt, @config)
       prompt_list.map!{ prompt } if @vi_arg or @searching_prompt
       prompt = prompt_list[@line_index]
       prompt_width = calculate_width(prompt, true)

@@ -205,6 +205,9 @@ module Reline
       otio = Reline::IOGate.prep
 
       may_req_ambiguous_char_width
+
+      config.read unless config.test_mode
+
       line_editor.reset(prompt, encoding: Reline::IOGate.encoding)
       if multiline
         line_editor.multiline_on
@@ -219,13 +222,20 @@ module Reline
       line_editor.completion_append_character = completion_append_character
       line_editor.output_modifier_proc = output_modifier_proc
       line_editor.prompt_proc = prompt_proc
+
+      case config.editing_mode
+      when Reline::KeyActor::ViInsert, Reline::KeyActor::ViCommand
+        line_editor.prompt_proc = prompt_proc || default_vim_prompt_proc
+      else
+        line_editor.prompt_proc = prompt_proc
+      end
+
       line_editor.auto_indent_proc = auto_indent_proc
       line_editor.dig_perfect_match_proc = dig_perfect_match_proc
       line_editor.pre_input_hook = pre_input_hook
       line_editor.rerender
 
       unless config.test_mode
-        config.read
         config.reset_default_key_bindings
         Reline::IOGate::RAW_KEYSTROKE_CONFIG.each_pair do |key, func|
           config.add_default_key_binding(key, func)
@@ -346,6 +356,29 @@ module Reline
       end
       Reline::IOGate.move_cursor_column(0)
       Reline::IOGate.erase_after_cursor
+    end
+
+    private def default_vim_prompt_proc
+      -> buffer, prompt, config do
+        prefix = ''
+
+        if config.show_mode_in_prompt
+          ins_icon = config.vi_ins_mode_icon || :'(ins)'
+          cmd_icon = config.vi_cmd_mode_icon || :'(cmd)'
+          prefix = case config.editing_mode
+                   when Reline::KeyActor::ViCommand
+                     "#{cmd_icon} ".freeze
+                   when Reline::KeyActor::ViInsert
+                     "#{ins_icon} ".freeze
+                   else
+                     "#{prompt} ".freeze
+                   end
+        end
+
+        prompt = "#{prefix}#{prompt}".freeze
+
+        [prompt] * buffer.size
+      end
     end
   end
 
