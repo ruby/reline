@@ -37,4 +37,8 @@ rescue Interrupt
 ensure
   `stty #{stty_save}` if stty_save
 end
-puts
+begin
+  puts
+rescue Errno::EIO
+  # Maybe the I/O has been closed.
+end
