@@ -107,5 +107,7 @@ jobs:
           sudo make install
       - name: Install yamatanooroti
         run:  gem install yamatanooroti vterm
+      - name: Install latest irb
+        run:  gem install irb -f
       - name: rake test_yamatanooroti
         run:  rake test_yamatanooroti
