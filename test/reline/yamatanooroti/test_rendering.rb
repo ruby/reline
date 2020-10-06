@@ -176,6 +176,7 @@ begin
         LINES
       end
       start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/bin/multiline_repl})
+      sleep 0.5
       close
       assert_screen(<<~EOC)
         Multiline REPL.
@@ -191,6 +192,7 @@ begin
         LINES
       end
       start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/bin/multiline_repl})
+      sleep 0.5
       close
       assert_screen(<<~EOC)
         Multiline REPL.
@@ -208,6 +210,7 @@ begin
         LINES
       end
       start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/bin/multiline_repl})
+      sleep 0.5
       write(":a\n\C-[k")
       close
       assert_screen(<<~EOC)
