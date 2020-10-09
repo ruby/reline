@@ -9,9 +9,10 @@ rescue
 end
 
 begin
+  prompt = ENV['RELINE_TEST_PROMPT'] || 'prompt> '
   puts 'Multiline REPL.'
   checker = TerminationChecker.new
-  while code = Reline.readmultiline('prompt> ', true) { |code| checker.terminated?(code) }
+  while code = Reline.readmultiline(prompt, true) { |code| checker.terminated?(code) }
     case code.chomp
     when 'exit', 'quit', 'q'
       exit 0
