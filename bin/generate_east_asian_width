@@ -62,15 +62,15 @@ EOH
       when :A  then 'Ambiguous'
       when :N  then 'Neutral'
       end
-    output += "  TYPE_%s = /^(\n" % type.upcase
+    output += "  TYPE_%s = /^([\#{ %%W(\n" % type.upcase
     output += ranges.map { |range|
       if range.first == range.last
         '    \u{%04X}' % range.first
       else
-        '    [\u{%04X}-\u{%04X}]' % [range.first, range.last]
+        '    \u{%04X}-\u{%04X}' % [range.first, range.last]
       end
-    }.join(" |\n")
-    output += "\n  )/x\n"
+    }.join("\n")
+    output += "\n  ).join }])/\n"
   }.join("\n")
   puts 'end'
 end
