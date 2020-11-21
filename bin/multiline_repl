@@ -1,7 +1,22 @@
 #!/usr/bin/env ruby
 
 require 'reline'
+require 'optparse'
 require_relative 'termination_checker'
+
+opt = OptionParser.new
+opt.on('--prompt-list-cache-timeout VAL') { |v|
+  Reline::LineEditor.__send__(:remove_const, :PROMPT_LIST_CACHE_TIMEOUT)
+  Reline::LineEditor::PROMPT_LIST_CACHE_TIMEOUT = v.to_f
+}
+opt.on('--dynamic-prompt') {
+  Reline.prompt_proc = proc { |lines|
+    lines.each_with_index.map { |l, i|
+      '[%04d]> ' % i
+    }
+  }
+}
+opt.parse!(ARGV)
 
 begin
   stty_save = `stty -g`.chomp
