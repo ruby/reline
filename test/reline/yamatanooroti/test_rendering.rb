@@ -6,7 +6,8 @@ begin
   class Reline::TestRendering < Yamatanooroti::TestCase
     def setup
       @pwd = Dir.pwd
-      @tmpdir = File.join(File.expand_path(Dir.tmpdir), "test_reline_config_#{$$}")
+      suffix = '%010d' % Random.rand(0..65535)
+      @tmpdir = File.join(File.expand_path(Dir.tmpdir), "test_reline_config_#{$$}_#{suffix}")
       begin
         Dir.mkdir(@tmpdir)
       rescue Errno::EEXIST
@@ -420,6 +421,23 @@ begin
         [0000]> def hoge
         [0001]>   3
         [0002]> end
+      EOC
+    end
+
+    def test_enable_bracketed_paste
+      write_inputrc <<~LINES
+        set enable-bracketed-paste on
+      LINES
+      start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/bin/multiline_repl}, startup_message: 'Multiline REPL.')
+      write("\e[200~,")
+      write("def hoge\n  3\nend")
+      write("\e[200~.")
+      close
+      assert_screen(<<~EOC)
+        Multiline REPL.
+        prompt> def hoge
+        prompt>   3
+        prompt> end
       EOC
     end
 
