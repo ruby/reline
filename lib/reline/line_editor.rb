@@ -139,9 +139,12 @@ class Reline::LineEditor
     @screen_height = @screen_size.first
     reset_variables(prompt, encoding: encoding)
     @old_trap = Signal.trap('SIGINT') {
-      @old_trap.call if @old_trap.respond_to?(:call) # can also be string, ex: "DEFAULT"
+      unless @old_trap.instance_variable_get(:@_is_reset_trap)
+        @old_trap.try(:call) # can also be string, ex: "DEFAULT"
+      end
       raise Interrupt
     }
+    @old_trap.instance_variable_set(:@_is_reset_trap, true)
     Reline::IOGate.set_winch_handler do
       @rest_height = (Reline::IOGate.get_screen_size.first - 1) - Reline::IOGate.cursor_pos.y
       old_screen_size = @screen_size
