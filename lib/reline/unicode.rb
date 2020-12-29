@@ -100,6 +100,8 @@ class Reline::Unicode
   /x
 
   def self.get_mbchar_width(mbchar)
+    return 1 if mbchar == ""
+
     ord = mbchar.ord
     if (0x00 <= ord and ord <= 0x1F)
       return 2
