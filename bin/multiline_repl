@@ -4,6 +4,12 @@ require 'reline'
 require 'optparse'
 require_relative 'termination_checker'
 
+if ENV['RELINE_STDERR_TTY']
+  $stderr.reopen(ENV['RELINE_STDERR_TTY'], 'w')
+  $stderr.sync = true
+  $stderr.puts "Reline is used by #{Process.pid}"
+end
+
 opt = OptionParser.new
 opt.on('--prompt-list-cache-timeout VAL') { |v|
   Reline::LineEditor.__send__(:remove_const, :PROMPT_LIST_CACHE_TIMEOUT)
