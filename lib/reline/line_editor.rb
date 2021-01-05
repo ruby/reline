@@ -112,6 +112,7 @@ class Reline::LineEditor
           use_cached_prompt_list = true
         end
       end
+      use_cached_prompt_list = false if @rerender_all
       if use_cached_prompt_list
         prompt_list = @cached_prompt_list
       else
@@ -123,6 +124,12 @@ class Reline::LineEditor
       prompt_list = prompt_list.map{ |pr| mode_string + pr } if mode_string
       prompt = prompt_list[@line_index]
       prompt = prompt_list[0] if prompt.nil?
+      prompt = prompt_list.last if prompt.nil?
+      if buffer.size > prompt_list.size
+        (buffer.size - prompt_list.size).times do
+          prompt_list << prompt_list.last
+        end
+      end
       prompt_width = calculate_width(prompt, true)
       [prompt, prompt_width, prompt_list]
     else
@@ -1131,6 +1138,7 @@ class Reline::LineEditor
       new_lines = whole_lines
     end
     new_indent = @auto_indent_proc.(new_lines, @line_index, @byte_pointer, @check_new_auto_indent)
+    new_indent = @cursor_max if new_indent&.> @cursor_max
     if new_indent&.>= 0
       md = new_lines[@line_index].match(/\A */)
       prev_indent = md[0].count(' ')
@@ -1331,7 +1339,7 @@ class Reline::LineEditor
       cursor_line = @line.byteslice(0, @byte_pointer)
       insert_new_line(cursor_line, next_line)
       @cursor = 0
-      @check_new_auto_indent = true
+      @check_new_auto_indent = true unless Reline::IOGate.in_pasting?
     end
   end
 

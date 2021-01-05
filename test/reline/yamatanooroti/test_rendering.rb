@@ -450,6 +450,18 @@ begin
       EOC
     end
 
+    def test_broken_prompt_list
+      start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/bin/multiline_repl --broken-dynamic-prompt}, startup_message: 'Multiline REPL.')
+      write("def hoge\n  3\nend")
+      close
+      assert_screen(<<~EOC)
+        Multiline REPL.
+        [0000]> def hoge
+        [0001]>   3
+        [0001]> end
+      EOC
+    end
+
     def test_enable_bracketed_paste
       omit if Reline::IOGate.win?
       write_inputrc <<~LINES
@@ -634,6 +646,35 @@ begin
         Multiline REPL.
         prompt> def hoge
         prompt>   0123456789
+      EOC
+    end
+
+    def test_suppress_auto_indent_just_after_pasted
+      start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/bin/multiline_repl --auto-indent}, startup_message: 'Multiline REPL.')
+      write("def hoge\n  [[\n      3]]\ned")
+      write("\C-bn")
+      close
+      assert_screen(<<~EOC)
+        Multiline REPL.
+        prompt> def hoge
+        prompt>   [[
+        prompt>       3]]
+        prompt> end
+      EOC
+    end
+
+    def test_suppress_auto_indent_for_adding_newlines_in_pasting
+      start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/bin/multiline_repl --auto-indent}, startup_message: 'Multiline REPL.')
+      write("<<~Q\n")
+      write("{\n  #\n}")
+      write("#")
+      close
+      assert_screen(<<~EOC)
+        Multiline REPL.
+        prompt> <<~Q
+        prompt> {
+        prompt>   #
+        prompt> }#
       EOC
     end
 
