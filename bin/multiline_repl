@@ -22,6 +22,14 @@ opt.on('--dynamic-prompt') {
     }
   }
 }
+opt.on('--broken-dynamic-prompt') {
+  Reline.prompt_proc = proc { |lines|
+    range = lines.size > 1 ? (0..(lines.size - 2)) : (0..0)
+    lines[range].each_with_index.map { |l, i|
+      '[%04d]> ' % i
+    }
+  }
+}
 opt.on('--auto-indent') {
   AutoIndent.new
 }
