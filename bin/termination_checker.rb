@@ -16,3 +16,15 @@ class TerminationChecker < RubyLex
     end
   end
 end
+
+class AutoIndent < RubyLex
+  def initialize
+    set_input(self)
+    context = Struct.new(:auto_indent_mode).new(true)
+    set_auto_indent(context)
+  end
+
+  def auto_indent(&block)
+    Reline.auto_indent_proc = block
+  end
+end

@@ -22,6 +22,9 @@ opt.on('--dynamic-prompt') {
     }
   }
 }
+opt.on('--auto-indent') {
+  AutoIndent.new
+}
 opt.parse!(ARGV)
 
 begin
