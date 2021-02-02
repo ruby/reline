@@ -429,6 +429,7 @@ class Reline::LineEditor
         line = modify_lines(whole_lines)[@line_index]
         prompt, prompt_width, prompt_list = check_multiline_prompt(whole_lines, prompt)
         render_partial(prompt, prompt_width, line, @first_line_started_from)
+        move_cursor_down(@highest_in_all - (@first_line_started_from + @highest_in_this - 1) - 1)
         scroll_down(1)
         Reline::IOGate.move_cursor_column(0)
         Reline::IOGate.erase_after_cursor
@@ -491,8 +492,8 @@ class Reline::LineEditor
     @line = @buffer_of_lines[@line_index]
     unless @in_pasting
       render_partial(prompt, prompt_width, @line, @first_line_started_from + @started_from + 1, with_control: false)
-      @cursor = @cursor_max = calculate_width(@line)
     end
+    @cursor = @cursor_max = calculate_width(@line)
     @byte_pointer = @line.bytesize
     @highest_in_all += @highest_in_this
     @highest_in_this = calculate_height_by_width(prompt_width + @cursor_max)
@@ -2461,11 +2462,23 @@ class Reline::LineEditor
 
   private def vi_histedit(key)
     path = Tempfile.open { |fp|
-      fp.write @line
+      if @is_multiline
+        fp.write whole_lines.join("\n")
+      else
+        fp.write @line
+      end
       fp.path
     }
     system("#{ENV['EDITOR']} #{path}")
-    @line = File.read(path)
+    if @is_multiline
+      @buffer_of_lines = File.read(path).split("\n")
+      @buffer_of_lines = [String.new(encoding: @encoding)] if @buffer_of_lines.empty?
+      @line_index = 0
+      @line = @buffer_of_lines[@line_index]
+      @rerender_all = true
+    else
+      @line = File.read(path)
+    end
     finish
   end
 
