@@ -28,11 +28,15 @@ jobs:
     runs-on: ${{ matrix.cfg.os }}
     strategy:
       matrix:
-        cfg:
-          - { ruby: head , os: ubuntu-latest  }
-          - { ruby: head , os: macos-latest   }
-          - { ruby: mingw, os: windows-latest }
-          - { ruby: mswin, os: windows-latest }
+        include:
+          - ruby: head
+            os: ubuntu-latest
+          - ruby: head
+            os: macos-latest
+          - ruby: mingw
+            os: windows-latest
+          - ruby: mswin
+            os: windows-latest
     steps:
       - uses: actions/checkout@v2
       - name: Set up Ruby
