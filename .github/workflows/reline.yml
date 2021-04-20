@@ -24,25 +24,21 @@ jobs:
 
   readline:
     name: >-
-      readline ${{ matrix.cfg.ruby }}  ${{ matrix.cfg.os }}
-    runs-on: ${{ matrix.cfg.os }}
+      readline ${{ matrix.ruby }}  ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-          - ruby: head
-            os: ubuntu-latest
-          - ruby: head
-            os: macos-latest
-          - ruby: mingw
-            os: windows-latest
-          - ruby: mswin
-            os: windows-latest
+          - { ruby: head,  os: ubuntu-latest  }
+          - { ruby: head,  os: macos-latest   }
+          - { ruby: mingw, os: windows-latest }
+          - { ruby: mswin, os: windows-latest }
     steps:
       - uses: actions/checkout@v2
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: ${{ matrix.cfg.ruby }}
+          ruby-version: ${{ matrix.ruby }}
       - name: Install dependencies
         run:  bundle install
       - name: Download test readline
