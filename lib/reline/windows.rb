@@ -38,6 +38,7 @@ class Reline::Windows
 
     {
       [27, 32] => :em_set_mark,             # M-<space>
+      [24, 24] => :em_exchange_mark,        # C-x C-x
     }.each_pair do |key, func|
       config.add_default_key_binding_by_keymap(:emacs, key, func)
     end
@@ -183,6 +184,10 @@ class Reline::Windows
     char = char_code.chr(Encoding::UTF_8)
     if char_code == 0x0D and control_key_state.anybits?(LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED | SHIFT_PRESSED)
       # It's treated as Meta+Enter on Windows.
+      @@output_buf.push("\e".ord)
+      @@output_buf.push(char_code)
+    elsif char_code == 0x20 and control_key_state.anybits?(LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)
+      # It's treated as Meta+Space on Windows.
       @@output_buf.push("\e".ord)
       @@output_buf.push(char_code)
     elsif control_key_state.anybits?(LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)
