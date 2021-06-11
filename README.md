@@ -39,6 +39,17 @@ rescue Interrupt
 end
 ```
 
+```bash
+$ ruby example.rb
+prompt> aaa
+prompt> bbb
+prompt> end
+You entered:
+aaa
+bbb
+end
+```
+
 See also: [test/reline/yamatanooroti/multiline_repl](https://github.com/ruby/reline/blob/master/test/reline/yamatanooroti/multiline_repl)
 
 ## License
