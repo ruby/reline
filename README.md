@@ -12,7 +12,9 @@ Reline is compatible with the API of Ruby's stdlib 'readline', GNU Readline and 
 
 ### Single line editing mode
 
-See [bin/example](https://github.com/ruby/reline/blob/master/bin/example)
+It's compatible with the readline standard library.
+
+See [the document of readline stdlib](https://ruby-doc.org/stdlib/libdoc/readline/rdoc/Readline.html) or [bin/example](https://github.com/ruby/reline/blob/master/bin/example).
 
 ### Multi-line editing mode
 
