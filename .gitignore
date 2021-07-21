@@ -11,3 +11,4 @@
 /tool/
 *.swp
 Gemfile.lock
+/.idea/
