@@ -20,6 +20,8 @@ jobs:
       - name: Install dependencies
         run:  bundle install
       - name: rake test
+        env:
+          TERM: xterm-256color
         run:  bundle exec rake test
 
   readline:
@@ -48,6 +50,7 @@ jobs:
       - name: rake ci-test
         env:
           TEST_READLINE_OR_RELINE: Reline
+          TERM: xterm-256color
         run: bundle exec rake ci-test
 
   irb:
