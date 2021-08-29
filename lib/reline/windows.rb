@@ -133,6 +133,7 @@ class Reline::Windows
   @@GetFileType = Win32API.new('kernel32', 'GetFileType', ['L'], 'L')
   @@GetFileInformationByHandleEx = Win32API.new('kernel32', 'GetFileInformationByHandleEx', ['L', 'I', 'P', 'L'], 'I')
   @@FillConsoleOutputAttribute = Win32API.new('kernel32', 'FillConsoleOutputAttribute', ['L', 'L', 'L', 'L', 'P'], 'L')
+  @@SetConsoleCursorInfo = Win32API.new('kernel32', 'SetConsoleCursorInfo', ['L', 'P'], 'L')
 
   @@GetConsoleMode = Win32API.new('kernel32', 'GetConsoleMode', ['L', 'P'], 'L')
   @@SetConsoleMode = Win32API.new('kernel32', 'SetConsoleMode', ['L', 'L'], 'L')
@@ -341,6 +342,20 @@ class Reline::Windows
 
   def self.set_screen_size(rows, columns)
     raise NotImplementedError
+  end
+
+  def self.hide_cursor
+    size = 100
+    visible = 0 # 0 means false
+    cursor_info = [size, visible].pack('Li')
+    @@SetConsoleCursorInfo.call(@@hConsoleHandle, cursor_info)
+  end
+
+  def self.show_cursor
+    size = 100
+    visible = 1 # 1 means true
+    cursor_info = [size, visible].pack('Li')
+    @@SetConsoleCursorInfo.call(@@hConsoleHandle, cursor_info)
   end
 
   def self.set_winch_handler(&handler)
