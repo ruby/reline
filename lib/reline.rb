@@ -107,6 +107,14 @@ module Reline
       @completion_proc = p
     end
 
+    def autocompletion
+      @config.autocompletion
+    end
+
+    def autocompletion=(val)
+      @config.autocompletion = val
+    end
+
     def output_modifier_proc=(p)
       raise ArgumentError unless p.respond_to?(:call) or p.nil?
       @output_modifier_proc = p
@@ -180,6 +188,7 @@ module Reline
 
     Reline::DEFAULT_DIALOG_PROC_AUTOCOMPLETE = ->() {
       # autocomplete
+      return nil unless config.autocompletion
       if just_cursor_moving and completion_journey_data.nil?
         # Auto complete starts only when edited
         return nil
