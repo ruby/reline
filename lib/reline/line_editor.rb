@@ -499,6 +499,14 @@ class Reline::LineEditor
       @line_editor.call_completion_proc_with_checking_args(pre, target, post)
     end
 
+    def set_dialog(dialog)
+      @dialog = dialog
+    end
+
+    def dialog
+      @dialog
+    end
+
     def set_cursor_pos(col, row)
       @cursor_pos.x = col
       @cursor_pos.y = row
@@ -531,11 +539,12 @@ class Reline::LineEditor
 
   class Dialog
     attr_reader :name
-    attr_accessor :column, :vertical_offset, :contents, :lines_backup
+    attr_accessor :scroll_top, :column, :vertical_offset, :contents, :lines_backup
 
     def initialize(name, proc_scope)
       @name = name
       @proc_scope = proc_scope
+      @scroll_top = 0
     end
 
     def set_cursor_pos(col, row)
@@ -543,6 +552,7 @@ class Reline::LineEditor
     end
 
     def call
+      @proc_scope.set_dialog(self)
       @proc_scope.call
     end
   end
@@ -566,13 +576,28 @@ class Reline::LineEditor
       return
     end
     dialog.set_cursor_pos(cursor_column, @first_line_started_from + @started_from)
-    pos, result, pointer, bg = dialog.call
+    dialog_render_info = dialog.call
     old_dialog_contents = dialog.contents
     old_dialog_column = dialog.column
     old_dialog_vertical_offset = dialog.vertical_offset
-    if result and not result.empty?
-      dialog.contents = result
-      dialog.contents = dialog.contents[0...DIALOG_HEIGHT] if dialog.contents.size > DIALOG_HEIGHT
+    start = 0
+    if dialog_render_info and dialog_render_info.contents and not dialog_render_info.contents.empty?
+      height = dialog_render_info.height || DIALOG_HEIGHT
+      pointer = dialog_render_info.pointer
+      dialog.contents = dialog_render_info.contents
+      if dialog.contents.size > height
+        if dialog_render_info.pointer
+          if dialog_render_info.pointer < 0
+            dialog.scroll_top = 0
+          elsif (dialog_render_info.pointer - dialog.scroll_top) >= (height - 1)
+            dialog.scroll_top = dialog_render_info.pointer - (height - 1)
+          elsif (dialog_render_info.pointer - dialog.scroll_top) < 0
+            dialog.scroll_top = dialog_render_info.pointer
+          end
+          pointer = dialog_render_info.pointer - dialog.scroll_top
+        end
+        dialog.contents = dialog.contents[dialog.scroll_top, height]
+      end
     else
       dialog.lines_backup = {
         lines: modify_lines(whole_lines),
@@ -587,21 +612,21 @@ class Reline::LineEditor
     end
     upper_space = @first_line_started_from - @started_from
     lower_space = @highest_in_all - @first_line_started_from - @started_from - 1
-    dialog.column = pos.x
+    dialog.column = dialog_render_info.pos.x
     diff = (dialog.column + DIALOG_WIDTH) - (@screen_size.last - 1)
     if diff > 0
       dialog.column -= diff
     end
-    if (lower_space + @rest_height) >= DIALOG_HEIGHT
-      dialog.vertical_offset = pos.y + 1
-    elsif upper_space >= DIALOG_HEIGHT
-      dialog.vertical_offset = pos.y + -(DIALOG_HEIGHT + 1)
+    if (lower_space + @rest_height - dialog_render_info.pos.y) >= height
+      dialog.vertical_offset = dialog_render_info.pos.y + 1
+    elsif upper_space >= height
+      dialog.vertical_offset = dialog_render_info.pos.y + -(height + 1)
     else
-      if (lower_space + @rest_height) < DIALOG_HEIGHT
-        scroll_down(DIALOG_HEIGHT)
-        move_cursor_up(DIALOG_HEIGHT)
+      if (lower_space + @rest_height - dialog_render_info.pos.y) < height
+        scroll_down(height + dialog_render_info.pos.y)
+        move_cursor_up(height + dialog_render_info.pos.y)
       end
-      dialog.vertical_offset = pos.y + 1
+      dialog.vertical_offset = dialog_render_info.pos.y + 1
     end
     Reline::IOGate.hide_cursor
     reset_dialog(dialog, old_dialog_contents, old_dialog_column, old_dialog_vertical_offset)
@@ -611,8 +636,8 @@ class Reline::LineEditor
       if i == pointer
         bg_color = '45'
       else
-        if bg
-          bg_color = bg
+        if dialog_render_info.bg_color
+          bg_color = dialog_render_info.bg_color
         else
           bg_color = '46'
         end

@@ -18,6 +18,7 @@ module Reline
 
   Key = Struct.new('Key', :char, :combined_char, :with_meta)
   CursorPos = Struct.new(:x, :y)
+  DialogRenderInfo = Struct.new(:pos, :contents, :pointer, :bg_color, :height, keyword_init: true)
 
   class Core
     ATTR_READER_NAMES = %i(
@@ -219,9 +220,9 @@ module Reline
       cursor_pos_to_render = Reline::CursorPos.new(x, y)
       if context and context.is_a?(Array)
         context.clear
-        context.push(cursor_pos_to_render, result, pointer)
+        context.push(cursor_pos_to_render, result, pointer, dialog)
       end
-      [cursor_pos_to_render, result, pointer, nil]
+      DialogRenderInfo.new(pos: cursor_pos_to_render, contents: result, pointer: pointer, height: 15)
     }
     Reline::DEFAULT_DIALOG_CONTEXT = Array.new
 
