@@ -582,6 +582,10 @@ class Reline::LineEditor
     end
   end
 
+  private def padding_space_with_escape_sequences(str, width)
+    str + (' ' * (width - calculate_width(str, true)))
+  end
+
   private def render_each_dialog(dialog, cursor_column)
     if @in_pasting
       dialog.contents = nil
@@ -651,7 +655,8 @@ class Reline::LineEditor
           bg_color = '46'
         end
       end
-      @output.write "\e[#{bg_color}m%-#{dialog.width}s\e[49m" % Reline::Unicode.take_range(item, 0, dialog.width)
+      str = padding_space_with_escape_sequences(Reline::Unicode.take_range(item, 0, dialog.width), dialog.width)
+      @output.write "\e[#{bg_color}m#{str}\e[49m"
       Reline::IOGate.move_cursor_column(dialog.column)
       move_cursor_down(1) if i < (dialog.contents.size - 1)
     end
@@ -695,8 +700,9 @@ class Reline::LineEditor
           s = ' ' * dialog.width
         else
           s = Reline::Unicode.take_range(visual_lines[start + i], old_dialog.column, dialog.width)
+          s = padding_space_with_escape_sequences(s, dialog.width)
         end
-        @output.write "\e[39m\e[49m%-#{dialog.width}s\e[39m\e[49m" % s
+        @output.write "\e[39m\e[49m#{s}\e[39m\e[49m"
         move_cursor_down(1) if i < (line_num - 1)
       end
       move_cursor_up(old_dialog.vertical_offset + line_num - 1 - y_diff)
@@ -712,8 +718,9 @@ class Reline::LineEditor
           s = ' ' * dialog.width
         else
           s = Reline::Unicode.take_range(visual_lines[start + i], old_dialog.column, dialog.width)
+          s = padding_space_with_escape_sequences(s, dialog.width)
         end
-        @output.write "\e[39m\e[49m%-#{dialog.width}s\e[39m\e[49m" % s
+        @output.write "\e[39m\e[49m#{s}\e[39m\e[49m"
         move_cursor_down(1) if i < (line_num - 1)
       end
       move_cursor_up(dialog.vertical_offset + dialog.contents.size + line_num - 1 - y_diff)
@@ -730,8 +737,9 @@ class Reline::LineEditor
           s = ' ' * width
         else
           s = Reline::Unicode.take_range(visual_lines[start + i], old_dialog.column, width)
+          s = padding_space_with_escape_sequences(s, dialog.width)
         end
-        @output.write "\e[39m\e[49m%-#{width}s\e[39m\e[49m" % s
+        @output.write "\e[39m\e[49m#{s}\e[39m\e[49m"
         move_cursor_down(1) if i < (line_num - 1)
       end
       move_cursor_up(old_dialog.vertical_offset + line_num - 1 - y_diff)
@@ -748,9 +756,10 @@ class Reline::LineEditor
           s = ' ' * width
         else
           s = Reline::Unicode.take_range(visual_lines[start + i], old_dialog.column + dialog.width, width)
+          s = padding_space_with_escape_sequences(s, dialog.width)
         end
         Reline::IOGate.move_cursor_column(dialog.column + dialog.width)
-        @output.write "\e[39m\e[49m%-#{width}s\e[39m\e[49m" % s
+        @output.write "\e[39m\e[49m#{s}\e[39m\e[49m"
         move_cursor_down(1) if i < (line_num - 1)
       end
       move_cursor_up(old_dialog.vertical_offset + line_num - 1 + y_diff)
@@ -787,12 +796,12 @@ class Reline::LineEditor
     dialog_vertical_size.times do |i|
       if i < visual_lines_under_dialog.size
         Reline::IOGate.move_cursor_column(0)
-        @output.write "\e[39m\e[49m%-#{dialog.width}s\e[39m\e[49m" % visual_lines_under_dialog[i]
+        str = padding_space_with_escape_sequences(visual_lines_under_dialog[i], dialog.width)
+        @output.write "\e[39m\e[49m#{str}\e[39m\e[49m"
       else
         Reline::IOGate.move_cursor_column(dialog.column)
         @output.write "\e[39m\e[49m#{' ' * dialog.width}\e[39m\e[49m"
       end
-      Reline::IOGate.erase_after_cursor
       move_cursor_down(1) if i < (dialog_vertical_size - 1)
     end
     move_cursor_up(dialog_vertical_size - 1 + dialog.vertical_offset)
