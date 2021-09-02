@@ -575,7 +575,6 @@ class Reline::LineEditor
   end
 
   DIALOG_HEIGHT = 20
-  DIALOG_WIDTH = 40
   private def render_dialog(cursor_column)
     @dialogs.each do |dialog|
       render_each_dialog(dialog, cursor_column)
@@ -610,6 +609,7 @@ class Reline::LineEditor
     height = dialog_render_info.height || DIALOG_HEIGHT
     pointer = dialog_render_info.pointer
     dialog.contents = dialog_render_info.contents
+    height = dialog.contents.size if dialog.contents.size < height
     if dialog.contents.size > height
       if dialog_render_info.pointer
         if dialog_render_info.pointer < 0
@@ -633,7 +633,7 @@ class Reline::LineEditor
     if (lower_space + @rest_height - dialog_render_info.pos.y) >= height
       dialog.vertical_offset = dialog_render_info.pos.y + 1
     elsif upper_space >= height
-      dialog.vertical_offset = dialog_render_info.pos.y + -(height + 1)
+      dialog.vertical_offset = dialog_render_info.pos.y - height
     else
       if (lower_space + @rest_height - dialog_render_info.pos.y) < height
         scroll_down(height + dialog_render_info.pos.y)
@@ -795,8 +795,9 @@ class Reline::LineEditor
     dialog_vertical_size = dialog.contents.size
     dialog_vertical_size.times do |i|
       if i < visual_lines_under_dialog.size
-        Reline::IOGate.move_cursor_column(0)
-        str = padding_space_with_escape_sequences(visual_lines_under_dialog[i], dialog.width)
+        Reline::IOGate.move_cursor_column(dialog.column)
+        str = Reline::Unicode.take_range(visual_lines_under_dialog[i], dialog.column, dialog.width)
+        str = padding_space_with_escape_sequences(str, dialog.width)
         @output.write "\e[39m\e[49m#{str}\e[39m\e[49m"
       else
         Reline::IOGate.move_cursor_column(dialog.column)
