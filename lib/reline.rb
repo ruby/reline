@@ -18,10 +18,23 @@ module Reline
 
   Key = Struct.new('Key', :char, :combined_char, :with_meta) do
     def match?(key)
-      (key.char.nil? or char.nil? or char == key.char) and
-      (key.combined_char.nil? or combined_char.nil? or combined_char == key.combined_char) and
-      (key.with_meta.nil? or with_meta.nil? or with_meta == key.with_meta)
+      if key.instance_of?(Reline::Key)
+        (key.char.nil? or char.nil? or char == key.char) and
+        (key.combined_char.nil? or combined_char.nil? or combined_char == key.combined_char) and
+        (key.with_meta.nil? or with_meta.nil? or with_meta == key.with_meta)
+      elsif key.is_a?(Integer) or key.is_a?(Symbol)
+        if not combined_char.nil? and combined_char == key
+          true
+        elsif combined_char.nil? and not char.nil? and char == key
+          true
+        else
+          false
+        end
+      else
+        false
+      end
     end
+    alias_method :==, :match?
   end
   CursorPos = Struct.new(:x, :y)
   DialogRenderInfo = Struct.new(:pos, :contents, :pointer, :bg_color, :width, :height, :scrollbar, keyword_init: true)
@@ -368,25 +381,9 @@ module Reline
           break
         when :matching
           if buffer.size == 1
-            begin
-              succ_c = nil
-              Timeout.timeout(keyseq_timeout / 1000.0) {
-                succ_c = Reline::IOGate.getc
-              }
-            rescue Timeout::Error # cancel matching only when first byte
-              block.([Reline::Key.new(c, c, false)])
-              break
-            else
-              if key_stroke.match_status(buffer.dup.push(succ_c)) == :unmatched
-                if c == "\e".ord
-                  block.([Reline::Key.new(succ_c, succ_c | 0b10000000, true)])
-                else
-                  block.([Reline::Key.new(c, c, false), Reline::Key.new(succ_c, succ_c, false)])
-                end
-                break
-              else
-                Reline::IOGate.ungetc(succ_c)
-              end
+            case read_2nd_character_of_key_sequence(keyseq_timeout, buffer, c, block)
+            when :break then break
+            when :next  then next
             end
           end
         when :unmatched
@@ -399,6 +396,38 @@ module Reline
             block.(expanded)
           end
           break
+        end
+      end
+    end
+
+    private def read_2nd_character_of_key_sequence(keyseq_timeout, buffer, c, block)
+      begin
+        succ_c = nil
+        Timeout.timeout(keyseq_timeout / 1000.0) {
+          succ_c = Reline::IOGate.getc
+        }
+      rescue Timeout::Error # cancel matching only when first byte
+        block.([Reline::Key.new(c, c, false)])
+        return :break
+      else
+        case key_stroke.match_status(buffer.dup.push(succ_c))
+        when :unmatched
+          if c == "\e".ord
+            block.([Reline::Key.new(succ_c, succ_c | 0b10000000, true)])
+          else
+            block.([Reline::Key.new(c, c, false), Reline::Key.new(succ_c, succ_c, false)])
+          end
+          return :break
+        when :matching
+          Reline::IOGate.ungetc(succ_c)
+          return :next
+        when :matched
+          buffer << succ_c
+          expanded = key_stroke.expand(buffer).map{ |expanded_c|
+            Reline::Key.new(expanded_c, expanded_c, false)
+          }
+          block.(expanded)
+          return :break
         end
       end
     end
