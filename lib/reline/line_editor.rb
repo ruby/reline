@@ -706,9 +706,10 @@ class Reline::LineEditor
           bg_color = '46'
         end
       end
-      str = padding_space_with_escape_sequences(Reline::Unicode.take_range(item, 0, dialog.width - @block_elem_width), dialog.width - @block_elem_width)
+      str_width = dialog.width - (dialog.scrollbar_pos.nil? ? 0 : @block_elem_width)
+      str = padding_space_with_escape_sequences(Reline::Unicode.take_range(item, 0, str_width), str_width)
       @output.write "\e[#{bg_color}m#{str}"
-      if dialog.scrollbar_pos and dialog.scrollbar_pos != old_dialog.scrollbar_pos
+      if dialog.scrollbar_pos and (dialog.scrollbar_pos != old_dialog.scrollbar_pos or dialog.column != old_dialog.column)
         @output.write "\e[37m"
         if dialog.scrollbar_pos <= (i * 2) and (i * 2 + @block_elem_width) < (dialog.scrollbar_pos + bar_height)
           @output.write '█'
@@ -810,9 +811,7 @@ class Reline::LineEditor
       end
       move_cursor_up(old_dialog.vertical_offset + line_num - 1 - y_diff)
     end
-    old_dialog_scrollbar = old_dialog.scrollbar_pos.nil? ? 0 : @block_elem_width
-    dialog_scrollbar = dialog.scrollbar_pos.nil? ? 0 : @block_elem_width
-    if (old_dialog.column + old_dialog.width - old_dialog_scrollbar) > (dialog.column + dialog.width - dialog_scrollbar)
+    if (old_dialog.column + old_dialog.width) > (dialog.column + dialog.width)
       # rerender right
       move_cursor_down(old_dialog.vertical_offset + y_diff)
       width = (old_dialog.column + old_dialog.width) - (dialog.column + dialog.width)
