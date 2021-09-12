@@ -27,7 +27,6 @@ module HTTPS_DL
     ["tool/lib"          , "tool/lib"          , "envutil.rb"               ],
     ["tool/lib"          , "tool/lib"          , "find_executable.rb"       ],
     ["tool/lib"          , "tool/lib"          , "leakchecker.rb"           ],
-    ["tool/lib/minitest" , "tool/lib/minitest" , "unit.rb"                  ],
     ["tool/lib/test"     , "tool/lib/test"     , "unit.rb"                  ],
     ["tool/lib/test/unit", "tool/lib/test/unit", "assertions.rb"            ],
     ["tool/lib/test/unit", "tool/lib/test/unit", "parallel.rb"              ],
