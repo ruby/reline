@@ -2515,6 +2515,11 @@ class Reline::LineEditor
   end
   alias_method :backward_delete_char, :em_delete_prev_char
 
+  # Editline:: +ed-kill-line+ (vi command: +D+, +Ctrl-K+; emacs: +Ctrl-K+,
+  #            +Ctrl-U+) + Kill from the cursor to the end of the line.
+  # GNU Readline:: +kill-line+ (+C-k+) Kill the text from point to the end of
+  #                the line. With a negative numeric argument, kill backward
+  #                from the cursor to the beginning of the current line.
   private def ed_kill_line(key)
     if @line.bytesize > @byte_pointer
       @line, deleted = byteslice!(@line, @byte_pointer, @line.bytesize - @byte_pointer)
@@ -2533,7 +2538,12 @@ class Reline::LineEditor
   end
   alias_method :kill_line, :ed_kill_line
 
-  private def em_kill_line(key)
+  # Editline:: +vi-kill-line-prev+ (vi: +Ctrl-U+) Delete the string from the
+  #            beginning  of the edit buffer to the cursor and save it to the
+  #            cut buffer.
+  # GNU Readline:: +unix-line-discard+ (+C-u+) Kill backward from the cursor
+  #                to the beginning of the current line.
+  private def vi_kill_line_prev(key)
     if @byte_pointer > 0
       @line, deleted = byteslice!(@line, 0, @byte_pointer)
       @byte_pointer = 0
@@ -2542,8 +2552,22 @@ class Reline::LineEditor
       @cursor = 0
     end
   end
-  alias_method :unix_line_discard, :em_kill_line
-  alias_method :vi_kill_line_prev, :em_kill_line
+  alias_method :unix_line_discard, :vi_kill_line_prev
+
+  # Editline:: +em-kill-line+ (not bound) Delete the entire contents of the
+  #            edit buffer and save it to the cut buffer. +vi-kill-line-prev+
+  # GNU Readline:: +kill-whole-line+ (not bound) Kill all characters on the
+  #                current line, no matter where point is.
+  private def em_kill_line(key)
+    if @line.size > 0
+      @kill_ring.append(@line.dup, true)
+      @line.clear
+      @byte_pointer = 0
+      @cursor_max = 0
+      @cursor = 0
+    end
+  end
+  alias_method :kill_whole_line, :em_kill_line
 
   private def em_delete(key)
     if (not @is_multiline and @line.empty?) or (@is_multiline and @line.empty? and @buffer_of_lines.size == 1)
