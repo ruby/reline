@@ -1998,8 +1998,8 @@ class Reline::LineEditor
     @cursor += width
     @cursor_max += width
   end
-  private alias_method :ed_digit, :ed_insert
-  private alias_method :self_insert, :ed_insert
+  alias_method :ed_digit, :ed_insert
+  alias_method :self_insert, :ed_insert
 
   private def ed_quoted_insert(str, arg: 1)
     @waiting_proc = proc { |key|
@@ -2015,7 +2015,7 @@ class Reline::LineEditor
       @waiting_proc = nil
     }
   end
-  private alias_method :quoted_insert, :ed_quoted_insert
+  alias_method :quoted_insert, :ed_quoted_insert
 
   private def ed_next_char(key, arg: 1)
     byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
@@ -2035,7 +2035,7 @@ class Reline::LineEditor
     arg -= 1
     ed_next_char(key, arg: arg) if arg > 0
   end
-  private alias_method :forward_char, :ed_next_char
+  alias_method :forward_char, :ed_next_char
 
   private def ed_prev_char(key, arg: 1)
     if @cursor > 0
@@ -2055,7 +2055,7 @@ class Reline::LineEditor
     arg -= 1
     ed_prev_char(key, arg: arg) if arg > 0
   end
-  private alias_method :backward_char, :ed_prev_char
+  alias_method :backward_char, :ed_prev_char
 
   private def vi_first_print(key)
     @byte_pointer, @cursor = Reline::Unicode.vi_first_print(@line)
@@ -2064,7 +2064,7 @@ class Reline::LineEditor
   private def ed_move_to_beg(key)
     @byte_pointer = @cursor = 0
   end
-  private alias_method :beginning_of_line, :ed_move_to_beg
+  alias_method :beginning_of_line, :ed_move_to_beg
 
   private def ed_move_to_end(key)
     @byte_pointer = 0
@@ -2079,7 +2079,7 @@ class Reline::LineEditor
       @byte_pointer += byte_size
     end
   end
-  private alias_method :end_of_line, :ed_move_to_end
+  alias_method :end_of_line, :ed_move_to_end
 
   private def generate_searcher
     Fiber.new do |first_key|
@@ -2287,12 +2287,12 @@ class Reline::LineEditor
   private def vi_search_prev(key)
     incremental_search_history(key)
   end
-  private alias_method :reverse_search_history, :vi_search_prev
+  alias_method :reverse_search_history, :vi_search_prev
 
   private def vi_search_next(key)
     incremental_search_history(key)
   end
-  private alias_method :forward_search_history, :vi_search_next
+  alias_method :forward_search_history, :vi_search_next
 
   private def ed_search_prev_history(key, arg: 1)
     history = nil
@@ -2339,7 +2339,7 @@ class Reline::LineEditor
     arg -= 1
     ed_search_prev_history(key, arg: arg) if arg > 0
   end
-  private alias_method :history_search_backward, :ed_search_prev_history
+  alias_method :history_search_backward, :ed_search_prev_history
 
   private def ed_search_next_history(key, arg: 1)
     substr = @line.slice(0, @byte_pointer)
@@ -2391,7 +2391,7 @@ class Reline::LineEditor
     arg -= 1
     ed_search_next_history(key, arg: arg) if arg > 0
   end
-  private alias_method :history_search_forward, :ed_search_next_history
+  alias_method :history_search_forward, :ed_search_next_history
 
   private def ed_prev_history(key, arg: 1)
     if @is_multiline and @line_index > 0
@@ -2442,7 +2442,7 @@ class Reline::LineEditor
     arg -= 1
     ed_prev_history(key, arg: arg) if arg > 0
   end
-  private alias_method :previous_history, :ed_prev_history
+  alias_method :previous_history, :ed_prev_history
 
   private def ed_next_history(key, arg: 1)
     if @is_multiline and @line_index < (@buffer_of_lines.size - 1)
@@ -2490,7 +2490,7 @@ class Reline::LineEditor
     arg -= 1
     ed_next_history(key, arg: arg) if arg > 0
   end
-  private alias_method :next_history, :ed_next_history
+  alias_method :next_history, :ed_next_history
 
   private def ed_newline(key)
     process_insert(force: true)
@@ -2546,7 +2546,7 @@ class Reline::LineEditor
     arg -= 1
     em_delete_prev_char(key, arg: arg) if arg > 0
   end
-  private alias_method :backward_delete_char, :em_delete_prev_char
+  alias_method :backward_delete_char, :em_delete_prev_char
 
   # Editline:: +ed-kill-line+ (vi command: +D+, +Ctrl-K+; emacs: +Ctrl-K+,
   #            +Ctrl-U+) + Kill from the cursor to the end of the line.
@@ -2569,7 +2569,7 @@ class Reline::LineEditor
       @rest_height += 1
     end
   end
-  private alias_method :kill_line, :ed_kill_line
+  alias_method :kill_line, :ed_kill_line
 
   # Editline:: +vi-kill-line-prev+ (vi: +Ctrl-U+) Delete the string from the
   #            beginning  of the edit buffer to the cursor and save it to the
@@ -2585,7 +2585,7 @@ class Reline::LineEditor
       @cursor = 0
     end
   end
-  private alias_method :unix_line_discard, :vi_kill_line_prev
+  alias_method :unix_line_discard, :vi_kill_line_prev
 
   # Editline:: +em-kill-line+ (not bound) Delete the entire contents of the
   #            edit buffer and save it to the cut buffer. +vi-kill-line-prev+
@@ -2600,7 +2600,7 @@ class Reline::LineEditor
       @cursor = 0
     end
   end
-  private alias_method :kill_whole_line, :em_kill_line
+  alias_method :kill_whole_line, :em_kill_line
 
   private def em_delete(key)
     if (not @is_multiline and @line.empty?) or (@is_multiline and @line.empty? and @buffer_of_lines.size == 1)
@@ -2627,7 +2627,7 @@ class Reline::LineEditor
       @rest_height += 1
     end
   end
-  private alias_method :delete_char, :em_delete
+  alias_method :delete_char, :em_delete
 
   private def em_delete_or_list(key)
     if @line.empty? or @byte_pointer < @line.bytesize
@@ -2639,7 +2639,7 @@ class Reline::LineEditor
       end
     end
   end
-  private alias_method :delete_char_or_list, :em_delete_or_list
+  alias_method :delete_char_or_list, :em_delete_or_list
 
   private def em_yank(key)
     yanked = @kill_ring.yank
@@ -2651,7 +2651,7 @@ class Reline::LineEditor
       @byte_pointer += yanked.bytesize
     end
   end
-  private alias_method :yank, :em_yank
+  alias_method :yank, :em_yank
 
   private def em_yank_pop(key)
     yanked, prev_yank = @kill_ring.yank_pop
@@ -2668,12 +2668,12 @@ class Reline::LineEditor
       @byte_pointer += yanked.bytesize
     end
   end
-  private alias_method :yank_pop, :em_yank_pop
+  alias_method :yank_pop, :em_yank_pop
 
   private def ed_clear_screen(key)
     @cleared = true
   end
-  private alias_method :clear_screen, :ed_clear_screen
+  alias_method :clear_screen, :ed_clear_screen
 
   private def em_next_word(key)
     if @line.bytesize > @byte_pointer
@@ -2682,7 +2682,7 @@ class Reline::LineEditor
       @cursor += width
     end
   end
-  private alias_method :forward_word, :em_next_word
+  alias_method :forward_word, :em_next_word
 
   private def ed_prev_word(key)
     if @byte_pointer > 0
@@ -2691,7 +2691,7 @@ class Reline::LineEditor
       @cursor -= width
     end
   end
-  private alias_method :backward_word, :ed_prev_word
+  alias_method :backward_word, :ed_prev_word
 
   private def em_delete_next_word(key)
     if @line.bytesize > @byte_pointer
@@ -2731,7 +2731,7 @@ class Reline::LineEditor
       end
     end
   end
-  private alias_method :transpose_chars, :ed_transpose_chars
+  alias_method :transpose_chars, :ed_transpose_chars
 
   private def ed_transpose_words(key)
     left_word_start, middle_start, right_word_start, after_start = Reline::Unicode.ed_transpose_words(@line, @byte_pointer)
@@ -2746,7 +2746,7 @@ class Reline::LineEditor
     @byte_pointer = from_head_to_left_word.bytesize
     @cursor = calculate_width(from_head_to_left_word)
   end
-  private alias_method :transpose_words, :ed_transpose_words
+  alias_method :transpose_words, :ed_transpose_words
 
   private def em_capitol_case(key)
     if @line.bytesize > @byte_pointer
@@ -2758,7 +2758,7 @@ class Reline::LineEditor
       @cursor += calculate_width(new_str)
     end
   end
-  private alias_method :capitalize_word, :em_capitol_case
+  alias_method :capitalize_word, :em_capitol_case
 
   private def em_lower_case(key)
     if @line.bytesize > @byte_pointer
@@ -2774,7 +2774,7 @@ class Reline::LineEditor
       @line += rest
     end
   end
-  private alias_method :downcase_word, :em_lower_case
+  alias_method :downcase_word, :em_lower_case
 
   private def em_upper_case(key)
     if @line.bytesize > @byte_pointer
@@ -2790,7 +2790,7 @@ class Reline::LineEditor
       @line += rest
     end
   end
-  private alias_method :upcase_word, :em_upper_case
+  alias_method :upcase_word, :em_upper_case
 
   private def em_kill_region(key)
     if @byte_pointer > 0
@@ -2802,7 +2802,7 @@ class Reline::LineEditor
       @kill_ring.append(deleted, true)
     end
   end
-  private alias_method :unix_word_rubout, :em_kill_region
+  alias_method :unix_word_rubout, :em_kill_region
 
   private def copy_for_vi(text)
     if @config.editing_mode_is?(:vi_insert) or @config.editing_mode_is?(:vi_command)
@@ -2823,7 +2823,7 @@ class Reline::LineEditor
     ed_prev_char(key)
     @config.editing_mode = :vi_command
   end
-  private alias_method :vi_movement_mode, :vi_command_mode
+  alias_method :vi_movement_mode, :vi_command_mode
 
   private def vi_next_word(key, arg: 1)
     if @line.bytesize > @byte_pointer
@@ -3012,8 +3012,8 @@ class Reline::LineEditor
       ed_newline(key)
     end
   end
-  private alias_method :vi_end_of_transmission, :vi_list_or_eof
-  private alias_method :vi_eof_maybe, :vi_list_or_eof
+  alias_method :vi_end_of_transmission, :vi_list_or_eof
+  alias_method :vi_eof_maybe, :vi_list_or_eof
 
   private def ed_delete_next_char(key, arg: 1)
     byte_size = Reline::Unicode.get_next_mbchar_size(@line, @byte_pointer)
@@ -3285,7 +3285,7 @@ class Reline::LineEditor
   private def em_set_mark(key)
     @mark_pointer = [@byte_pointer, @line_index]
   end
-  private alias_method :set_mark, :em_set_mark
+  alias_method :set_mark, :em_set_mark
 
   private def em_exchange_mark(key)
     return unless @mark_pointer
@@ -3296,5 +3296,5 @@ class Reline::LineEditor
     @cursor_max = calculate_width(@line)
     @mark_pointer = new_pointer
   end
-  private alias_method :exchange_point_and_mark, :em_exchange_mark
+  alias_method :exchange_point_and_mark, :em_exchange_mark
 end
