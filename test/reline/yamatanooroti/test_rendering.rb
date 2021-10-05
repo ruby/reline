@@ -730,7 +730,7 @@ begin
     end
 
     def test_meta_key
-      start_terminal(50, 200, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      start_terminal(30, 20, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
       write("def ge\M-bho")
       close
       assert_screen(<<~EOC)
@@ -740,7 +740,7 @@ begin
     end
 
     def test_force_enter
-      start_terminal(50, 200, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      start_terminal(30, 120, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
       write("def hoge\nend\C-p\C-e")
       write("\M-\x0D")
       close
@@ -752,32 +752,10 @@ begin
       EOC
     end
 
-    def test_cyrillic_chars
-      omit unless Reline::IOGate.win?
-      start_terminal(50, 50, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
-      write("`chcp 850`\n")
-      write("`chcp`\n")
-      write("def гопота; 3; end\n")
-      write("гопота\n")
-      close
-      assert_screen(<<~'EOC')
-        Multiline REPL.
-        prompt> `chcp 850`
-        => "Active code page: 850\n"
-        prompt> `chcp`
-        => "Active code page: 850\n"
-        prompt> def гопота; 3; end
-        => :гопота
-        prompt> гопота
-        => 3
-        prompt>
-      EOC
-    end
-
     def test_with_newline
       omit if Reline::IOGate.win?
       cmd = %Q{ruby -e 'print(%Q{abc def \\e\\r})' | ruby -I#{@pwd}/lib -rreline -e 'p Reline.readline(%{> })'}
-      start_terminal(50, 50, ['bash', '-c', cmd])
+      start_terminal(40, 50, ['bash', '-c', cmd])
       close
       assert_screen(<<~'EOC')
         > abc def
