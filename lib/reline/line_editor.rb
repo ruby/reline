@@ -622,7 +622,7 @@ class Reline::LineEditor
     @dialogs << Dialog.new(name, @config, DialogProcScope.new(self, @config, p, context))
   end
 
-  DIALOG_HEIGHT = 20
+  DIALOG_DEFAULT_HEIGHT = 20
   private def render_dialog(cursor_column)
     @dialogs.each do |dialog|
       render_each_dialog(dialog, cursor_column)
@@ -662,7 +662,7 @@ class Reline::LineEditor
     else
       dialog.width = dialog.contents.map { |l| calculate_width(l, true) }.max
     end
-    height = dialog_render_info.height || DIALOG_HEIGHT
+    height = dialog_render_info.height || DIALOG_DEFAULT_HEIGHT
     height = dialog.contents.size if dialog.contents.size < height
     if dialog.contents.size > height
       if dialog.pointer
@@ -709,6 +709,10 @@ class Reline::LineEditor
     end
     Reline::IOGate.hide_cursor
     dialog.width += @block_elem_width if dialog.scrollbar_pos
+    if dialog.column < 0
+      dialog.column = 0
+      dialog.width = @screen_size.last
+    end
     reset_dialog(dialog, old_dialog)
     move_cursor_down(dialog.vertical_offset)
     Reline::IOGate.move_cursor_column(dialog.column)
