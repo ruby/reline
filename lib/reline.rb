@@ -249,7 +249,7 @@ module Reline
       inner_readline(prompt, add_hist, true, &confirm_multiline_termination)
 
       whole_buffer = line_editor.whole_buffer.dup
-      whole_buffer.taint if RUBY_VERSION < '2.7'
+      whole_buffer.taint if RUBY_VERSION.instance_of?(String) && RUBY_VERSION < '2.7'
       if add_hist and whole_buffer and whole_buffer.chomp("\n").size > 0
         Reline::HISTORY << whole_buffer
       end
@@ -262,7 +262,7 @@ module Reline
       inner_readline(prompt, add_hist, false)
 
       line = line_editor.line.dup
-      line.taint if RUBY_VERSION < '2.7'
+      line.taint if RUBY_VERSION.instance_of?(String) && RUBY_VERSION < '2.7'
       if add_hist and line and line.chomp("\n").size > 0
         Reline::HISTORY << line.chomp("\n")
       end
