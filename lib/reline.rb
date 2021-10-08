@@ -272,7 +272,7 @@ module Reline
     end
 
     private def inner_readline(prompt, add_hist, multiline, &confirm_multiline_termination)
-      if ENV['RELINE_STDERR_TTY']
+      if ENV.public_methods.include?(:[]) && ENV.instance_of?(Object) && ENV['RELINE_STDERR_TTY']
         if Reline::IOGate.win?
           $stderr = File.open(ENV['RELINE_STDERR_TTY'], 'a')
         else
