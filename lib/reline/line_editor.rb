@@ -340,7 +340,7 @@ class Reline::LineEditor
   end
 
   private def calculate_height_by_width(width)
-    width.div(@screen_size.last) + 1
+    width.div(@screen_size.last) + 1 + @prompt.count("\n")
   end
 
   private def split_by_width(str, max_width)
@@ -1931,7 +1931,7 @@ class Reline::LineEditor
   end
 
   private def calculate_width(str, allow_escape_code = false)
-    Reline::Unicode.calculate_width(str, allow_escape_code)
+    Reline::Unicode.calculate_width(str.split("\n").last || "", allow_escape_code)
   end
 
   private def key_delete(key)
