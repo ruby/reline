@@ -533,7 +533,7 @@ module Reline
       core.line_editor = Reline::LineEditor.new(core.config, Reline::IOGate.encoding)
 
       core.basic_word_break_characters = " \t\n`><=;|&{("
-      core.completer_word_break_characters = " \t\n`><=;|&{("
+      core.completer_word_break_characters = " \t\n`><=;|&"
       core.basic_quote_characters = '"\''
       core.completer_quote_characters = '"\''
       core.filename_quote_characters = ""
