@@ -1775,6 +1775,11 @@ class Reline::LineEditor
         i += 1
         break_pointer = i - 1
       elsif word_break_regexp and not quote and slice =~ word_break_regexp
+        if string_slice?(i)
+          i += 1
+          next
+        end
+
         rest = $'
         i += 1
         before = @line.byteslice(i, @byte_pointer - i)
@@ -1816,6 +1821,21 @@ class Reline::LineEditor
       end
     end
     [preposing.encode(@encoding), target.encode(@encoding), postposing.encode(@encoding)]
+  end
+
+  private def string_slice?(line_pos)
+    line_scan = Ripper::Lexer.new(@line).scan
+    counter = 0
+    line_scan.each do |elem|
+      counter += elem.tok.length
+      if line_pos < counter
+        if [:on_tstring_beg, :on_embexpr_beg, :on_tstring_content, :on_embexpr_end, :on_tstring_end].include? elem.event
+          return true
+        end
+        break
+      end
+    end
+    false
   end
 
   def confirm_multiline_termination
