@@ -743,7 +743,11 @@ class Reline::LineEditor
     Reline::IOGate.move_cursor_column(dialog.column)
     dialog.contents.each_with_index do |item, i|
       if i == pointer
-        bg_color = '45'
+        if dialog_render_info.pointer_bg_color
+          bg_color = dialog_render_info.pointer_bg_color
+        else
+          bg_color = '45'
+        end
       else
         if dialog_render_info.bg_color
           bg_color = dialog_render_info.bg_color

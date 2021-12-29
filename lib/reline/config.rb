@@ -39,6 +39,8 @@ class Reline::Config
     emacs-mode-string
     enable-bracketed-paste
     isearch-terminators
+    dialog-default-bg-color
+    dialog-pointer-bg-color
   }
   VARIABLE_NAME_SYMBOLS = VARIABLE_NAMES.map { |v| :"#{v.tr(?-, ?_)}" }
   VARIABLE_NAME_SYMBOLS.each do |v|
@@ -69,6 +71,8 @@ class Reline::Config
     @test_mode = false
     @autocompletion = false
     @convert_meta = true if seven_bit_encoding?(Reline::IOGate.encoding)
+    @dialog_default_bg_color = nil
+    @dialog_pointer_bg_color = nil
   end
 
   def reset
@@ -334,6 +338,11 @@ class Reline::Config
       @vi_ins_mode_string = retrieve_string(value)
     when 'emacs-mode-string'
       @emacs_mode_string = retrieve_string(value)
+
+    when 'dialog-default-bg-color'
+      @dialog_default_bg_color = value.to_i
+    when 'dialog-pointer-bg-color'
+      @dialog_pointer_bg_color = value.to_i
     when *VARIABLE_NAMES then
       variable_name = :"@#{name.tr(?-, ?_)}"
       instance_variable_set(variable_name, value.nil? || value == '1' || value == 'on')
