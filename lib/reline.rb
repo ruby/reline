@@ -131,6 +131,22 @@ module Reline
       @config.autocompletion = val
     end
 
+    def dialog_default_bg_color
+      @config.dialog_default_bg_color
+    end
+
+    def dialog_default_bg_color=(val)
+      @config.dialog_default_bg_color= val
+    end
+
+    def dialog_pointer_bg_color
+      @config.dialog_pointer_bg_color
+    end
+
+    def dialog_pointer_bg_color=(val)
+      @config.dialog_pointer_bg_color= val
+    end
+
     def output_modifier_proc=(p)
       raise ArgumentError unless p.respond_to?(:call) or p.nil?
       @output_modifier_proc = p
