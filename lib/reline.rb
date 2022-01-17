@@ -546,6 +546,8 @@ module Reline
   def_single_delegators :core, :add_dialog_proc
   def_single_delegators :core, :dialog_proc
   def_single_delegators :core, :autocompletion, :autocompletion=
+  def_single_delegators :core, :dialog_default_bg_color, :dialog_default_bg_color=
+  def_single_delegators :core, :dialog_pointer_bg_color, :dialog_pointer_bg_color=
 
   def_single_delegators :core, :readmultiline
   def_instance_delegators self, :readmultiline
