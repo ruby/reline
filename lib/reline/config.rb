@@ -39,8 +39,6 @@ class Reline::Config
     emacs-mode-string
     enable-bracketed-paste
     isearch-terminators
-    dialog-default-bg-color
-    dialog-pointer-bg-color
   }
   VARIABLE_NAME_SYMBOLS = VARIABLE_NAMES.map { |v| :"#{v.tr(?-, ?_)}" }
   VARIABLE_NAME_SYMBOLS.each do |v|
@@ -104,6 +102,22 @@ class Reline::Config
 
   def autocompletion
     @autocompletion
+  end
+
+  def dialog_default_bg_color=(val)
+    @dialog_default_bg_color = val
+  end
+
+  def dialog_default_bg_color
+    @dialog_default_bg_color
+  end
+
+  def dialog_pointer_bg_color=(val)
+    @dialog_pointer_bg_color = val
+  end
+
+  def dialog_pointer_bg_color
+    @dialog_pointer_bg_color
   end
 
   def keymap
