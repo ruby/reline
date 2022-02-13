@@ -71,6 +71,8 @@ class Reline::Config
     @convert_meta = true if seven_bit_encoding?(Reline::IOGate.encoding)
     @dialog_default_bg_color = nil
     @dialog_pointer_bg_color = nil
+    @dialog_default_fg_color = nil
+    @dialog_pointer_fg_color = nil
   end
 
   def reset
@@ -112,12 +114,28 @@ class Reline::Config
     @dialog_default_bg_color
   end
 
+  def dialog_default_fg_color=(val)
+    @dialog_default_fg_color = val
+  end
+
+  def dialog_default_fg_color
+    @dialog_default_fg_color
+  end
+
   def dialog_pointer_bg_color=(val)
     @dialog_pointer_bg_color = val
   end
 
   def dialog_pointer_bg_color
     @dialog_pointer_bg_color
+  end
+
+  def dialog_pointer_fg_color=(val)
+    @dialog_pointer_fg_color = val
+  end
+
+  def dialog_pointer_fg_color
+    @dialog_pointer_fg_color
   end
 
   def keymap
@@ -352,11 +370,14 @@ class Reline::Config
       @vi_ins_mode_string = retrieve_string(value)
     when 'emacs-mode-string'
       @emacs_mode_string = retrieve_string(value)
-
     when 'dialog-default-bg-color'
       @dialog_default_bg_color = value.to_i
     when 'dialog-pointer-bg-color'
       @dialog_pointer_bg_color = value.to_i
+    when 'dialog-default-fg-color'
+      @dialog_default_fg_color = value.to_i
+    when 'dialog-pointer-fg-color'
+      @dialog_pointer_fg_color = value.to_i
     when *VARIABLE_NAMES then
       variable_name = :"@#{name.tr(?-, ?_)}"
       instance_variable_set(variable_name, value.nil? || value == '1' || value == 'on')

@@ -33,7 +33,18 @@ module Reline
     alias_method :==, :match?
   end
   CursorPos = Struct.new(:x, :y)
-  DialogRenderInfo = Struct.new(:pos, :contents, :bg_color, :pointer_bg_color, :width, :height, :scrollbar, keyword_init: true)
+  DialogRenderInfo = Struct.new(
+    :pos,
+    :contents,
+    :bg_color,
+    :pointer_bg_color,
+    :fg_color,
+    :pointer_fg_color,
+    :width,
+    :height,
+    :scrollbar,
+    keyword_init: true
+  )
 
   class Core
     ATTR_READER_NAMES = %i(
@@ -139,12 +150,28 @@ module Reline
       @config.dialog_default_bg_color= val
     end
 
+    def dialog_default_fg_color
+      @config.dialog_default_fg_color
+    end
+
+    def dialog_default_fg_color=(val)
+      @config.dialog_default_fg_color= val
+    end
+
     def dialog_pointer_bg_color
       @config.dialog_pointer_bg_color
     end
 
     def dialog_pointer_bg_color=(val)
       @config.dialog_pointer_bg_color= val
+    end
+
+    def dialog_pointer_fg_color
+      @config.dialog_pointer_fg_color
+    end
+
+    def dialog_pointer_fg_color=(val)
+      @config.dialog_pointer_fg_color= val
     end
 
     def output_modifier_proc=(p)
@@ -261,7 +288,18 @@ module Reline
       dialog.pointer = pointer
       bg_color = config.dialog_default_bg_color
       pointer_bg_color = config.dialog_pointer_bg_color
-      DialogRenderInfo.new(pos: cursor_pos_to_render, contents: result, scrollbar: true, height: 15, bg_color: bg_color, pointer_bg_color: pointer_bg_color)
+      fg_color = config.dialog_default_fg_color
+      pointer_fg_color = config.dialog_pointer_fg_color
+      DialogRenderInfo.new(
+        pos: cursor_pos_to_render,
+        contents: result,
+        scrollbar: true,
+        height: 15,
+        bg_color: bg_color,
+        pointer_bg_color: pointer_bg_color,
+        fg_color: fg_color,
+        pointer_fg_color: pointer_fg_color
+      )
     }
     Reline::DEFAULT_DIALOG_CONTEXT = Array.new
 
@@ -548,6 +586,8 @@ module Reline
   def_single_delegators :core, :autocompletion, :autocompletion=
   def_single_delegators :core, :dialog_default_bg_color, :dialog_default_bg_color=
   def_single_delegators :core, :dialog_pointer_bg_color, :dialog_pointer_bg_color=
+  def_single_delegators :core, :dialog_default_fg_color, :dialog_default_fg_color=
+  def_single_delegators :core, :dialog_pointer_fg_color, :dialog_pointer_fg_color=
 
   def_single_delegators :core, :readmultiline
   def_instance_delegators self, :readmultiline
