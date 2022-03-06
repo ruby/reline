@@ -30,10 +30,9 @@ class Reline::ANSI
   end
 
   def self.set_default_key_bindings(config)
+    set_default_key_bindings_comprehensive_list(config)
     if Reline::Terminfo.enabled?
       set_default_key_bindings_terminfo(config)
-    else
-      set_default_key_bindings_comprehensive_list(config)
     end
     {
       # extended entries of terminfo
