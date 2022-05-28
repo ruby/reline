@@ -742,25 +742,12 @@ class Reline::LineEditor
     move_cursor_down(dialog.vertical_offset)
     Reline::IOGate.move_cursor_column(dialog.column)
     dialog.contents.each_with_index do |item, i|
-      fg_color = 37
       if i == pointer
-        if dialog_render_info.pointer_fg_color
-          fg_color = dialog_render_info.pointer_fg_color
-        end
-        if dialog_render_info.pointer_bg_color
-          bg_color = dialog_render_info.pointer_bg_color
-        else
-          bg_color = '45'
-        end
+        fg_color = dialog_render_info.pointer_fg_color
+        bg_color = dialog_render_info.pointer_bg_color
       else
-        if dialog_render_info.fg_color
-          fg_color = dialog_render_info.fg_color
-        end
-        if dialog_render_info.bg_color
-          bg_color = dialog_render_info.bg_color
-        else
-          bg_color = '46'
-        end
+        fg_color = dialog_render_info.fg_color
+        bg_color = dialog_render_info.bg_color
       end
       str_width = dialog.width - (dialog.scrollbar_pos.nil? ? 0 : @block_elem_width)
       str = padding_space_with_escape_sequences(Reline::Unicode.take_range(item, 0, str_width), str_width)
