@@ -612,7 +612,7 @@ module Reline
       core.add_dialog_proc(:autocomplete, Reline::DEFAULT_DIALOG_PROC_AUTOCOMPLETE, Reline::DEFAULT_DIALOG_CONTEXT)
       core.dialog_default_bg_color = 46 # Cyan
       core.dialog_default_fg_color = 37 # White
-      core.dialog_pointer_bg_color = 45 # Maggenta
+      core.dialog_pointer_bg_color = 45 # Magenta
       core.dialog_pointer_fg_color = 37 # White
     }
   end
