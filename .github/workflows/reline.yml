@@ -110,5 +110,7 @@ jobs:
         run:  WITH_VTERM=1 bundle install
       - name: Install latest irb
         run:  gem install irb -f --pre
+      - name: Setup tmate session
+        run: mxschmitt/action-tmate@v3
       - name: rake test_yamatanooroti
         run:  rake test_yamatanooroti
