@@ -28,7 +28,7 @@ begin
 
     def test_history_back
       Timeout.timeout(10) do
-        start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+        start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: /Multiline REPL\./)
       end
       write(":a\n")
       write("\C-p")
