@@ -106,6 +106,8 @@ jobs:
           sed -i -e 's/^PREFIX=.*$/PREFIX=\/usr/g' Makefile
           make
           sudo make install
+      - name: Install latest bundler
+        run:  gem install bundler
       - name: Install dependencies
         run:  WITH_VTERM=1 bundle install
       - name: Install latest irb
