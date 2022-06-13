@@ -33,6 +33,8 @@ begin
       write(":a\n")
       write("\C-p")
       close
+      puts("result")
+      puts(result)
       assert_screen(<<~EOC)
         Multiline REPL.
         prompt> :a
