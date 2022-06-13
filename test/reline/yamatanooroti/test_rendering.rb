@@ -27,6 +27,8 @@ begin
     end
 
     def test_history_back
+      puts("=====Terminfo=====")
+      puts(Reline::Terminfo.curses_dl)
       Timeout.timeout(10) do
         start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl})
       end
