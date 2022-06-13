@@ -111,4 +111,6 @@ jobs:
       - name: Install latest irb
         run:  gem install irb -f --pre
       - name: rake test_yamatanooroti
-        run:  rake test_yamatanooroti
+        run: |
+          ruby -Ilib test/reline/yamatanooroti/multiline_repl
+          rake test_yamatanooroti
