@@ -111,4 +111,4 @@ jobs:
       - name: Install latest irb
         run:  gem install irb -f --pre
       - name: rake test_yamatanooroti
-        run:  rake test_yamatanooroti
+        run:  bundle exec rake test_yamatanooroti
