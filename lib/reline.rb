@@ -147,7 +147,7 @@ module Reline
     end
 
     def dialog_default_bg_color=(val)
-      @config.dialog_default_bg_color= val
+      @config.dialog_default_bg_color = val
     end
 
     def dialog_default_fg_color
@@ -155,7 +155,7 @@ module Reline
     end
 
     def dialog_default_fg_color=(val)
-      @config.dialog_default_fg_color= val
+      @config.dialog_default_fg_color = val
     end
 
     def dialog_pointer_bg_color
@@ -163,7 +163,7 @@ module Reline
     end
 
     def dialog_pointer_bg_color=(val)
-      @config.dialog_pointer_bg_color= val
+      @config.dialog_pointer_bg_color = val
     end
 
     def dialog_pointer_fg_color
@@ -171,7 +171,7 @@ module Reline
     end
 
     def dialog_pointer_fg_color=(val)
-      @config.dialog_pointer_fg_color= val
+      @config.dialog_pointer_fg_color = val
     end
 
     def output_modifier_proc=(p)
