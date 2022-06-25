@@ -69,6 +69,19 @@ module Reline
     attr_accessor :last_incremental_search
     attr_reader :output
 
+    extend Forwardable
+    def_delegators :config,
+      :autocompletion,
+      :autocompletion=,
+      :dialog_default_bg_color,
+      :dialog_default_bg_color=,
+      :dialog_default_fg_color,
+      :dialog_default_fg_color=,
+      :dialog_pointer_bg_color,
+      :dialog_pointer_bg_color=,
+      :dialog_pointer_fg_color,
+      :dialog_pointer_fg_color=
+
     def initialize
       self.output = STDOUT
       @dialog_proc_list = {}
@@ -132,46 +145,6 @@ module Reline
     def completion_proc=(p)
       raise ArgumentError unless p.respond_to?(:call) or p.nil?
       @completion_proc = p
-    end
-
-    def autocompletion
-      @config.autocompletion
-    end
-
-    def autocompletion=(val)
-      @config.autocompletion = val
-    end
-
-    def dialog_default_bg_color
-      @config.dialog_default_bg_color
-    end
-
-    def dialog_default_bg_color=(val)
-      @config.dialog_default_bg_color = val
-    end
-
-    def dialog_default_fg_color
-      @config.dialog_default_fg_color
-    end
-
-    def dialog_default_fg_color=(val)
-      @config.dialog_default_fg_color = val
-    end
-
-    def dialog_pointer_bg_color
-      @config.dialog_pointer_bg_color
-    end
-
-    def dialog_pointer_bg_color=(val)
-      @config.dialog_pointer_bg_color = val
-    end
-
-    def dialog_pointer_fg_color
-      @config.dialog_pointer_fg_color
-    end
-
-    def dialog_pointer_fg_color=(val)
-      @config.dialog_pointer_fg_color = val
     end
 
     def output_modifier_proc=(p)
@@ -291,10 +264,10 @@ module Reline
         contents: result,
         scrollbar: true,
         height: 15,
-        bg_color: dialog_default_bg_color,
-        pointer_bg_color: dialog_pointer_bg_color,
-        fg_color: dialog_default_fg_color,
-        pointer_fg_color: dialog_pointer_fg_color
+        bg_color: config.dialog_default_bg_color,
+        pointer_bg_color: config.dialog_pointer_bg_color,
+        fg_color: config.dialog_default_fg_color,
+        pointer_fg_color: config.dialog_pointer_fg_color
       )
     }
     Reline::DEFAULT_DIALOG_CONTEXT = Array.new
