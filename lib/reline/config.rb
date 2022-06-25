@@ -45,6 +45,14 @@ class Reline::Config
     attr_accessor v
   end
 
+  attr_accessor(
+    :autocompletion,
+    :dialog_default_bg_color,
+    :dialog_default_fg_color,
+    :dialog_pointer_bg_color,
+    :dialog_pointer_fg_color,
+  )
+
   def initialize
     @additional_key_bindings = {} # from inputrc
     @additional_key_bindings[:emacs] = {}
@@ -96,46 +104,6 @@ class Reline::Config
 
   def editing_mode_is?(*val)
     (val.respond_to?(:any?) ? val : [val]).any?(@editing_mode_label)
-  end
-
-  def autocompletion=(val)
-    @autocompletion = val
-  end
-
-  def autocompletion
-    @autocompletion
-  end
-
-  def dialog_default_bg_color=(val)
-    @dialog_default_bg_color = val
-  end
-
-  def dialog_default_bg_color
-    @dialog_default_bg_color
-  end
-
-  def dialog_default_fg_color=(val)
-    @dialog_default_fg_color = val
-  end
-
-  def dialog_default_fg_color
-    @dialog_default_fg_color
-  end
-
-  def dialog_pointer_bg_color=(val)
-    @dialog_pointer_bg_color = val
-  end
-
-  def dialog_pointer_bg_color
-    @dialog_pointer_bg_color
-  end
-
-  def dialog_pointer_fg_color=(val)
-    @dialog_pointer_fg_color = val
-  end
-
-  def dialog_pointer_fg_color
-    @dialog_pointer_fg_color
   end
 
   def keymap
