@@ -286,19 +286,15 @@ module Reline
         context.push(cursor_pos_to_render, result, pointer, dialog)
       end
       dialog.pointer = pointer
-      bg_color = config.dialog_default_bg_color
-      pointer_bg_color = config.dialog_pointer_bg_color
-      fg_color = config.dialog_default_fg_color
-      pointer_fg_color = config.dialog_pointer_fg_color
       DialogRenderInfo.new(
         pos: cursor_pos_to_render,
         contents: result,
         scrollbar: true,
         height: 15,
-        bg_color: bg_color,
-        pointer_bg_color: pointer_bg_color,
-        fg_color: fg_color,
-        pointer_fg_color: pointer_fg_color
+        bg_color: dialog_default_bg_color,
+        pointer_bg_color: dialog_pointer_bg_color,
+        fg_color: dialog_default_fg_color,
+        pointer_fg_color: dialog_pointer_fg_color
       )
     }
     Reline::DEFAULT_DIALOG_CONTEXT = Array.new
