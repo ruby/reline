@@ -15,6 +15,7 @@ class Reline::ANSI
     'cud' => :ed_next_history,
     'cuf' => :ed_next_char,
     'cub' => :ed_prev_char,
+    'kdch1' => :key_delete 
   }
 
   if Reline::Terminfo.enabled?
