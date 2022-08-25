@@ -60,8 +60,22 @@ class Reline::ANSI
       config.add_default_key_binding_by_keymap(:emacs, key, func)
     end
   end
+  
+  @@input = STDIN
+  def self.input=(val)
+    @@input = val
+  end
 
+  @@output = STDOUT
+  def self.output=(val)
+    @@output = val
+  end
   def self.set_default_key_bindings_terminfo(config)
+    begin
+      @@output.write Reline::Terminfo.tigetstr('smkx')
+    rescue Reline::Terminfo::TerminfoError
+      # capname is undefined
+    end
     key_bindings = CAPNAME_KEY_BINDINGS.map do |capname, key_binding|
       begin
         key_code = Reline::Terminfo.tigetstr(capname)
