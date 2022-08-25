@@ -70,12 +70,26 @@ class Reline::ANSI
   def self.output=(val)
     @@output = val
   end
+
   def self.set_default_key_bindings_terminfo(config)
+    
+    # put terminal in tx mode so that
+    # keys match terminfo's bindings
     begin
       @@output.write Reline::Terminfo.tigetstr('smkx')
     rescue Reline::Terminfo::TerminfoError
       # capname is undefined
     end
+    
+    # return terminal to rx mode
+    at_exit do
+      begin
+        @@output.write Reline::Terminfo.tigetstr('rmkx')
+      rescue Reline::Terminfo::TerminfoError
+        # capname is undefined
+      end
+    end
+    
     key_bindings = CAPNAME_KEY_BINDINGS.map do |capname, key_binding|
       begin
         key_code = Reline::Terminfo.tigetstr(capname)
