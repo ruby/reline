@@ -78,4 +78,41 @@ class Reline::LineEditor::StringProcessingTest < Reline::TestCase
     })
     @line_editor.__send__(:call_completion_proc)
   end
+
+  def test_completion_proc_parenthesis
+    # IRB has some specific settings
+    Reline.completer_quote_characters = ""
+
+    buf = ["\"()\"", "()"]
+
+    @line_editor.instance_variable_set(:@is_multiline, true)
+    @line_editor.instance_variable_set(:@buffer_of_lines, buf)
+    @line_editor.instance_variable_set(:@line, buf[0])
+    @line_editor.instance_variable_set(:@byte_pointer, 4)
+    @line_editor.instance_variable_set(:@cursor, 4)
+    @line_editor.instance_variable_set(:@cursor_max, 4)
+    @line_editor.instance_variable_set(:@line_index, 0)
+    @line_editor.instance_variable_set(:@completion_proc, proc { |target, pre, post|
+      assert_equal("\"()\"", target)
+      assert_equal("", pre)
+      assert_equal("\n" + "()", post)
+    })
+    @line_editor.__send__(:call_completion_proc)
+
+    # the target for () returns ) because of completer_word_break_characters
+    # it likely needs improvements
+    @line_editor.instance_variable_set(:@is_multiline, true)
+    @line_editor.instance_variable_set(:@buffer_of_lines, buf)
+    @line_editor.instance_variable_set(:@line, buf[1])
+    @line_editor.instance_variable_set(:@byte_pointer, 2)
+    @line_editor.instance_variable_set(:@cursor, 2)
+    @line_editor.instance_variable_set(:@cursor_max, 2)
+    @line_editor.instance_variable_set(:@line_index, 1)
+    @line_editor.instance_variable_set(:@completion_proc, proc { |target, pre, post|
+      assert_equal(")", target)
+      assert_equal("\"()\"\n" + "(", pre)
+      assert_equal("", post)
+    })
+    @line_editor.__send__(:call_completion_proc)
+  end
 end
