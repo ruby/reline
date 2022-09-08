@@ -1824,12 +1824,12 @@ class Reline::LineEditor
   end
 
   private def string_slice?(line_pos)
-    line_scan = Ripper::Lexer.new(@line).scan
+    line_scan = Ripper::Lexer.lex(@line)
     counter = 0
     line_scan.each do |elem|
-      counter += elem.tok.length
+      counter += elem[2].length
       if line_pos < counter
-        if [:on_tstring_beg, :on_embexpr_beg, :on_tstring_content, :on_embexpr_end, :on_tstring_end].include? elem.event
+        if [:on_tstring_beg, :on_embexpr_beg, :on_tstring_content, :on_embexpr_end, :on_tstring_end].include? elem[1]
           return true
         end
         break
