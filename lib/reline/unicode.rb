@@ -205,8 +205,10 @@ class Reline::Unicode
       case
       when gc[NON_PRINTING_START_INDEX]
         in_zero_width = true
+        chunk << NON_PRINTING_START
       when gc[NON_PRINTING_END_INDEX]
         in_zero_width = false
+        chunk << NON_PRINTING_END
       when gc[CSI_REGEXP_INDEX]
         chunk << gc[CSI_REGEXP_INDEX]
       when gc[OSC_REGEXP_INDEX]
