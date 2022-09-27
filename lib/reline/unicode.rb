@@ -194,11 +194,13 @@ class Reline::Unicode
   end
 
   # Take a chunk of a String cut by width with escape sequences.
-  def self.take_range(str, start_col, max_width, encoding = str.encoding)
+  def self.take_range(str, start_col, width, encoding: str.encoding, cover_begin: false, cover_end: false, padding: false)
     chunk = String.new(encoding: encoding)
     total_width = 0
     rest = str.encode(Encoding::UTF_8)
     in_zero_width = false
+    chunk_start_col = nil
+    chunk_end_col = nil
     rest.scan(WIDTH_SCANNER) do |gc|
       case
       when gc[NON_PRINTING_START_INDEX]
@@ -215,13 +217,31 @@ class Reline::Unicode
           chunk << gc
         else
           mbchar_width = get_mbchar_width(gc)
+          prev_width = total_width
           total_width += mbchar_width
-          break if (start_col + max_width) < total_width
-          chunk << gc if start_col < total_width
+          break if !cover_end && total_width > start_col + width
+          if cover_begin ? start_col < total_width : start_col <= prev_width
+            chunk << gc
+            chunk_start_col ||= prev_width
+            chunk_end_col = total_width
+          end
+          break if total_width >= start_col + width
         end
       end
     end
-    chunk
+    chunk_start_col ||= start_col
+    chunk_end_col ||= start_col
+    if padding
+      if start_col < chunk_start_col
+        chunk = ' ' * (chunk_start_col - start_col) + chunk
+        chunk_start_col = start_col
+      end
+      if chunk_end_col < start_col + width
+        chunk << ' ' * (start_col + width - chunk_end_col)
+        chunk_end_col = start_col + width
+      end
+    end
+    [chunk, chunk_start_col, chunk_end_col - chunk_start_col]
   end
 
   def self.get_next_mbchar_size(line, byte_pointer)

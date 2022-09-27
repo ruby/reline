@@ -654,13 +654,6 @@ class Reline::LineEditor
     end
   end
 
-  private def padding_space_with_escape_sequences(str, width)
-    padding_width = width - calculate_width(str, true)
-    # padding_width should be only positive value. But macOS and Alacritty returns negative value.
-    padding_width = 0 if padding_width < 0
-    str + (' ' * padding_width)
-  end
-
   private def render_each_dialog(dialog, cursor_column)
     if @in_pasting
       clear_each_dialog(dialog)
@@ -753,7 +746,7 @@ class Reline::LineEditor
         bg_color = dialog_render_info.bg_color
       end
       str_width = dialog.width - (dialog.scrollbar_pos.nil? ? 0 : @block_elem_width)
-      str = padding_space_with_escape_sequences(Reline::Unicode.take_range(item, 0, str_width), str_width)
+      str, = Reline::Unicode.take_range(item, 0, str_width, padding: true)
       @output.write "\e[#{bg_color}m\e[#{fg_color}m#{str}"
       if dialog.scrollbar_pos and (dialog.scrollbar_pos != old_dialog.scrollbar_pos or dialog.column != old_dialog.column)
         @output.write "\e[37m"
@@ -811,28 +804,24 @@ class Reline::LineEditor
       if y_range.cover?(y) && x_range.any?(old_x_range)
         if old_x_range.begin < x_range.begin
           # rerender left
-          rerender_ranges << (old_x_range.begin...[old_x_range.end, x_range.begin].min)
+          rerender_ranges << [old_x_range.begin...[old_x_range.end, x_range.begin].min, true, false]
         end
         if x_range.end < old_x_range.end
           # rerender right
-          rerender_ranges << ([x_range.end, old_x_range.begin].max...old_x_range.end)
+          rerender_ranges << [[x_range.end, old_x_range.begin].max...old_x_range.end, false, true]
         end
       else
-        rerender_ranges << old_x_range
+        rerender_ranges << [old_x_range, true, true]
       end
 
-      rerender_ranges.each do |range|
+      rerender_ranges.each do |range, cover_begin, cover_end|
         move_cursor_down(y - cursor_y)
         cursor_y = y
         col = range.begin
         width = range.end - range.begin
+        line = visual_lines[y + visual_start - old_dialog_y] || ''
+        s, col = Reline::Unicode.take_range(line, col, width, cover_begin: cover_begin, cover_end: cover_end, padding: true)
         Reline::IOGate.move_cursor_column(col)
-        if visual_lines[y].nil?
-          s = ' ' * width
-        else
-          s = Reline::Unicode.take_range(visual_lines[y + visual_start - old_dialog_y], col, width)
-          s = padding_space_with_escape_sequences(s, width)
-        end
         @output.write "\e[0m#{s}\e[0m"
       end
     end
@@ -877,9 +866,8 @@ class Reline::LineEditor
     dialog_vertical_size = dialog.contents.size
     dialog_vertical_size.times do |i|
       if i < visual_lines_under_dialog.size
-        Reline::IOGate.move_cursor_column(dialog.column)
-        str = Reline::Unicode.take_range(visual_lines_under_dialog[i], dialog.column, dialog.width)
-        str = padding_space_with_escape_sequences(str, dialog.width)
+        str, start_pos = Reline::Unicode.take_range(visual_lines_under_dialog[i], dialog.column, dialog.width, cover_begin: true, cover_end: true, padding: true)
+        Reline::IOGate.move_cursor_column(start_pos)
         @output.write "\e[0m#{str}\e[0m"
       else
         Reline::IOGate.move_cursor_column(dialog.column)
