@@ -1031,6 +1031,22 @@ begin
       EOC
     end
 
+    def test_autocomplete_rerender_fullwidth_under_dialog
+      start_terminal(20, 40, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --autocomplete}, startup_message: 'Multiline REPL.')
+      write("def hoge\n\n  あいうえおかきくけこab\n  aあいうえおかきくけこb\n  abあいうえおかきくけこ\C-p\C-p\C-p  ")
+      write('S')
+      write('t')
+      close
+      assert_screen(<<~'EOC')
+        Multiline REPL.
+        prompt> def hoge
+        prompt>   St
+        prompt>   Stringえおかきくけこab
+        prompt>   Struct えおかきくけこb
+        prompt>   abあいうえおかきくけこ
+      EOC
+    end
+
     def test_autocomplete_long_with_scrollbar
       start_terminal(20, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --autocomplete-long}, startup_message: 'Multiline REPL.')
       write('S')
