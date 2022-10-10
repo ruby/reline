@@ -10,4 +10,5 @@ group :development do
   gem 'vterm', '>= 0.0.5' if is_unix && ENV['WITH_VTERM']
   gem 'yamatanooroti', '>= 0.0.9'
   gem 'irb', '>= 1.3.6'
+  gem 'fiddle', github: 'ruby/fiddle'
 end
