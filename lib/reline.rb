@@ -256,10 +256,10 @@ module Reline
         contents: result,
         scrollbar: true,
         height: 15,
-        bg_color: 46,
-        pointer_bg_color: 45,
+        bg_color: 40,
         fg_color: 37,
-        pointer_fg_color: 37
+        pointer_bg_color: 47,
+        pointer_fg_color: 30
       )
     }
     Reline::DEFAULT_DIALOG_CONTEXT = Array.new
