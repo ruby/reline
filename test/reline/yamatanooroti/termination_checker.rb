@@ -19,7 +19,7 @@ end
 
 class AutoIndent < RubyLex
   def initialize
-    set_input(self)
+    set_input(self, context: nil)
     context = Struct.new(:auto_indent_mode, :workspace).new(true, nil)
     set_auto_indent(context)
   end
