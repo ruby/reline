@@ -473,6 +473,17 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     refute(@line_editor.finished?)
   end
 
+  def test_key_delete_preserves_cursor
+    input_keys('abc')
+    input_keys("\C-b", false)
+    assert_cursor(2)
+    assert_cursor_max(3)
+    @line_editor.input_key(Reline::Key.new(:key_delete, :key_delete, false))
+    assert_cursor(2)
+    assert_cursor_max(2)
+    assert_line('ab')
+  end
+
   def test_em_next_word
     assert_byte_pointer_size('')
     assert_cursor(0)
