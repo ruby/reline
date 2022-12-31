@@ -641,13 +641,6 @@ class Reline::LineEditor
     render_dialog_changes(changes, cursor_column)
   end
 
-  private def padding_space_with_escape_sequences(str, width)
-    padding_width = width - calculate_width(str, true)
-    # padding_width should be only positive value. But macOS and Alacritty returns negative value.
-    padding_width = 0 if padding_width < 0
-    str + (' ' * padding_width)
-  end
-
   private def range_subtract(base_ranges, subtract_ranges)
     indices = base_ranges.flat_map(&:to_a).uniq.sort - subtract_ranges.flat_map(&:to_a)
     chunks = indices.chunk_while { |a, b| a + 1 == b }
@@ -723,7 +716,14 @@ class Reline::LineEditor
         restore_ranges.each do |range|
           col = range.begin
           width = range.end - range.begin
-          s = padding_space_with_escape_sequences(Reline::Unicode.take_range(line, col, width), width)
+          s, col = Reline::Unicode.take_mbchar_range(
+            line,
+            col,
+            width,
+            cover_begin: !new_x_ranges&.any? { |new_range| new_range.include? range.begin - 1 },
+            cover_end: !new_x_ranges&.any? { |new_range| new_range.include? range.end },
+            padding: true
+          )
           Reline::IOGate.move_cursor_column(col)
           @output.write "\e[0m#{s}\e[0m"
         end
@@ -820,7 +820,7 @@ class Reline::LineEditor
         bg_color = dialog_render_info.bg_color
       end
       str_width = dialog.width - (scrollbar_pos.nil? ? 0 : @block_elem_width)
-      str = padding_space_with_escape_sequences(Reline::Unicode.take_range(item, 0, str_width), str_width)
+      str, = Reline::Unicode.take_mbchar_range(item, 0, str_width, padding: true)
       colored_content = "\e[#{bg_color}m\e[#{fg_color}m#{str}"
       if scrollbar_pos
         color_seq = "\e[37m"
