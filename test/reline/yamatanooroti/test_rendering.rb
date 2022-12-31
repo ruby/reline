@@ -1343,11 +1343,11 @@ begin
         prompt>
         prompt>
         prompt>
-        prompt>   S
         prompt>   String
         prompt>   Struct
-        prompt> enSymbol
-                  ScriptError
+        prompt>   Symbol
+        prompt> enScriptError
+                  SyntaxError
                   Signal
       EOC
     end
