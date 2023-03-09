@@ -7,6 +7,7 @@ class Reline::ANSI
   CAPNAME_KEY_BINDINGS = {
     'khome' => :ed_move_to_beg,
     'kend'  => :ed_move_to_end,
+    'kdch1' => :key_delete,
     'kcuu1' => :ed_prev_history,
     'kcud1' => :ed_next_history,
     'kcuf1' => :ed_next_char,
@@ -29,8 +30,8 @@ class Reline::ANSI
     false
   end
 
-  def self.set_default_key_bindings(config)
-    if Reline::Terminfo.enabled?
+  def self.set_default_key_bindings(config, allow_terminfo: true)
+    if allow_terminfo && Reline::Terminfo.enabled?
       set_default_key_bindings_terminfo(config)
     else
       set_default_key_bindings_comprehensive_list(config)
@@ -140,6 +141,10 @@ class Reline::ANSI
   @@output = STDOUT
   def self.output=(val)
     @@output = val
+  end
+
+  def self.with_raw_input
+    @@input.raw { yield }
   end
 
   @@buf = []
