@@ -1360,12 +1360,12 @@ begin
         prompt>
         prompt>
         prompt>
+        prompt>   S
         prompt>   String
         prompt>   Struct
-        prompt>   Symbol
-        prompt> enScriptError
+        prompt> enSymbol
+                  ScriptError
                   SyntaxError
-                  Signal
       EOC
     end
 

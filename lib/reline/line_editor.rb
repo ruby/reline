@@ -708,6 +708,9 @@ class Reline::LineEditor
     # Clear and rerender all dialogs line by line
     Reline::IOGate.hide_cursor
     ymin, ymax = (ranges_to_restore.keys + new_dialog_ranges.keys).minmax
+    screen_y_range = (@scroll_partial_screen || 0)..(@scroll_partial_screen || 0) + @screen_height - 1
+    ymin = ymin.clamp(screen_y_range.begin, screen_y_range.end)
+    ymax = ymax.clamp(screen_y_range.begin, screen_y_range.end)
     dialog_y = @first_line_started_from + @started_from
     cursor_y = dialog_y
     scroll_down(ymax - cursor_y)
