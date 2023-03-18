@@ -344,12 +344,26 @@ class Reline::ANSI
     @@old_winch_handler = Signal.trap('WINCH', &handler)
   end
 
+  def self.enter_keyboard_transmit_mode
+    @@output.write Reline::Terminfo.tigetstr('smkx') if Reline::Terminfo.enabled?
+  rescue Reline::Terminfo::TerminfoError
+    # smkx is undefined
+  end
+
+  def self.leave_keyboard_transmit_mode
+    @@output.write Reline::Terminfo.tigetstr('rmkx') if Reline::Terminfo.enabled?
+  rescue Reline::Terminfo::TerminfoError
+    # rmkx is undefined
+  end
+
   def self.prep
     retrieve_keybuffer
+    enter_keyboard_transmit_mode
     nil
   end
 
   def self.deprep(otio)
+    leave_keyboard_transmit_mode
     Signal.trap('WINCH', @@old_winch_handler) if @@old_winch_handler
   end
 end
