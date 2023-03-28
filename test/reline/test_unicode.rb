@@ -29,6 +29,11 @@ class Reline::Unicode::Test < Reline::TestCase
 
   def test_take_range
     assert_equal 'cdef', Reline::Unicode.take_range('abcdefghi', 2, 4)
+    assert_equal 'あde', Reline::Unicode.take_range('abあdef', 2, 4)
+    assert_equal 'zerocdef', Reline::Unicode.take_range("ab\1zero\2cdef", 2, 4)
+    assert_equal 'bzerocde', Reline::Unicode.take_range("ab\1zero\2cdef", 1, 4)
+    assert_equal "\e[31mcd\e[42mef", Reline::Unicode.take_range("\e[31mabcd\e[42mefg", 2, 4)
+    assert_equal "\e]0;1\acd", Reline::Unicode.take_range("ab\e]0;1\acd", 2, 3)
     assert_equal 'いう', Reline::Unicode.take_range('あいうえお', 2, 4)
   end
 end
