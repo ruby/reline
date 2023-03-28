@@ -36,4 +36,19 @@ class Reline::Unicode::Test < Reline::TestCase
     assert_equal "\e]0;1\acd", Reline::Unicode.take_range("ab\e]0;1\acd", 2, 3)
     assert_equal 'いう', Reline::Unicode.take_range('あいうえお', 2, 4)
   end
+
+  def test_calculate_width
+    assert_equal 9, Reline::Unicode.calculate_width('abcdefghi')
+    assert_equal 9, Reline::Unicode.calculate_width('abcdefghi', true)
+    assert_equal 7, Reline::Unicode.calculate_width('abあdef')
+    assert_equal 7, Reline::Unicode.calculate_width('abあdef', true)
+    assert_equal 14, Reline::Unicode.calculate_width("ab\1zero\2cdef")
+    assert_equal 6, Reline::Unicode.calculate_width("ab\1zero\2cdef", true)
+    assert_equal 19, Reline::Unicode.calculate_width("\e[31mabcd\e[42mefg")
+    assert_equal 7, Reline::Unicode.calculate_width("\e[31mabcd\e[42mefg", true)
+    assert_equal 12, Reline::Unicode.calculate_width("ab\e]0;1\acd")
+    assert_equal 4, Reline::Unicode.calculate_width("ab\e]0;1\acd", true)
+    assert_equal 10, Reline::Unicode.calculate_width('あいうえお')
+    assert_equal 10, Reline::Unicode.calculate_width('あいうえお', true)
+  end
 end
