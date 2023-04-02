@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.com/ruby/reline.svg?branch=master)](https://travis-ci.com/ruby/reline)
+[![Gem Version](https://badge.fury.io/rb/reline.svg)](https://badge.fury.io/rb/reline)
+[![CI](https://github.com/ruby/reline/actions/workflows/reline.yml/badge.svg)](https://github.com/ruby/reline/actions/workflows/reline.yml)
 
 This is a screen capture of *IRB improved by Reline*.
 
