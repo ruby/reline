@@ -12,4 +12,3 @@ end
 gem 'bundler'
 gem 'rake'
 gem 'test-unit'
-gem 'irb', github: "ruby/irb"
