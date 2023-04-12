@@ -55,6 +55,37 @@ jobs:
           TERM: xterm-256color
         run: bundle exec rake ci-test
 
+  irb:
+    name: >-
+      irb ${{ matrix.ruby }}  ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        ruby: [ head ]
+        os: [ ubuntu-latest ]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Install dependencies
+        run:  bundle install
+      - name: Install reline
+        run:  |
+          rake build
+          rake install
+      - name: Download ruby/irb
+        run:  |
+          git clone https://github.com/ruby/irb
+      - name: Setup ruby/irb
+        run:  |
+          cd irb
+          bundle install
+      - name: Run irb test
+        run:  bundle exec rake test
+
   vterm-yamatanooroti:
     name: >-
       vterm-yamatanooroti ${{ matrix.os }} ${{ matrix.ruby }}
