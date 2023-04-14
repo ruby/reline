@@ -55,6 +55,52 @@ jobs:
           TERM: xterm-256color
         run: bundle exec rake ci-test
 
+  irb:
+    name: >-
+      irb ${{ matrix.ruby }}  ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        ruby: [ 'head', '3.2' ]
+        os: [ ubuntu-latest ]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Install libvterm
+        run: |
+          sudo apt install -y libtool-bin
+          wget http://www.leonerd.org.uk/code/libvterm/libvterm-0.1.4.tar.gz
+          tar xvzf libvterm-0.1.4.tar.gz
+          cd libvterm-0.1.4
+          sed -i -e 's/^PREFIX=.*$/PREFIX=\/usr/g' Makefile
+          make
+          sudo make install
+      - name: Install dependencies
+        run:  bundle install
+      - name: Install reline
+        run:  |
+          rake build
+          rake install
+      - name: Download ruby/irb
+        run:  |
+          git clone https://github.com/ruby/irb
+      - name: Run irb test
+        working-directory: ./irb
+        run: |
+          bundle install
+          bundle exec rake test
+      - name: Run irb yamatanooroti test
+        working-directory: ./irb
+        env:
+          WITH_VTERM: 1
+        run: |
+          bundle install
+          bundle exec rake test_yamatanooroti
+
   vterm-yamatanooroti:
     name: >-
       vterm-yamatanooroti ${{ matrix.os }} ${{ matrix.ruby }}
