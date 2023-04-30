@@ -661,6 +661,7 @@ class Reline::LineEditor
   end
 
   private def render_dialog_changes(changes, cursor_column)
+    # Collect x-coordinate range and content of previous and current dialogs for each line
     old_dialog_ranges = {}
     new_dialog_ranges = {}
     new_dialog_contents = {}
@@ -680,6 +681,8 @@ class Reline::LineEditor
       end
     end
     return if old_dialog_ranges.empty? && new_dialog_ranges.empty?
+
+    # Calculate x-coordinate ranges to restore text that was hidden behind dialogs for each line
     ranges_to_restore = {}
     subtract_cache = {}
     old_dialog_ranges.each do |y, old_x_ranges|
@@ -688,6 +691,7 @@ class Reline::LineEditor
       ranges_to_restore[y] = ranges if ranges.any?
     end
 
+    # Create visual_lines for restoring text hidden behind dialogs
     if ranges_to_restore.any?
       lines = whole_lines
       prompt, _prompt_width, prompt_list = check_multiline_prompt(lines, force_recalc: true)
@@ -701,6 +705,7 @@ class Reline::LineEditor
       }
     end
 
+    # Clear and rerender all dialogs line by line
     Reline::IOGate.hide_cursor
     ymin, ymax = (ranges_to_restore.keys + new_dialog_ranges.keys).minmax
     dialog_y = @first_line_started_from + @started_from
@@ -712,6 +717,7 @@ class Reline::LineEditor
       cursor_y = y
       new_x_ranges = new_dialog_ranges[y]
       restore_ranges = ranges_to_restore[y]
+      # Restore text that was hidden behind dialogs
       if restore_ranges
         line = visual_lines[y] || ''
         restore_ranges.each do |range|
@@ -727,6 +733,7 @@ class Reline::LineEditor
           Reline::IOGate.erase_after_cursor
         end
       end
+      # Render dialog contents
       new_dialog_contents[y]&.each do |x_range, content|
         Reline::IOGate.move_cursor_column(x_range.begin)
         @output.write "\e[0m#{content}\e[0m"
