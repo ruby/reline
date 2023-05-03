@@ -151,6 +151,20 @@ begin
       EOC
     end
 
+    def test_readline_prompt
+      start_terminal(5, 40, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --dynamic-prompt}, startup_message: 'Multiline REPL.')
+      write("Reline.readline('prompt> ')\n")
+      write("hello\n")
+      close
+      assert_screen(<<~EOC)
+        Multiline REPL.
+        [0000]> Reline.readline('prompt> ')
+        prompt> hello
+        => "hello"
+        [0000]>
+      EOC
+    end
+
     def test_mode_string_emacs
       write_inputrc <<~LINES
         set show-mode-in-prompt on

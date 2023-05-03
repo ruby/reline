@@ -326,7 +326,7 @@ module Reline
       line_editor.completion_proc = completion_proc
       line_editor.completion_append_character = completion_append_character
       line_editor.output_modifier_proc = output_modifier_proc
-      line_editor.prompt_proc = prompt_proc
+      line_editor.prompt_proc = multiline ? prompt_proc : nil
       line_editor.auto_indent_proc = auto_indent_proc
       line_editor.dig_perfect_match_proc = dig_perfect_match_proc
       line_editor.pre_input_hook = pre_input_hook
