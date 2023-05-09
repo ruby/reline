@@ -25,36 +25,6 @@ jobs:
           TERM: xterm-256color
         run:  bundle exec rake test
 
-  readline:
-    name: >-
-      readline ${{ matrix.ruby }}  ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - { ruby: head,  os: ubuntu-latest  }
-          - { ruby: head,  os: macos-latest   }
-          - { ruby: mingw, os: windows-latest }
-          - { ruby: mswin, os: windows-latest }
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-      - name: Install dependencies
-        run:  bundle install
-      - name: Download test readline
-        run:  ruby download-test_readline.rb
-      - name: rake test
-        run:  bundle exec rake test
-      - name: rake ci-test
-        env:
-          TEST_READLINE_OR_RELINE: Reline
-          TERM: xterm-256color
-        run: bundle exec rake ci-test
-
   irb:
     name: >-
       irb ${{ matrix.ruby }}  ${{ matrix.os }}
