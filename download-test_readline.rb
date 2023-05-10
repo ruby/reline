@@ -15,22 +15,21 @@ module HTTPS_DL
 
   HOST = "https://raw.githubusercontent.com"
   URI_GH = URI HOST
-  BASE = "ruby/ruby/master"
 
-  # 1st - ruby/ruby dir  , 2nd - reline dir    , 3rd - filename
+  # 1st - source path                        , 2nd - reline dir    , 3rd - filename
   FILES = [
-    ["test/readline"     , "test/ext/readline" , "helper.rb"                ],
-    ["test/readline"     , "test/ext/readline" , "test_readline.rb"         ],
-    ["test/readline"     , "test/ext/readline" , "test_readline_history.rb" ],
-    ["tool/lib"          , "tool/lib"          , "colorize.rb"              ],
-    ["tool/lib"          , "tool/lib"          , "core_assertions.rb"       ],
-    ["tool/lib"          , "tool/lib"          , "envutil.rb"               ],
-    ["tool/lib"          , "tool/lib"          , "find_executable.rb"       ],
-    ["tool/lib"          , "tool/lib"          , "leakchecker.rb"           ],
-    ["tool/lib/test"     , "tool/lib/test"     , "unit.rb"                  ],
-    ["tool/lib/test/unit", "tool/lib/test/unit", "assertions.rb"            ],
-    ["tool/lib/test/unit", "tool/lib/test/unit", "parallel.rb"              ],
-    ["tool/lib/test/unit", "tool/lib/test/unit", "testcase.rb" ]
+    ["ruby/readline-ext/master/test/readline", "test/ext/readline" , "helper.rb"                ],
+    ["ruby/readline-ext/master/test/readline", "test/ext/readline" , "test_readline.rb"         ],
+    ["ruby/readline-ext/master/test/readline", "test/ext/readline" , "test_readline_history.rb" ],
+    ["ruby/ruby/master/tool/lib"             , "tool/lib"          , "colorize.rb"              ],
+    ["ruby/ruby/master/tool/lib"             , "tool/lib"          , "core_assertions.rb"       ],
+    ["ruby/ruby/master/tool/lib"             , "tool/lib"          , "envutil.rb"               ],
+    ["ruby/ruby/master/tool/lib"             , "tool/lib"          , "find_executable.rb"       ],
+    ["ruby/ruby/master/tool/lib"             , "tool/lib"          , "leakchecker.rb"           ],
+    ["ruby/ruby/master/tool/lib/test"        , "tool/lib/test"     , "unit.rb"                  ],
+    ["ruby/ruby/master/tool/lib/test/unit"   , "tool/lib/test/unit", "assertions.rb"            ],
+    ["ruby/ruby/master/tool/lib/test/unit"   , "tool/lib/test/unit", "parallel.rb"              ],
+    ["ruby/ruby/master/tool/lib/test/unit"   , "tool/lib/test/unit", "testcase.rb"              ]
   ]
 
   class << self
@@ -47,11 +46,11 @@ module HTTPS_DL
         connections << Thread.new do
           Net::HTTP.start(URI_GH.host, URI_GH.port, :use_ssl => true,:verify_mode => OpenSSL::SSL::VERIFY_PEER) do |http|
             while (path, dir, file = files.shift)
-              uri = URI("#{HOST}/#{BASE}/#{path}/#{file}")
+              uri = URI("#{HOST}/#{path}/#{file}")
               req = Net::HTTP::Get.new uri.request_uri
               http.request req do |res|
                 unless Net::HTTPOK === res
-                  STDOUT.puts "Can't download #{path}/#{file} from #{HOST}/#{BASE}/"
+                  STDOUT.puts "Can't download #{path}/#{file} from #{HOST}/"
                   exit 1
                 end
                 File.binwrite "./#{dir}/#{file}", res.body
