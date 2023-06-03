@@ -65,9 +65,7 @@ If you have not installed libvterm, please install libvterm.
 
 ```bash
 WITH_VTERM=1 bundle install
-
-bundle exec rake test
-WITH_VTERM=1 bundle exec rake test_yamatanooroti
+WITH_VTERM=1 bundle exec rake test test_yamatanooroti
 ```
 
 ## Releasing
