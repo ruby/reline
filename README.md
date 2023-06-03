@@ -61,6 +61,8 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/ruby/r
 
 ### Run tests
 
+If you have not installed libvterm, please install libvterm.
+
 ```bash
 WITH_VTERM=1 bundle install
 
