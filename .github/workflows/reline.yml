@@ -118,13 +118,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
       - name: Install libvterm
         run: |
-          sudo apt install -y libtool-bin
-          wget http://www.leonerd.org.uk/code/libvterm/libvterm-0.1.4.tar.gz
-          tar xvzf libvterm-0.1.4.tar.gz
-          cd libvterm-0.1.4
-          sed -i -e 's/^PREFIX=.*$/PREFIX=\/usr/g' Makefile
-          make
-          sudo make install
+          sudo apt-get install -y libvterm-dev
       - name: Install dependencies
         run:  WITH_VTERM=1 bundle install
       - name: rake test_yamatanooroti
