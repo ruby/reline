@@ -55,6 +55,29 @@ end
 
 See also: [test/reline/yamatanooroti/multiline_repl](https://github.com/ruby/reline/blob/master/test/reline/yamatanooroti/multiline_repl)
 
+## Contributing
+
+Bug reports and pull requests are welcome on GitHub at https://github.com/ruby/reline.
+
+### Run tests
+
+> **Note**
+> Please make sure you have `libvterm` installed for `yamatanooroti` tests (integration tests).
+
+If you use Homebrew, you can install it by running `brew install libvterm`.
+
+```bash
+WITH_VTERM=1 bundle install
+WITH_VTERM=1 bundle exec rake test test_yamatanooroti
+```
+
+## Releasing
+
+```bash
+rake release
+gh release create vX.Y.Z --generate-notes
+```
+
 ## License
 
 The gem is available as open source under the terms of the [Ruby License](https://www.ruby-lang.org/en/about/license.txt).
