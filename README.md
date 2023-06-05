@@ -61,7 +61,10 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/ruby/r
 
 ### Run tests
 
-If you have not installed libvterm, please install libvterm.
+> **Note**
+> Please make sure you have `libvterm` installed for `yamatanooroti` tests (integration tests).
+
+If you use Homebrew, you can install it by running `brew install libvterm`.
 
 ```bash
 WITH_VTERM=1 bundle install
