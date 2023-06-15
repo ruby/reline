@@ -7,40 +7,47 @@ class Reline::Face::Test < Reline::TestCase
         face.define :normal_line, :blue_display
         face.define :enhanced_line, { display: "#FF1020" }, :black_background, :bold, :underlined
       end
+      Reline::Face.config(:another_config) do |face|
+        face.define :another_label, :red_display
+      end
       @face = Reline::Face[:my_config]
     end
 
     def test_my_config_line
-      assert_equal "\e[34m", @face[:normal_line]
+      assert_equal "\e[34m", @face.normal_line
     end
 
     def test_my_config_enhanced_line
-      assert_equal "\e[38;2;255;16;32;40;1;4m", @face[:enhanced_line]
+      assert_equal "\e[38;2;255;16;32;40;1;4m", @face.enhanced_line
     end
 
     def test_my_config_default
-      assert_equal "\e[m", @face[:default]
+      assert_equal "\e[m", @face.default
+    end
+
+    def test_not_respond_to_another_label
+      assert_equal false, @face.respond_to?(:another_label)
     end
 
     def test_existing_confit_override_default
       Reline::Face.config(:my_config) do |face|
         face.define :normal_line, :red_display
       end
-      assert_equal "\e[31m", Reline::Face[:my_config][:normal_line]
+      assert_equal "\e[31m", Reline::Face[:my_config].normal_line
     end
 
     def test_existing_config_override_false
       Reline::Face.config(:my_config, false) do |face|
         face.define :normal_line, :red_display
       end
-      assert_equal "\e[34m", Reline::Face[:my_config][:normal_line]
+      assert_equal "\e[34m", Reline::Face[:my_config].normal_line
     end
 
     def test_new_config_override_false
       Reline::Face.config(:new_config, false) do |face|
         face.define :normal_line, :red_display
       end
-      assert_equal "\e[31m", Reline::Face[:new_config][:normal_line]
+      assert_equal "\e[31m", Reline::Face[:new_config].normal_line
     end
   end
 

@@ -603,6 +603,7 @@ end
 Reline::Face.config(:default) do |face|
   face.define :normal_line, :default
   face.define :enhanced_line, :default
+  face.define :scrollbar, :default
 end
 
 Reline::Face.config(:completion_dialog) do |face|

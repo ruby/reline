@@ -53,20 +53,15 @@ class Reline::Face
   class FaceConfig
     def initialize(name, &block)
       @name = name
-      @parameters = {}
       block.call(self)
-      define(:default) unless @parameters[:default]
-    end
-
-    def [](name)
-      @parameters[name]
+      define(:default) unless self.respond_to?(:default)
     end
 
     def define(name, *sgr_values)
       sgr_values.each do |value|
         sgr_valid?(value) or raise ArgumentError, "invalid SGR parameter: #{value.inspect}"
       end
-      @parameters[name] = "\e[" + sgr_values.map { |value|
+      sgr = "\e[" + sgr_values.map { |value|
         case value
         when Symbol
           SGR_PARAMETERS[value]
@@ -75,6 +70,7 @@ class Reline::Face
           sgr_rgb(key, v)
         end
       }.join(';') + "m"
+      define_singleton_method(name) { sgr }
     end
 
     private
