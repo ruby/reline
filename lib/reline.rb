@@ -270,6 +270,7 @@ module Reline
     Reline::DEFAULT_DIALOG_CONTEXT = Array.new
 
     def readmultiline(prompt = '', add_hist = false, &confirm_multiline_termination)
+      Reline.update_iogate
       Reline::IOGate.with_raw_input do
         unless confirm_multiline_termination
           raise ArgumentError.new('#readmultiline needs block to confirm multiline termination')
@@ -288,6 +289,7 @@ module Reline
     end
 
     def readline(prompt = '', add_hist = false)
+      Reline.update_iogate
       inner_readline(prompt, add_hist, false)
 
       line = line_editor.line.dup
@@ -583,6 +585,18 @@ module Reline
 
   def self.line_editor
     core.line_editor
+  end
+
+  def self.update_iogate
+    return if core.config.test_mode
+
+    # Need to change IOGate when `$stdout.tty?` change from false to true by `$stdout.reopen`
+    # Example: rails/spring boot the application in non-tty, then run console in tty.
+    if ENV['TERM'] != 'dumb' && Reline::IOGate == Reline::GeneralIO && $stdout.tty?
+      require 'reline/ansi'
+      remove_const(:IOGate)
+      const_set(:IOGate, Reline::ANSI)
+    end
   end
 end
 
