@@ -181,20 +181,16 @@ module Reline
 
     def input=(val)
       raise TypeError unless val.respond_to?(:getc) or val.nil?
-      if val.respond_to?(:getc)
-        if defined?(Reline::ANSI) and Reline::IOGate == Reline::ANSI
-          Reline::ANSI.input = val
-        elsif Reline::IOGate == Reline::GeneralIO
-          Reline::GeneralIO.input = val
-        end
+      if val.respond_to?(:getc) && Reline::IOGate.respond_to?(:input=)
+        Reline::IOGate.input = val
       end
     end
 
     def output=(val)
       raise TypeError unless val.respond_to?(:write) or val.nil?
       @output = val
-      if defined?(Reline::ANSI) and Reline::IOGate == Reline::ANSI
-        Reline::ANSI.output = val
+      if Reline::IOGate.respond_to?(:output=)
+        Reline::IOGate.output = val
       end
     end
 
