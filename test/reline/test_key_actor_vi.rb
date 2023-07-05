@@ -4,7 +4,7 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
   def setup
     Reline.send(:test_mode)
     @prompt = '> '
-    @config = Reline::Config.new(Reline::IOGate)
+    @config = Reline::Config.new(Reline.core.io_gate)
     @config.read_lines(<<~LINES.split(/(?<=\n)/))
       set editing-mode vi
     LINES

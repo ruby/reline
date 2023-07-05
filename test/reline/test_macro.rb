@@ -3,7 +3,7 @@ require_relative 'helper'
 class Reline::MacroTest < Reline::TestCase
   def setup
     Reline.send(:test_mode)
-    @config = Reline::Config.new(Reline::IOGate)
+    @config = Reline::Config.new(Reline.core.io_gate)
     @encoding = Reline.core.encoding
     @line_editor = Reline::LineEditor.new(@config, @encoding)
     @line_editor.instance_variable_set(:@screen_size, [24, 80])

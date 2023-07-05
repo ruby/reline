@@ -14,7 +14,7 @@ class Reline::KeyStroke::Test < Reline::TestCase
   }
 
   def test_match_status
-    config = Reline::Config.new(Reline::IOGate)
+    config = Reline::Config.new(Reline.core.io_gate)
     {
       'a' => 'xx',
       'ab' => 'y',
@@ -37,7 +37,7 @@ class Reline::KeyStroke::Test < Reline::TestCase
   end
 
   def test_expand
-    config = Reline::Config.new(Reline::IOGate)
+    config = Reline::Config.new(Reline.core.io_gate)
     {
       'abc' => '123',
     }.each_pair do |key, func|
@@ -48,7 +48,7 @@ class Reline::KeyStroke::Test < Reline::TestCase
   end
 
   def test_oneshot_key_bindings
-    config = Reline::Config.new(Reline::IOGate)
+    config = Reline::Config.new(Reline.core.io_gate)
     {
       'abc' => '123',
     }.each_pair do |key, func|
@@ -60,7 +60,7 @@ class Reline::KeyStroke::Test < Reline::TestCase
   end
 
   def test_with_reline_key
-    config = Reline::Config.new(Reline::IOGate)
+    config = Reline::Config.new(Reline.core.io_gate)
     {
       [
         Reline::Key.new(100, 228, true), # Alt+d

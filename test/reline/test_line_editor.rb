@@ -3,7 +3,7 @@ require 'reline/line_editor'
 
 class Reline::LineEditor::Test < Reline::TestCase
   def test_range_subtract
-    config = Reline::Config.new(Reline::IOGate)
+    config = Reline::Config.new(Reline::GeneralIO)
     editor = Reline::LineEditor.new(config, 'ascii-8bit')
     base_ranges = [3...5, 4...10, 6...8, 12...15, 15...20]
     subtract_ranges = [5...7, 8...9, 11...13, 17...18, 18...19]

@@ -4,7 +4,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
   def setup
     Reline.send(:test_mode)
     @prompt = '> '
-    @config = Reline::Config.new(Reline::IOGate) # Emacs mode is default
+    @config = Reline::Config.new(Reline.core.io_gate) # Emacs mode is default
     @config.autocompletion = false
     Reline::HISTORY.instance_variable_set(:@config, @config)
     Reline::HISTORY.clear
