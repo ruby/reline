@@ -12,7 +12,7 @@ class Reline::Config::Test < Reline::TestCase
     end
     Dir.chdir(@tmpdir)
     Reline.test_mode
-    @config = Reline::Config.new
+    @config = Reline::Config.new(Reline::IOGate)
   end
 
   def teardown
@@ -86,7 +86,7 @@ class Reline::Config::Test < Reline::TestCase
   def test_encoding_is_ascii
     @config.reset
     Reline::IOGate.reset(encoding: Encoding::US_ASCII)
-    @config = Reline::Config.new
+    @config = Reline::Config.new(Reline::IOGate)
 
     assert_equal true, @config.convert_meta
   end
@@ -94,7 +94,7 @@ class Reline::Config::Test < Reline::TestCase
   def test_encoding_is_not_ascii
     @config.reset
     Reline::IOGate.reset(encoding: Encoding::UTF_8)
-    @config = Reline::Config.new
+    @config = Reline::Config.new(Reline::IOGate)
 
     assert_equal nil, @config.convert_meta
   end

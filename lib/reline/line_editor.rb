@@ -56,6 +56,7 @@ class Reline::LineEditor
 
   def initialize(config, encoding)
     @config = config
+    @io_gate = config.io_gate
     @completion_append_character = ''
     reset_variables(encoding: encoding)
   end
@@ -148,11 +149,11 @@ class Reline::LineEditor
   end
 
   def reset(prompt = '', encoding:)
-    @rest_height = (Reline::IOGate.get_screen_size.first - 1) - Reline::IOGate.cursor_pos.y
-    @screen_size = Reline::IOGate.get_screen_size
+    @rest_height = (@io_gate.get_screen_size.first - 1) - @io_gate.cursor_pos.y
+    @screen_size = @io_gate.get_screen_size
     @screen_height = @screen_size.first
     reset_variables(prompt, encoding: encoding)
-    Reline::IOGate.set_winch_handler do
+    @io_gate.set_winch_handler do
       @resized = true
     end
     if ENV.key?('RELINE_ALT_SCROLLBAR')
@@ -160,7 +161,7 @@ class Reline::LineEditor
       @upper_half_block = "''"
       @lower_half_block = '..'
       @block_elem_width = 2
-    elsif Reline::IOGate.win?
+    elsif @io_gate.win?
       @full_block = '█'
       @upper_half_block = '▀'
       @lower_half_block = '▄'
@@ -181,9 +182,9 @@ class Reline::LineEditor
   def resize
     return unless @resized
     @resized = false
-    @rest_height = (Reline::IOGate.get_screen_size.first - 1) - Reline::IOGate.cursor_pos.y
+    @rest_height = (@io_gate.get_screen_size.first - 1) - @io_gate.cursor_pos.y
     old_screen_size = @screen_size
-    @screen_size = Reline::IOGate.get_screen_size
+    @screen_size = @io_gate.get_screen_size
     @screen_height = @screen_size.first
     if old_screen_size.last < @screen_size.last # columns increase
       @rerender_all = true
@@ -212,7 +213,7 @@ class Reline::LineEditor
       end
       calculate_nearest_cursor
       @started_from = calculate_height_by_width(prompt_width + @cursor) - 1
-      Reline::IOGate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
+      @io_gate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
       @highest_in_this = calculate_height_by_width(prompt_width + @cursor_max)
       @rerender_all = true
     end
@@ -226,7 +227,7 @@ class Reline::LineEditor
       else
         move_cursor_down(@highest_in_all - @line_index - 1)
       end
-      Reline::IOGate.move_cursor_column(0)
+      @io_gate.move_cursor_column(0)
       scroll_down(1)
       case @old_trap
       when 'DEFAULT', 'SYSTEM_DEFAULT'
@@ -343,18 +344,18 @@ class Reline::LineEditor
 
   private def scroll_down(val)
     if val <= @rest_height
-      Reline::IOGate.move_cursor_down(val)
+      @io_gate.move_cursor_down(val)
       @rest_height -= val
     else
-      Reline::IOGate.move_cursor_down(@rest_height)
-      Reline::IOGate.scroll_down(val - @rest_height)
+      @io_gate.move_cursor_down(@rest_height)
+      @io_gate.scroll_down(val - @rest_height)
       @rest_height = 0
     end
   end
 
   private def move_cursor_up(val)
     if val > 0
-      Reline::IOGate.move_cursor_up(val)
+      @io_gate.move_cursor_up(val)
       @rest_height += val
     elsif val < 0
       move_cursor_down(-val)
@@ -363,7 +364,7 @@ class Reline::LineEditor
 
   private def move_cursor_down(val)
     if val > 0
-      Reline::IOGate.move_cursor_down(val)
+      @io_gate.move_cursor_down(val)
       @rest_height -= val
       @rest_height = 0 if @rest_height < 0
     elsif val < 0
@@ -438,14 +439,14 @@ class Reline::LineEditor
     end
     if @is_multiline and finished? and @scroll_partial_screen
       # Re-output all code higher than the screen when finished.
-      Reline::IOGate.move_cursor_up(@first_line_started_from + @started_from - @scroll_partial_screen)
-      Reline::IOGate.move_cursor_column(0)
+      @io_gate.move_cursor_up(@first_line_started_from + @started_from - @scroll_partial_screen)
+      @io_gate.move_cursor_column(0)
       @scroll_partial_screen = nil
       new_lines = whole_lines
       prompt, prompt_width, prompt_list = check_multiline_prompt(new_lines)
       modify_lines(new_lines).each_with_index do |line, index|
         @output.write "#{prompt_list ? prompt_list[index] : prompt}#{line}\r\n"
-        Reline::IOGate.erase_after_cursor
+        @io_gate.erase_after_cursor
       end
       @output.flush
       clear_dialog(cursor_column)
@@ -485,8 +486,8 @@ class Reline::LineEditor
         render_partial(prompt, prompt_width, line, @first_line_started_from)
         move_cursor_down(@highest_in_all - (@first_line_started_from + @highest_in_this - 1) - 1)
         scroll_down(1)
-        Reline::IOGate.move_cursor_column(0)
-        Reline::IOGate.erase_after_cursor
+        @io_gate.move_cursor_column(0)
+        @io_gate.erase_after_cursor
       else
         if not rendered and not @in_pasting
           line = modify_lines(whole_lines)[@line_index]
@@ -502,8 +503,8 @@ class Reline::LineEditor
       render_partial(prompt, prompt_width, line, 0)
       if finished?
         scroll_down(1)
-        Reline::IOGate.move_cursor_column(0)
-        Reline::IOGate.erase_after_cursor
+        @io_gate.move_cursor_column(0)
+        @io_gate.erase_after_cursor
       end
     end
   end
@@ -716,7 +717,7 @@ class Reline::LineEditor
     end
 
     # Clear and rerender all dialogs line by line
-    Reline::IOGate.hide_cursor
+    @io_gate.hide_cursor
     ymin, ymax = (ranges_to_restore.keys + new_dialog_ranges.keys).minmax
     scroll_partial_screen = @scroll_partial_screen || 0
     screen_y_range = scroll_partial_screen..(scroll_partial_screen + @screen_height - 1)
@@ -740,24 +741,24 @@ class Reline::LineEditor
           col = range.begin
           width = range.end - range.begin
           s = padding_space_with_escape_sequences(Reline::Unicode.take_range(line, col, width), width)
-          Reline::IOGate.move_cursor_column(col)
+          @io_gate.move_cursor_column(col)
           @output.write "\e[0m#{s}\e[0m"
         end
         max_column = [calculate_width(line, true), new_x_ranges&.map(&:end)&.max || 0].max
         if max_column < restore_ranges.map(&:end).max
-          Reline::IOGate.move_cursor_column(max_column)
-          Reline::IOGate.erase_after_cursor
+          @io_gate.move_cursor_column(max_column)
+          @io_gate.erase_after_cursor
         end
       end
       # Render dialog contents
       new_dialog_contents[y]&.each do |x_range, content|
-        Reline::IOGate.move_cursor_column(x_range.begin)
+        @io_gate.move_cursor_column(x_range.begin)
         @output.write "\e[0m#{content}\e[0m"
       end
     end
     move_cursor_up(cursor_y - dialog_y)
-    Reline::IOGate.move_cursor_column(cursor_column)
-    Reline::IOGate.show_cursor
+    @io_gate.move_cursor_column(cursor_column)
+    @io_gate.show_cursor
 
     @previous_rendered_dialog_y = dialog_y
   end
@@ -951,7 +952,7 @@ class Reline::LineEditor
       @first_line_started_from = new_first_line_started_from
       @started_from = new_started_from
       move_cursor_down(first_line_diff + @started_from)
-      Reline::IOGate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
+      @io_gate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
       false
     end
   end
@@ -967,8 +968,8 @@ class Reline::LineEditor
       move_cursor_up(all_height - 1)
     elsif diff < 0
       (-diff).times do
-        Reline::IOGate.move_cursor_column(0)
-        Reline::IOGate.erase_after_cursor
+        @io_gate.move_cursor_column(0)
+        @io_gate.erase_after_cursor
         move_cursor_up(1)
       end
       move_cursor_up(all_height - 1)
@@ -996,13 +997,13 @@ class Reline::LineEditor
     calculate_nearest_cursor
     @started_from = calculate_height_by_width(prompt_width + @cursor) - 1
     move_cursor_down(@started_from)
-    Reline::IOGate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
+    @io_gate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
     @highest_in_this = calculate_height_by_width(prompt_width + @cursor_max)
   end
 
   private def rerender_all_lines
     move_cursor_up(@first_line_started_from + @started_from)
-    Reline::IOGate.move_cursor_column(0)
+    @io_gate.move_cursor_column(0)
     back = 0
     new_buffer = whole_lines
     prompt, prompt_width, prompt_list = check_multiline_prompt(new_buffer)
@@ -1024,16 +1025,16 @@ class Reline::LineEditor
       move_cursor_up(@first_line_started_from + @started_from)
       scroll_down(@screen_height - 1)
       move_cursor_up(@screen_height)
-      Reline::IOGate.move_cursor_column(0)
+      @io_gate.move_cursor_column(0)
     elsif back > old_highest_in_all
       scroll_down(back - 1)
       move_cursor_up(back - 1)
     elsif back < old_highest_in_all
       scroll_down(back)
-      Reline::IOGate.erase_after_cursor
+      @io_gate.erase_after_cursor
       (old_highest_in_all - back - 1).times do
         scroll_down(1)
-        Reline::IOGate.erase_after_cursor
+        @io_gate.erase_after_cursor
       end
       move_cursor_up(old_highest_in_all - 1)
     end
@@ -1047,11 +1048,11 @@ class Reline::LineEditor
     @first_line_started_from = new_first_line_started_from
     @started_from = new_started_from
     if @scroll_partial_screen
-      Reline::IOGate.move_cursor_up(@screen_height - (@first_line_started_from + @started_from - @scroll_partial_screen) - 1)
-      Reline::IOGate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
+      @io_gate.move_cursor_up(@screen_height - (@first_line_started_from + @started_from - @scroll_partial_screen) - 1)
+      @io_gate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
     else
       move_cursor_down(@first_line_started_from + @started_from - back + 1)
-      Reline::IOGate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
+      @io_gate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
     end
   end
 
@@ -1128,11 +1129,11 @@ class Reline::LineEditor
       @output.write "\e[0m" # clear character decorations
     end
     visual_lines.each_with_index do |line, index|
-      Reline::IOGate.move_cursor_column(0)
+      @io_gate.move_cursor_column(0)
       if line.nil?
-        if calculate_width(visual_lines[index - 1], true) == Reline::IOGate.get_screen_size.last
+        if calculate_width(visual_lines[index - 1], true) == @io_gate.get_screen_size.last
           # reaches the end of line
-          if Reline::IOGate.win? and Reline::IOGate.win_legacy_console?
+          if @io_gate.win? and @io_gate.win_legacy_console?
             # A newline is automatically inserted if a character is rendered at
             # eol on command prompt.
           else
@@ -1140,17 +1141,17 @@ class Reline::LineEditor
             # after the cursor, some terminals delete the character at the
             # cursor position.
             move_cursor_down(1)
-            Reline::IOGate.move_cursor_column(0)
+            @io_gate.move_cursor_column(0)
           end
         else
-          Reline::IOGate.erase_after_cursor
+          @io_gate.erase_after_cursor
           move_cursor_down(1)
-          Reline::IOGate.move_cursor_column(0)
+          @io_gate.move_cursor_column(0)
         end
         next
       end
       @output.write line
-      if Reline::IOGate.win? and Reline::IOGate.win_legacy_console? and calculate_width(line, true) == Reline::IOGate.get_screen_size.last
+      if @io_gate.win? and @io_gate.win_legacy_console? and calculate_width(line, true) == @io_gate.get_screen_size.last
         # A newline is automatically inserted if a character is rendered at eol on command prompt.
         @rest_height -= 1 if @rest_height > 0
       end
@@ -1161,18 +1162,18 @@ class Reline::LineEditor
       end
     end
     unless visual_lines.empty?
-      Reline::IOGate.erase_after_cursor
-      Reline::IOGate.move_cursor_column(0)
+      @io_gate.erase_after_cursor
+      @io_gate.move_cursor_column(0)
     end
     if with_control
       # Just after rendring, so the cursor is on the last line.
       if finished?
-        Reline::IOGate.move_cursor_column(0)
+        @io_gate.move_cursor_column(0)
       else
         # Moves up from bottom of lines to the cursor position.
         move_cursor_up(cursor_up_from_last_line)
         # This logic is buggy if a fullwidth char is wrapped because there is only one halfwidth at end of a line.
-        Reline::IOGate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
+        @io_gate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
       end
     end
     height
@@ -1192,7 +1193,7 @@ class Reline::LineEditor
     scroll_down(@highest_in_all - @first_line_started_from)
     @rerender_all = true
     @menu_info.list.sort!.each do |item|
-      Reline::IOGate.move_cursor_column(0)
+      @io_gate.move_cursor_column(0)
       @output.write item
       @output.flush
       scroll_down(1)
@@ -1202,7 +1203,7 @@ class Reline::LineEditor
   end
 
   private def clear_screen_buffer(prompt, prompt_list, prompt_width)
-    Reline::IOGate.clear_screen
+    @io_gate.clear_screen
     back = 0
     modify_lines(whole_lines).each_with_index do |line, index|
       if @prompt_proc
@@ -1218,8 +1219,8 @@ class Reline::LineEditor
     end
     move_cursor_up(back)
     move_cursor_down(@first_line_started_from + @started_from)
-    @rest_height = (Reline::IOGate.get_screen_size.first - 1) - Reline::IOGate.cursor_pos.y
-    Reline::IOGate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
+    @rest_height = (@io_gate.get_screen_size.first - 1) - @io_gate.cursor_pos.y
+    @io_gate.move_cursor_column((prompt_width + @cursor) % @screen_size.last)
   end
 
   def editing_mode
@@ -2597,7 +2598,7 @@ class Reline::LineEditor
       if @buffer_of_lines.size > 1
         scroll_down(@highest_in_all - @first_line_started_from)
       end
-      Reline::IOGate.move_cursor_column(0)
+      @io_gate.move_cursor_column(0)
       @eof = true
       finish
     elsif @byte_pointer < @line.bytesize
@@ -2994,7 +2995,7 @@ class Reline::LineEditor
       if @buffer_of_lines.size > 1
         scroll_down(@highest_in_all - @first_line_started_from)
       end
-      Reline::IOGate.move_cursor_column(0)
+      @io_gate.move_cursor_column(0)
       @eof = true
       finish
     else

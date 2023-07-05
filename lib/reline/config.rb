@@ -46,8 +46,9 @@ class Reline::Config
   end
 
   attr_accessor :autocompletion
+  attr_accessor :io_gate
 
-  def initialize
+  def initialize(io_gate)
     @additional_key_bindings = {} # from inputrc
     @additional_key_bindings[:emacs] = {}
     @additional_key_bindings[:vi_insert] = {}
@@ -70,7 +71,8 @@ class Reline::Config
     @keyseq_timeout = 500
     @test_mode = false
     @autocompletion = false
-    @convert_meta = true if seven_bit_encoding?(Reline::IOGate.encoding)
+    @io_gate = io_gate
+    @convert_meta = true if seven_bit_encoding?(@io_gate.encoding)
   end
 
   def reset
