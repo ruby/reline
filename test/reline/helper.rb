@@ -21,16 +21,19 @@ end
 module Reline
   class <<self
     def test_mode(ansi: false)
+        config = send(:core).config
         remove_const('IOGate') if const_defined?('IOGate')
-        const_set('IOGate', ansi ? Reline::ANSI : Reline::GeneralIO)
+        io_gate = ansi ? Reline::ANSI : Reline::GeneralIO
+        const_set('IOGate', io_gate)
+        config.io_gate = io_gate
         if ENV['RELINE_TEST_ENCODING']
           encoding = Encoding.find(ENV['RELINE_TEST_ENCODING'])
         else
           encoding = Encoding::UTF_8
         end
-        Reline::GeneralIO.reset(encoding: encoding) unless ansi
-        send(:core).config.instance_variable_set(:@test_mode, true)
-        send(:core).config.reset
+        io_gate.reset(encoding: encoding) unless ansi
+        config.instance_variable_set(:@test_mode, true)
+        config.reset
     end
 
     def test_reset
