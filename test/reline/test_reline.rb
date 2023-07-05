@@ -378,7 +378,7 @@ class Reline::Test < Reline::TestCase
   end
 
   def get_reline_encoding
-    if encoding = Reline::IOGate.encoding
+    if encoding = Reline.core.encoding
       encoding
     elsif RUBY_PLATFORM =~ /mswin|mingw/
       Encoding::UTF_8
