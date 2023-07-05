@@ -302,12 +302,12 @@ class Reline::Test < Reline::TestCase
 
   def test_vi_editing_mode
     Reline.vi_editing_mode
-    assert_equal(Reline::KeyActor::ViInsert, Reline.send(:core).config.editing_mode.class)
+    assert_equal(Reline::KeyActor::ViInsert, Reline.core.config.editing_mode.class)
   end
 
   def test_emacs_editing_mode
     Reline.emacs_editing_mode
-    assert_equal(Reline::KeyActor::Emacs, Reline.send(:core).config.editing_mode.class)
+    assert_equal(Reline::KeyActor::Emacs, Reline.core.config.editing_mode.class)
   end
 
   def test_add_dialog_proc
@@ -378,7 +378,7 @@ class Reline::Test < Reline::TestCase
   end
 
   def get_reline_encoding
-    if encoding = Reline::IOGate.encoding
+    if encoding = Reline.core.encoding
       encoding
     elsif RUBY_PLATFORM =~ /mswin|mingw/
       Encoding::UTF_8
