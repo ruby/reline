@@ -14,10 +14,15 @@ class Reline::ANSI
     'kcud1' => :ed_next_history,
     'kcuf1' => :ed_next_char,
     'kcub1' => :ed_prev_char,
-    'cuu' => :ed_prev_history,
-    'cud' => :ed_next_history,
-    'cuf' => :ed_next_char,
-    'cub' => :ed_prev_char,
+  }
+
+  CSI_STANDARD_KEY_BINDINGS = {
+    "\e[A" => :ed_prev_history,
+    "\e[B" => :ed_next_history,
+    "\e[C" => :ed_next_char,
+    "\e[D" => :ed_prev_char,
+    "\e[F" => :ed_move_to_end,
+    "\e[H" => :ed_move_to_beg,
   }
 
   if Reline::Terminfo.enabled?
@@ -33,6 +38,7 @@ class Reline::ANSI
   end
 
   def self.set_default_key_bindings(config, allow_terminfo: true)
+    set_default_key_bindings_csi_standard(config)
     if allow_terminfo && Reline::Terminfo.enabled?
       set_default_key_bindings_terminfo(config)
     else
@@ -64,18 +70,20 @@ class Reline::ANSI
     end
   end
 
+  def self.set_default_key_bindings_csi_standard(config)
+    CSI_STANDARD_KEY_BINDINGS.each_pair do |seq, func|
+      key = seq.bytes
+      config.add_default_key_binding_by_keymap(:emacs, key, func)
+      config.add_default_key_binding_by_keymap(:vi_insert, key, func)
+      config.add_default_key_binding_by_keymap(:vi_command, key, func)
+    end
+  end
+
   def self.set_default_key_bindings_terminfo(config)
     key_bindings = CAPNAME_KEY_BINDINGS.map do |capname, key_binding|
       begin
         key_code = Reline::Terminfo.tigetstr(capname)
-        case capname
-        # Escape sequences that omit the move distance and are set to defaults
-        # value 1 may be sometimes sent by pressing the arrow-key.
-        when 'cuu', 'cud', 'cuf', 'cub'
-          [ key_code.sub(/%p1%d/, '').bytes, key_binding ]
-        else
-          [ key_code.bytes, key_binding ]
-        end
+        [ key_code.bytes, key_binding ]
       rescue Reline::Terminfo::TerminfoError
         # capname is undefined
       end
