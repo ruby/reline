@@ -1849,7 +1849,7 @@ class Reline::LineEditor
   def whole_lines
     index = @previous_line_index || @line_index
     temp_lines = @buffer_of_lines.dup
-    temp_lines[index] = @line
+    temp_lines[index] = @line || ""
     temp_lines
   end
 
