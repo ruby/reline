@@ -1605,7 +1605,7 @@ class Reline::LineEditor
     else
       @just_cursor_moving = false
     end
-    if @is_multiline and @auto_indent_proc and not simplified_rendering?
+    if @is_multiline and @auto_indent_proc and not simplified_rendering? and @line
       process_auto_indent
     end
   end
@@ -1849,7 +1849,7 @@ class Reline::LineEditor
   def whole_lines
     index = @previous_line_index || @line_index
     temp_lines = @buffer_of_lines.dup
-    temp_lines[index] = @line || ""
+    temp_lines[index] = @line
     temp_lines
   end
 
