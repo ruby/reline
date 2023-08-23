@@ -8,11 +8,11 @@ end
 open(ARGV.first, 'rt') do |f|
   list = []
   f.each_line do |line|
-    next unless /^(\h+)(?:\.\.(\h+))?\s*;\s*(\w+)\s+#.+/ =~ line
+    next unless m = line.match(/^(\h+)(?:\.\.(\h+))?\s*;\s*(\w+)\s+#.+/)
 
-    first = Regexp.last_match(1).to_i(16)
-    last = Regexp.last_match(2)&.to_i(16) || first
-    type = Regexp.last_match(3).to_sym
+    first = m[1].to_i(16)
+    last = m[2]&.to_i(16) || first
+    type = m[3].to_sym
     if !list.empty? and (list.last[:range].last + 1) == first and list.last[:type] == type
       list.last[:range] = (list.last[:range].first..last)
     else
