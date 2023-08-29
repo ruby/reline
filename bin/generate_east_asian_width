@@ -6,6 +6,13 @@ if ARGV.empty?
 end
 
 open(ARGV.first, 'rt') do |f|
+  if m = f.gets.match(/^# EastAsianWidth-(\d+\.\d+\.\d+)\.txt/)
+    unicode_version = m[1]
+  else
+    warn 'Failed to get UNICODE_VERSION'
+    unicode_version = nil
+  end
+
   list = []
   f.each_line do |line|
     next unless m = line.match(/^(\h+)(?:\.\.(\h+))?\s*;\s*(\w+)\s+#.+/)
@@ -44,6 +51,7 @@ open(ARGV.first, 'rt') do |f|
 class Reline::Unicode::EastAsianWidth
   # This is based on EastAsianWidth.txt
   # #{ARGV.first}
+  # UNICODE_VERSION = #{unicode_version ? "'#{unicode_version}'" : 'nil'}
 
 EOH
   puts grouped.map { |item|
