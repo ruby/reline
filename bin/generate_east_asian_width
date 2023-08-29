@@ -51,7 +51,7 @@ open(ARGV.first, 'rt') do |f|
 class Reline::Unicode::EastAsianWidth
   # This is based on EastAsianWidth.txt
   # #{ARGV.first}
-  UNICODE_VERSION = #{unicode_version ? "'#{unicode_version}'" : 'nil'}
+  # UNICODE_VERSION = #{unicode_version ? "'#{unicode_version}'" : 'nil'}
 
 EOH
   puts grouped.map { |item|
