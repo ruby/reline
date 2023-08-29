@@ -50,7 +50,6 @@ open(ARGV.first, 'rt') do |f|
   puts <<EOH
 class Reline::Unicode::EastAsianWidth
   # This is based on EastAsianWidth.txt
-  # #{ARGV.first}
   # UNICODE_VERSION = #{unicode_version ? "'#{unicode_version}'" : 'nil'}
 
 EOH
