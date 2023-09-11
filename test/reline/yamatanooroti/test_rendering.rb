@@ -85,6 +85,21 @@ begin
       EOC
     end
 
+    def test_fullwidth_autowrap
+      start_terminal(10, 20, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      fullwidth_numbers = '０１２３４５６７８９'
+      write("'#{fullwidth_numbers * 2}-#{fullwidth_numbers * 2}")
+      close
+      assert_screen(<<~EOC)
+        Multiline REPL.
+        prompt> '０１２３４
+        ５６７８９０１２３４
+        ５６７８９-０１２３
+        ４５６７８９０１２３
+        ４５６７８９
+      EOC
+    end
+
     def test_finish_autowrapped_line
       start_terminal(10, 40, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
       write("[{'user'=>{'email'=>'a@a', 'id'=>'ABC'}, 'version'=>4, 'status'=>'succeeded'}]\n")
