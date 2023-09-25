@@ -1,3 +1,5 @@
+require 'rubygems'
+
 class Reline::Config
   attr_reader :test_mode
 
@@ -44,6 +46,16 @@ class Reline::Config
   VARIABLE_NAME_SYMBOLS.each do |v|
     attr_accessor v
   end
+
+  RUBY_OPERATOR_BY_INPUTRC_OPERATOR = {
+    '=': :==,
+    '==': :==,
+    '!=': :!=,
+    '<=': :<=,
+    '>=': :>=,
+    '<': :<,
+    '>': :>
+  }
 
   attr_accessor :autocompletion
 
@@ -227,18 +239,36 @@ class Reline::Config
   end
 
   def handle_directive(directive, file, no)
-    directive, args = directive.split(' ')
+    directive, args = directive.split(/\s+/, 2)
+    args, _comment = args.split(/\s+#\s*/, 2) if args
     case directive
     when 'if'
-      condition = false
-      case args
-      when 'mode'
-      when 'term'
-      when 'version'
-      else # application name
-        condition = true if args == 'Ruby'
-        condition = true if args == 'Reline'
-      end
+      lhs, operator, rhs = args.partition(/\s*(==|=|!=|<=|>=|<|>)\s*/)
+      stripped_operator = $1
+      ruby_operator = (RUBY_OPERATOR_BY_INPUTRC_OPERATOR[stripped_operator.to_sym] if stripped_operator)
+
+      condition =
+        if lhs == 'term' && operator == '='
+          rhs == ENV['TERM'] || rhs == ENV['TERM'].sub(/-.*\z/, '')
+        elsif lhs == 'mode' && operator == '='
+          editing_mode = %i[vi_insert vi_command].include?(@editing_mode_label) ? :vi : @editing_mode_label
+          rhs == editing_mode.to_s
+        elsif lhs == 'version' && %w[= == != >= <= < >].include?(stripped_operator)
+          # Comment syntax here is different from comment syntax above: `#` does
+          # not need to be preceded by whitespace
+          rhs_version_str, _comment = rhs.split(/\s*#\s*/)
+          rhs_version = Gem::Version.new(rhs_version_str)
+          reline_compatible_readline_version = Gem::Version.new(Reline::COMPATIBLE_READLINE_VERSION)
+          reline_compatible_readline_version.public_send(ruby_operator, rhs_version)
+        elsif %w[Ruby Reline].include?(args) # application name
+          true
+        elsif %w[= == !=].include?(stripped_operator) # variable
+          parse_variable(lhs, rhs).all? do |var_name, rhs_value|
+            actual_value = instance_variable_get(:"@#{var_name}")
+            actual_value.public_send(ruby_operator, rhs_value)
+          end
+        end
+
       @if_stack << [file, no, @skip_section]
       @skip_section = !condition
     when 'else'
@@ -256,81 +286,103 @@ class Reline::Config
     end
   end
 
-  def bind_variable(name, value)
+  def parse_variable(name, value)
     case name
     when 'history-size'
       begin
-        @history_size = Integer(value)
+        { history_size:  Integer(value) }
       rescue ArgumentError
-        @history_size = 500
+        { history_size:  500 }
       end
     when 'bell-style'
-      @bell_style =
-        case value
-        when 'none', 'off'
-          :none
-        when 'audible', 'on'
-          :audible
-        when 'visible'
-          :visible
-        else
-          :audible
-        end
+      {
+        bell_style:
+          case value
+          when 'none', 'off'
+            :none
+          when 'audible', 'on'
+            :audible
+          when 'visible'
+            :visible
+          else
+            :audible
+          end
+      }
     when 'comment-begin'
-      @comment_begin = value.dup
+      { comment_begin:  value.dup }
     when 'completion-query-items'
-      @completion_query_items = value.to_i
+      { completion_query_items:  value.to_i }
     when 'isearch-terminators'
-      @isearch_terminators = retrieve_string(value)
+      { isearch_terminators:  retrieve_string(value) }
     when 'editing-mode'
       case value
       when 'emacs'
-        @editing_mode_label = :emacs
-        @keymap_label = :emacs
-        @keymap_prefix = []
+        {
+          editing_mode_label:  :emacs,
+          keymap_label:  :emacs,
+          keymap_prefix:  []
+        }
       when 'vi'
-        @editing_mode_label = :vi_insert
-        @keymap_label = :vi_insert
-        @keymap_prefix = []
+        {
+          editing_mode_label:  :vi_insert,
+          keymap_label:  :vi_insert,
+          keymap_prefix:  []
+        }
       end
     when 'keymap'
       case value
       when 'emacs', 'emacs-standard'
-        @keymap_label = :emacs
-        @keymap_prefix = []
+        {
+          keymap_label:  :emacs,
+          keymap_prefix:  []
+        }
       when 'emacs-ctlx'
-        @keymap_label = :emacs
-        @keymap_prefix = [?\C-x.ord]
+        {
+          keymap_label:  :emacs,
+          keymap_prefix:  [?\C-x.ord]
+        }
       when 'emacs-meta'
-        @keymap_label = :emacs
-        @keymap_prefix = [?\e.ord]
+        {
+          keymap_label:  :emacs,
+          keymap_prefix:  [?\e.ord]
+        }
       when 'vi', 'vi-move', 'vi-command'
-        @keymap_label = :vi_command
-        @keymap_prefix = []
+        {
+          keymap_label:  :vi_command,
+          keymap_prefix:  []
+        }
       when 'vi-insert'
-        @keymap_label = :vi_insert
-        @keymap_prefix = []
+        {
+          keymap_label:  :vi_insert,
+          keymap_prefix:  []
+        }
       end
     when 'keyseq-timeout'
-      @keyseq_timeout = value.to_i
+      { keyseq_timeout:  value.to_i }
     when 'show-mode-in-prompt'
       case value
       when 'off'
-        @show_mode_in_prompt = false
+        { show_mode_in_prompt:  false }
       when 'on'
-        @show_mode_in_prompt = true
+        { show_mode_in_prompt:  true }
       else
-        @show_mode_in_prompt = false
+        { show_mode_in_prompt:  false }
       end
     when 'vi-cmd-mode-string'
-      @vi_cmd_mode_string = retrieve_string(value)
+      { vi_cmd_mode_string:  retrieve_string(value) }
     when 'vi-ins-mode-string'
-      @vi_ins_mode_string = retrieve_string(value)
+      { vi_ins_mode_string:  retrieve_string(value) }
     when 'emacs-mode-string'
-      @emacs_mode_string = retrieve_string(value)
+      { emacs_mode_string:  retrieve_string(value) }
     when *VARIABLE_NAMES then
-      variable_name = :"@#{name.tr(?-, ?_)}"
-      instance_variable_set(variable_name, value.nil? || value == '1' || value == 'on')
+      variable_name = :"#{name.tr(?-, ?_)}"
+      { variable_name => value.nil? || value == '1' || value == 'on' }
+    end
+  end
+
+  def bind_variable(name, value)
+    parse_variable(name, value).each do |parsed_name, parsed_value|
+      instance_variable_set(:"@#{parsed_name}", parsed_value)
     end
   end
 

@@ -160,9 +160,94 @@ class Reline::Config::Test < Reline::TestCase
     assert_equal :audible, @config.instance_variable_get(:@bell_style)
   end
 
-  def test_if
+  def test_if_mode
     @config.read_lines(<<~LINES.lines)
-      $if Ruby
+      set editing-mode vi
+      $if mode=vi # comment
+      set bell-style audible
+      $else
+      set bell-style visible
+      $endif
+    LINES
+
+    assert_equal :audible, @config.instance_variable_get(:@bell_style)
+  end
+
+  def test_if_term
+    original_term = ENV['TERM']
+    ENV['TERM'] = 'fake'
+
+    @config.read_lines(<<~LINES.lines)
+      $if term=fake # comment
+      set bell-style audible
+      $else
+      set bell-style visible
+      $endif
+    LINES
+
+    assert_equal :audible, @config.instance_variable_get(:@bell_style)
+  ensure
+    ENV['TERM'] = original_term
+  end
+
+  def test_if_term_prefix
+    original_term = ENV['TERM']
+    ENV['TERM'] = 'fake-color'
+
+    @config.read_lines(<<~LINES.lines)
+      $if term=fake # comment
+      set bell-style audible
+      $else
+      set bell-style visible
+      $endif
+    LINES
+
+    assert_equal :audible, @config.instance_variable_get(:@bell_style)
+  ensure
+    ENV['TERM'] = original_term
+  end
+
+  def test_if_version
+    @config.read_lines(<<~LINES.lines)
+      $if version >= 0.0#comment without whitespace # comment with whitespace
+      set bell-style audible
+      $else
+      set bell-style visible
+      $endif
+    LINES
+
+    assert_equal :audible, @config.instance_variable_get(:@bell_style)
+  end
+
+  def test_if_application
+    @config.read_lines(<<~LINES.lines)
+      $if Ruby # comment
+      set bell-style audible
+      $else
+      set bell-style visible
+      $endif
+    LINES
+
+    assert_equal :audible, @config.instance_variable_get(:@bell_style)
+  end
+
+  def test_if_variable_boolean
+    @config.read_lines(<<~LINES.lines)
+      set show-mode-in-prompt on
+      $if show-mode-in-prompt = on # comment
+      set bell-style audible
+      $else
+      set bell-style visible
+      $endif
+    LINES
+
+    assert_equal :audible, @config.instance_variable_get(:@bell_style)
+  end
+
+  def test_if_variable_string
+    @config.read_lines(<<~LINES.lines)
+      set editing-mode vi
+      $if editing-mode == vi # comment
       set bell-style audible
       $else
       set bell-style visible
