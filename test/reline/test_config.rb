@@ -161,19 +161,20 @@ class Reline::Config::Test < Reline::TestCase
   end
 
   def test_include_expand_path
-    pwd = Dir.pwd
+    home_backup = ENV['HOME']
     File.open('included_partial', 'wt') do |f|
       f.write(<<~PARTIAL_LINES)
         set bell-style on
       PARTIAL_LINES
     end
-    # '~/../ (...) /../PATH_TO/included_partial' => '/PATH_TO/included_partial'
-    path_to_be_expanded = File.join('~', ['..'] * 100, pwd, 'included_partial')
+    ENV['HOME'] = Dir.pwd
     @config.read_lines(<<~LINES.lines)
-      $include #{path_to_be_expanded}
+      $include ~/included_partial
     LINES
 
     assert_equal :audible, @config.instance_variable_get(:@bell_style)
+  ensure
+    ENV['HOME'] = home_backup
   end
 
   def test_if
