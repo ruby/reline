@@ -1,23 +1,23 @@
 class Reline::Face
   SGR_PARAMETERS = {
-    # Display
-    black_display: 30,
-    red_display: 31,
-    green_display: 32,
-    yellow_display: 33,
-    blue_display: 34,
-    magenta_display: 35,
-    cyan_display: 36,
-    white_display: 37,
-    bright_black_display: 90,
-    gray_display: 90,
-    bright_red_display: 91,
-    bright_green_display: 92,
-    bright_yellow_display: 93,
-    bright_blue_display: 94,
-    bright_magenta_display: 95,
-    bright_cyan_display: 96,
-    bright_white_display: 97,
+    # Foreground
+    black_foreground: 30,
+    red_foreground: 31,
+    green_foreground: 32,
+    yellow_foreground: 33,
+    blue_foreground: 34,
+    magenta_foreground: 35,
+    cyan_foreground: 36,
+    white_foreground: 37,
+    bright_black_foreground: 90,
+    gray_foreground: 90,
+    bright_red_foreground: 91,
+    bright_green_foreground: 92,
+    bright_yellow_foreground: 93,
+    bright_blue_foreground: 94,
+    bright_magenta_foreground: 95,
+    bright_cyan_foreground: 96,
+    bright_white_foreground: 97,
     # Background
     black_background: 40,
     red_background: 41,
@@ -77,7 +77,7 @@ class Reline::Face
 
     def sgr_rgb(key, value)
       case key
-      when :display
+      when :foreground
        "38;2;"
       when :background
         "48;2;"
@@ -91,7 +91,7 @@ class Reline::Face
       when Hash
         sgr_value.count == 1 or return false
         key, value = sgr_value.first
-        %i(display background).include?(key) or return false
+        %i(foreground background).include?(key) or return false
         rgb?(value) or return false
       else
         false

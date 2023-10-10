@@ -4,11 +4,11 @@ class Reline::Face::Test < Reline::TestCase
   class WithSetupTest < self
     def setup
       Reline::Face.config(:my_config) do |face|
-        face.define :normal_line, :blue_display
-        face.define :enhanced_line, { display: "#FF1020" }, :black_background, :bold, :underlined
+        face.define :normal_line, :blue_foreground
+        face.define :enhanced_line, { foreground: "#FF1020" }, :black_background, :bold, :underlined
       end
       Reline::Face.config(:another_config) do |face|
-        face.define :another_label, :red_display
+        face.define :another_label, :red_foreground
       end
       @face = Reline::Face[:my_config]
     end
@@ -31,31 +31,31 @@ class Reline::Face::Test < Reline::TestCase
 
     def test_existing_confit_override_default
       Reline::Face.config(:my_config) do |face|
-        face.define :normal_line, :red_display
+        face.define :normal_line, :red_foreground
       end
       assert_equal "\e[31m", Reline::Face[:my_config].normal_line
     end
 
     def test_existing_config_override_false
       Reline::Face.config(:my_config, false) do |face|
-        face.define :normal_line, :red_display
+        face.define :normal_line, :red_foreground
       end
       assert_equal "\e[34m", Reline::Face[:my_config].normal_line
     end
 
     def test_new_config_override_false
       Reline::Face.config(:new_config, false) do |face|
-        face.define :normal_line, :red_display
+        face.define :normal_line, :red_foreground
       end
       assert_equal "\e[31m", Reline::Face[:new_config].normal_line
     end
   end
 
   class WithoutSetupTest < self
-    def test_invalid_display_name
+    def test_invalid_foreground_name
       assert_raise ArgumentError do
         Reline::Face.config(:invalid_config) do |face|
-          face.define :normal_line, :invalid_display
+          face.define :normal_line, :invalid_foreground
         end
       end
     end
@@ -90,8 +90,8 @@ class Reline::Face::Test < Reline::TestCase
     end
 
     def test_sgr_valid?
-      assert_equal true, @face_config.send(:sgr_valid?, :white_display)
-      assert_equal true, @face_config.send(:sgr_valid?, { display: "#ffffff" })
+      assert_equal true, @face_config.send(:sgr_valid?, :white_foreground)
+      assert_equal true, @face_config.send(:sgr_valid?, { foreground: "#ffffff" })
     end
 
     def test_invalid_sgr_valid?
@@ -99,7 +99,7 @@ class Reline::Face::Test < Reline::TestCase
     end
 
     def test_sgr_rgb
-      assert_equal "38;2;255;255;255", @face_config.send(:sgr_rgb, :display, "#ffffff")
+      assert_equal "38;2;255;255;255", @face_config.send(:sgr_rgb, :foreground, "#ffffff")
       assert_equal "48;2;18;52;86", @face_config.send(:sgr_rgb, :background, "#123456")
     end
   end

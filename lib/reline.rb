@@ -607,9 +607,9 @@ Reline::Face.config(:default) do |face|
 end
 
 Reline::Face.config(:completion_dialog) do |face|
-  face.define :normal_line, :white_display, :cyan_background
-  face.define :enhanced_line, :white_display, :magenta_background
-  face.define :scrollbar, :white_display, :cyan_background
+  face.define :normal_line, :white_foreground, :cyan_background
+  face.define :enhanced_line, :white_foreground, :magenta_background
+  face.define :scrollbar, :white_foreground, :cyan_background
 end
 
 Reline::HISTORY = Reline::History.new(Reline.core.config)
