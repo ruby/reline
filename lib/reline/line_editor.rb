@@ -829,9 +829,9 @@ class Reline::LineEditor
     end
     face = Reline::Face[dialog_render_info.face || :default]
     scrollbar_sgr = face.scrollbar
-    normal_line_sgr = face.normal_line
+    default_sgr = face.default
     dialog.contents = contents.map.with_index do |item, i|
-      line_sgr = i == pointer ? face.enhanced_line : normal_line_sgr
+      line_sgr = i == pointer ? face.enhanced : default_sgr
       str_width = dialog.width - (scrollbar_pos.nil? ? 0 : @block_elem_width)
       str = padding_space_with_escape_sequences(Reline::Unicode.take_range(item, 0, str_width), str_width)
       colored_content = "#{line_sgr}#{str}"

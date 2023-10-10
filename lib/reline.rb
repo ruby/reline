@@ -601,14 +601,14 @@ else
 end
 
 Reline::Face.config(:default) do |face|
-  face.define :normal_line, :default
-  face.define :enhanced_line, :default
-  face.define :scrollbar, :default
+  face.define :default, :default_style
+  face.define :enhanced, :default_style
+  face.define :scrollbar, :default_style
 end
 
 Reline::Face.config(:completion_dialog) do |face|
-  face.define :normal_line, :white_foreground, :cyan_background
-  face.define :enhanced_line, :white_foreground, :magenta_background
+  face.define :default, :white_foreground, :cyan_background
+  face.define :enhanced, :white_foreground, :magenta_background
   face.define :scrollbar, :white_foreground, :cyan_background
 end
 

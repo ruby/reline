@@ -4,8 +4,8 @@ class Reline::Face::Test < Reline::TestCase
   class WithSetupTest < self
     def setup
       Reline::Face.config(:my_config) do |face|
-        face.define :normal_line, :blue_foreground
-        face.define :enhanced_line, { foreground: "#FF1020" }, :black_background, :bold, :underlined
+        face.define :default, :blue_foreground
+        face.define :enhanced, { foreground: "#FF1020" }, :black_background, :bold, :underlined
       end
       Reline::Face.config(:another_config) do |face|
         face.define :another_label, :red_foreground
@@ -14,15 +14,11 @@ class Reline::Face::Test < Reline::TestCase
     end
 
     def test_my_config_line
-      assert_equal "\e[34m", @face.normal_line
+      assert_equal "\e[34m", @face.default
     end
 
-    def test_my_config_enhanced_line
-      assert_equal "\e[38;2;255;16;32;40;1;4m", @face.enhanced_line
-    end
-
-    def test_my_config_default
-      assert_equal "\e[m", @face.default
+    def test_my_config_enhanced
+      assert_equal "\e[38;2;255;16;32;40;1;4m", @face.enhanced
     end
 
     def test_not_respond_to_another_label
@@ -31,31 +27,39 @@ class Reline::Face::Test < Reline::TestCase
 
     def test_existing_confit_override_default
       Reline::Face.config(:my_config) do |face|
-        face.define :normal_line, :red_foreground
+        face.define :default, :red_foreground
       end
-      assert_equal "\e[31m", Reline::Face[:my_config].normal_line
+      assert_equal "\e[31m", Reline::Face[:my_config].default
     end
 
     def test_existing_config_override_false
       Reline::Face.config(:my_config, false) do |face|
-        face.define :normal_line, :red_foreground
+        face.define :default, :red_foreground
       end
-      assert_equal "\e[34m", Reline::Face[:my_config].normal_line
+      assert_equal "\e[34m", Reline::Face[:my_config].default
     end
 
     def test_new_config_override_false
       Reline::Face.config(:new_config, false) do |face|
-        face.define :normal_line, :red_foreground
+        face.define :default, :red_foreground
       end
-      assert_equal "\e[31m", Reline::Face[:new_config].normal_line
+      assert_equal "\e[31m", Reline::Face[:new_config].default
     end
   end
 
   class WithoutSetupTest < self
+    def test_my_config_default
+      Reline::Face.config(:my_config) do |face|
+        # do nothing
+      end
+      face = Reline::Face[:my_config]
+      assert_equal "\e[m", face.default
+    end
+
     def test_invalid_foreground_name
       assert_raise ArgumentError do
         Reline::Face.config(:invalid_config) do |face|
-          face.define :normal_line, :invalid_foreground
+          face.define :default, :invalid_foreground
         end
       end
     end
@@ -63,7 +67,7 @@ class Reline::Face::Test < Reline::TestCase
     def test_invalid_background_name
       assert_raise ArgumentError do
         Reline::Face.config(:invalid_config) do |face|
-          face.define :normal_line, :invalid_background
+          face.define :default, :invalid_background
         end
       end
     end

@@ -37,7 +37,7 @@ class Reline::Face
     bright_cyan_background: 106,
     bright_white_background: 107,
     # Style
-    default: 0,
+    default_style: 0,
     bold: 1,
     faint: 2,
     italicized: 3,
