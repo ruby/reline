@@ -25,7 +25,7 @@ class Reline::Face::Test < Reline::TestCase
       assert_equal false, @face.respond_to?(:another_label)
     end
 
-    def test_existing_confit_override_default
+    def test_existing_config_override_default
       Reline::Face.config(:my_config) do |face|
         face.define :default, :red_foreground
       end
