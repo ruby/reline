@@ -57,7 +57,6 @@ class Reline::Face
 
   class Config
     def initialize(name, &block)
-      @name = name
       block.call(self)
       define(:default) unless self.respond_to?(:default)
     end
