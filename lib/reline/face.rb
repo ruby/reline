@@ -109,17 +109,16 @@ class Reline::Face
     end
   end
 
-  CONFIGS = {}
-
-  private_constant :SGR_PARAMETERS, :Config, :CONFIGS
+  private_constant :SGR_PARAMETERS, :Config
 
   def self.[](name)
-    CONFIGS[name]
+    @configs[name]
   end
 
   def self.config(name, override = true, &block)
-    return if CONFIGS[name] && !override
-    CONFIGS[name] = Config.new(name, &block)
+    @configs ||= {}
+    return if @configs[name] && !override
+    @configs[name] = Config.new(name, &block)
   end
 
 end
