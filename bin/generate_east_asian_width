@@ -6,18 +6,20 @@ if ARGV.empty?
 end
 
 open(ARGV.first, 'rt') do |f|
+  if m = f.gets.match(/^# EastAsianWidth-(\d+\.\d+\.\d+)\.txt/)
+    unicode_version = m[1]
+  else
+    warn 'Failed to get UNICODE_VERSION'
+    unicode_version = nil
+  end
+
   list = []
   f.each_line do |line|
-    next if line.start_with?(?#)
-    line.chomp!.sub!(/ .*/, '')
-    next if line.empty?
-    range, type = line.chomp.split(';')
-    type = type.to_sym
-    if range =~ /\h+\.\.\h+/
-      first, last = range.split('..').map{ |_| _.to_i(16) }
-    else
-      first = last = range.to_i(16)
-    end
+    next unless m = line.match(/^(\h+)(?:\.\.(\h+))?\s*;\s*(\w+)\s+#.+/)
+
+    first = m[1].to_i(16)
+    last = m[2]&.to_i(16) || first
+    type = m[3].to_sym
     if !list.empty? and (list.last[:range].last + 1) == first and list.last[:type] == type
       list.last[:range] = (list.last[:range].first..last)
     else
@@ -48,7 +50,7 @@ open(ARGV.first, 'rt') do |f|
   puts <<EOH
 class Reline::Unicode::EastAsianWidth
   # This is based on EastAsianWidth.txt
-  # #{ARGV.first}
+  # UNICODE_VERSION = #{unicode_version ? "'#{unicode_version}'" : 'nil'}
 
 EOH
   puts grouped.map { |item|

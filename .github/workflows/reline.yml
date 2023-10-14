@@ -13,7 +13,7 @@ jobs:
         ruby: [ 'head', '3.2', '3.1', '3.0', '2.7', '2.6' ]
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -38,7 +38,7 @@ jobs:
           - { ruby: mswin, os: windows-latest }
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -65,7 +65,7 @@ jobs:
         os: [ ubuntu-latest ]
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -98,6 +98,7 @@ jobs:
         env:
           WITH_VTERM: 1
         run: |
+          gem rdoc --all --ri --no-rdoc
           bundle install
           bundle exec rake test_yamatanooroti
 
@@ -111,7 +112,7 @@ jobs:
         ruby: [ 'head', '3.2', '3.1', '3.0', '2.7', '2.6' ]
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:

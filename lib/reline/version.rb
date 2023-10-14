@@ -1,3 +1,3 @@
 module Reline
-  VERSION = '0.3.5'
+  VERSION = '0.3.9'
 end
