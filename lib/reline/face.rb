@@ -84,7 +84,7 @@ class Reline::Face
     end
 
     def format_to_sgr(values)
-      "\e[" << values.map do |key, value|
+      "\e[" + values.map do |key, value|
         case key
         when :foreground, :background
           case value
@@ -101,7 +101,7 @@ class Reline::Face
           end
           rendition_expression
         end
-      end.join(';') << "m"
+      end.join(';') + "m"
     end
 
     def rgb_expression?(color)
