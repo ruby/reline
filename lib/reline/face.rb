@@ -55,7 +55,7 @@ class Reline::Face
     }
   }.freeze
 
-  class FaceConfig
+  class Config
     def initialize(name, &block)
       @name = name
       block.call(self)
@@ -111,7 +111,7 @@ class Reline::Face
 
   CONFIGS = {}
 
-  private_constant :SGR_PARAMETERS, :FaceConfig, :CONFIGS
+  private_constant :SGR_PARAMETERS, :Config, :CONFIGS
 
   def self.[](name)
     CONFIGS[name]
@@ -119,7 +119,7 @@ class Reline::Face
 
   def self.config(name, override = true, &block)
     return if CONFIGS[name] && !override
-    CONFIGS[name] = FaceConfig.new(name, &block)
+    CONFIGS[name] = Config.new(name, &block)
   end
 
 end
