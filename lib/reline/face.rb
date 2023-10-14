@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Reline::Face
   SGR_PARAMETERS = {
     foreground: {
