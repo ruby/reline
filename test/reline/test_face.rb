@@ -27,26 +27,6 @@ class Reline::Face::Test < Reline::TestCase
       assert_equal false, @face.respond_to?(:another_label)
     end
 
-    def test_existing_config_override_default
-      Reline::Face.config(:my_config) do |face|
-        face.define :default, foreground: :red
-      end
-      assert_equal "\e[31m", Reline::Face[:my_config].default
-    end
-
-    def test_existing_config_override_false
-      Reline::Face.config(:my_config, false) do |face|
-        face.define :default, foreground: :red
-      end
-      assert_equal "\e[34m", Reline::Face[:my_config].default
-    end
-
-    def test_new_config_override_false
-      Reline::Face.config(:new_config, false) do |face|
-        face.define :default, foreground: :red
-      end
-      assert_equal "\e[31m", Reline::Face[:new_config].default
-    end
   end
 
   class WithoutSetupTest < self

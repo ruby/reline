@@ -114,9 +114,8 @@ class Reline::Face
     @configs[name]
   end
 
-  def self.config(name, override = true, &block)
+  def self.config(name, &block)
     @configs ||= {}
-    return if @configs[name] && !override
     @configs[name] = Config.new(name, &block)
   end
 
