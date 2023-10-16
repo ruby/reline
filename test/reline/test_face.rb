@@ -3,6 +3,8 @@
 require_relative 'helper'
 
 class Reline::Face::Test < Reline::TestCase
+  RESET_SGR = "\e[0m"
+
   class WithSetupTest < self
     def setup
       Reline::Face.config(:my_config) do |face|
@@ -16,11 +18,11 @@ class Reline::Face::Test < Reline::TestCase
     end
 
     def test_my_config_line
-      assert_equal "\e[34m", @face.default
+      assert_equal "#{RESET_SGR}\e[34m", @face.default
     end
 
     def test_my_config_enhanced
-      assert_equal "\e[38;2;255;16;32;40;1;4m", @face.enhanced
+      assert_equal "#{RESET_SGR}\e[38;2;255;16;32;40;1;4m", @face.enhanced
     end
 
     def test_not_respond_to_another_label
@@ -35,7 +37,7 @@ class Reline::Face::Test < Reline::TestCase
         # do nothing
       end
       face = Reline::Face[:my_config]
-      assert_equal "\e[m", face.default
+      assert_equal RESET_SGR, face.default
     end
 
     def test_invalid_keyword
@@ -85,14 +87,14 @@ class Reline::Face::Test < Reline::TestCase
 
     def test_format_to_sgr
       assert_equal(
-        "\e[37;41;1;3m",
+        "#{RESET_SGR}\e[37;41;1;3m",
         @config.send(:format_to_sgr, foreground: :white, background: :red, style: [:bold, :italicized])
       )
     end
 
     def test_format_to_sgr_with_single_style
       assert_equal(
-        "\e[37;41;1m",
+        "#{RESET_SGR}\e[37;41;1m",
         @config.send(:format_to_sgr, foreground: :white, background: :red, style: :bold)
       )
     end

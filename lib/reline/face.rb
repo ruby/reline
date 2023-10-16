@@ -56,6 +56,8 @@ class Reline::Face
   }.freeze
 
   class Config
+    RESET_SGR = "\e[0m".freeze
+
     def initialize(name, &block)
       block.call(self)
       define(:default) unless self.respond_to?(:default)
@@ -83,7 +85,7 @@ class Reline::Face
     end
 
     def format_to_sgr(values)
-      "\e[" + values.map do |key, value|
+      sgr = "\e[" + values.map do |key, value|
         case key
         when :foreground, :background
           case value
@@ -101,6 +103,7 @@ class Reline::Face
           rendition_expression
         end
       end.join(';') + "m"
+      sgr == "\e[m" ? RESET_SGR : RESET_SGR + sgr
     end
 
     def rgb_expression?(color)
