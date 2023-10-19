@@ -153,6 +153,7 @@ class Reline::LineEditor
 
   def reset(prompt = '', encoding:)
     @rest_height = (Reline::IOGate.get_screen_size.first - 1) - Reline::IOGate.cursor_pos.y
+    @cursor_base_y = Reline::IOGate.cursor_pos.y
     @screen_size = Reline::IOGate.get_screen_size
     @screen_height = @screen_size.first
     reset_variables(prompt, encoding: encoding)
@@ -347,12 +348,28 @@ class Reline::LineEditor
 
   private def scroll_down(val)
     if val <= @rest_height
-      Reline::IOGate.move_cursor_down(val)
+      # Reline::IOGate.move_cursor_down(val)
       @rest_height -= val
     else
-      Reline::IOGate.move_cursor_down(@rest_height)
-      Reline::IOGate.scroll_down(val - @rest_height)
+      # Reline::IOGate.move_cursor_down(@rest_height)
+      # Reline::IOGate.scroll_down(val - @rest_height)
       @rest_height = 0
+    end
+  end
+
+  private def true_scroll_down(val)
+    @cursor_y ||= 0
+    @cursor_base_y ||= 0
+    if @cursor_base_y + @cursor_y + val < screen_height
+      Reline::IOGate.move_cursor_down(val)
+      @cursor_y += val
+    else
+      move = screen_height - @cursor_base_y - @cursor_y - 1
+      scroll = val - move
+      Reline::IOGate.scroll_down(move)
+      Reline::IOGate.scroll_down(scroll)
+      @cursor_y += move
+      @cursor_base_y = [@cursor_base_y - scroll, 0].max
     end
   end
 
@@ -417,21 +434,216 @@ class Reline::LineEditor
     end
   end
 
+  def with_cache(key, *deps)
+    @cache ||= {}
+    cached_deps, value = @cache[key]
+    if cached_deps != deps
+      @cache[key] = [deps, value = yield(*deps)]
+    end
+    value
+  end
+
+  def modified_lines
+    with_cache(__method__, whole_lines) { modify_lines(_1, force_recalc: true) }
+  end
+
+  def prompt_list
+    with_cache(__method__, whole_lines) do
+      prompt, _prompt_width, prompt_list = check_multiline_prompt(_1)
+      prompt_list || [prompt] * whole_lines.size
+    end
+  end
+
+  def screen_height
+    @screen_size.first
+  end
+
+  def screen_width
+    @screen_size.last
+  end
+
+  def screen_scroll_top
+    @scroll_partial_screen || 0
+  end
+
+  def wrapped_lines
+    with_cache(__method__, @buffer_of_lines.size, modified_lines, prompt_list, screen_width) do |n, lines, prompts, width|
+      n.times.map do |i|
+        split_by_width("#{prompts[i]}#{lines[i]}", width).first.compact
+      end
+    end
+  end
+
+  def calculate_overlay_levels(overlay_levels)
+    levels = []
+    overlay_levels.each do |x, w, l|
+      levels.fill(l, x, w)
+    end
+    levels
+  end
+
+  def render_line_differential(old_line, old_overlays, new_line, new_overlays)
+    # overlays: Array of [x, width, content] | nil
+    old_line_width = calculate_width(old_line, true)
+    new_line_width = calculate_width(new_line, true)
+    old_items = [[0, old_line_width, old_line]] + old_overlays
+    new_items = [[0, new_line_width, new_line]] + new_overlays
+    old_levels = calculate_overlay_levels(old_items.zip(new_items).each_with_index.map {|((x, w, c), (nx, _nw, nc)), i| [x, w, c == nc && x == nx ? i : -1] if x }.compact)
+    new_levels = calculate_overlay_levels(new_items.each_with_index.map { |(x, w), i| [x, w, i] if x }.compact)
+    base_x = 0
+    new_levels.zip(old_levels).chunk {|n, o| o == n ? -1 : n || 0 }.each do |level, chunk|
+      width = chunk.size
+      if level >= 0
+        x, w, content = new_items[level]
+        unless x == base_x && w == width
+          content = Reline::Unicode.take_range(content, base_x - x, width)
+          content += ' ' * (width - Reline::Unicode.calculate_width(content, true))
+        end
+        Reline::IOGate.move_cursor_column base_x
+        @output.write "\e[0m#{content}\e[0m"
+      end
+      base_x += width
+    end
+    if old_levels.size > new_levels.size
+      Reline::IOGate.move_cursor_column new_levels.size
+      Reline::IOGate.erase_after_cursor
+    end
+  end
+
+  def render_differential
+    @cursor_y ||= 0
+    @rendered_cache ||= {}
+
+    line = prompt_list[@line_index] + whole_lines[@line_index].byteslice(0, @byte_pointer)
+    wrapped_line_before_cursor = split_by_width(line, screen_width).first.compact
+    editor_cursor_y = wrapped_lines[0...@line_index].sum(&:size) + wrapped_line_before_cursor.size - 1
+    editor_cursor_x = Reline::Unicode.calculate_width(wrapped_line_before_cursor.last, true)
+
+    if editor_cursor_y < screen_scroll_top
+      @scroll_partial_screen = editor_cursor_y
+    end
+    if editor_cursor_y >= screen_scroll_top + screen_height
+      @scroll_partial_screen = editor_cursor_y - screen_height + 1
+    end
+    rendered_lines = @rendered_cache[:rendered_lines] || []
+    new_lines = wrapped_lines.flatten[screen_scroll_top, screen_height].map { [_1, []]}
+    if @menu_info
+      @menu_info.list.sort!.each do |item|
+        new_lines << [item, []]
+      end
+      @menu_info = nil # TODO: do not change state here
+    end
+
+
+    @dialogs.each_with_index do |dialog, index|
+      y = editor_cursor_y - screen_scroll_top
+      update_each_dialog(dialog, editor_cursor_x, y)
+      next unless dialog.contents
+      x_range, y_range = dialog_range dialog, y
+      y_range.each do |row|
+        next if row < 0 || row >= screen_height
+        dialog_rows = (new_lines[row] ||= ['', []]).last
+        dialog_rows[index] = [x_range.begin, dialog.width, dialog.contents[row - y_range.begin]]
+      end
+    end
+
+    num_lines = [[new_lines.size, rendered_lines.size].max, screen_height].min
+    true_scroll_down(num_lines - 1 - @cursor_y) if (num_lines - 1 - @cursor_y) > 0
+    @cursor_y = num_lines - 1
+    num_lines.times do |i|
+      rendered_line = rendered_lines[i] || ['', []]
+      line_to_render = new_lines[i] || ['', []]
+      next if rendered_line == line_to_render
+
+      Reline::IOGate.move_cursor_down i - @cursor_y
+      @cursor_y = i
+      render_line_differential(*rendered_line, *line_to_render)
+      # Reline::IOGate.move_cursor_column 0
+      # Reline::IOGate.erase_after_cursor
+      # line, dialog_rows = line_to_render
+      # @output.write "\e[0m#{line}\e[0m"
+      # dialog_rows.each do |x, row|
+      #   Reline::IOGate.move_cursor_column x
+      #   @output.write "\e[0m#{row}\e[0m"
+      # end
+    end
+    @rendered_cache[:rendered_lines] = new_lines
+    y = editor_cursor_y - screen_scroll_top
+    Reline::IOGate.move_cursor_column editor_cursor_x
+    Reline::IOGate.move_cursor_down y - @cursor_y
+    @cursor_y = y
+    update_variables(editor_cursor_x, editor_cursor_y)
+    new_lines.size - @cursor_y
+  end
+
+  def update_variables(x, y)
+    @rest_height = screen_height - @cursor_y - @cursor_base_y - 1
+    @highest_in_all = wrapped_lines.flatten.size
+    @first_line_started_from = wrapped_lines[0...@line_index].sum(&:size)
+    @started_from = y - @first_line_started_from
+    @cursor = whole_lines[@line_index].byteslice(0, @byte_pointer).size
+    @cursor_max = wrapped_lines.flatten[y].size
+    @highest_in_this = wrapped_lines[@line_index].size
+  end
+
   def rerender_all
     @rerender_all = true
     process_insert(force: true)
-    rerender
+    handle_clear_resize
+    update
+    render_differential unless @in_pasting
+  end
+
+  def with_output
+    $output ||= @output
+    Reline::IOGate.class_variable_set :@@output, @output = $output
+    yield
+    require 'stringio'
+    Reline::IOGate.class_variable_set :@@output, @output = StringIO.new
+    def @output.write(s) raise if s =~ /\e\[6n/; end
+  end
+
+  def handle_clear_resize
+    if @cleared || @resized
+      if @cleared
+        @rendered_cache = {}
+      end
+      if @resized
+        @screen_size = Reline::IOGate.get_screen_size
+        @screen_height = @screen_size.first
+      end
+      with_output do
+        Reline::IOGate.clear_screen if @cleared
+        @cursor_base_y = Reline::IOGate.cursor_pos.y
+        @cursor_y = 0
+      end
+      @cleared = false
+      @resized = false
+    end
   end
 
   def rerender
+    with_output{}
+    finished = finished?
+    handle_clear_resize
+    update
+    with_output do
+      scrolldown = render_differential unless @in_pasting
+      if finished
+        @rendered_cache = nil
+        @cache = nil
+        true_scroll_down scrolldown
+        Reline::IOGate.move_cursor_column 0
+        @cursor_y = 0
+      end
+    end
+  end
+
+  def update
     return if @line.nil?
     if @menu_info
       scroll_down(@highest_in_all - @first_line_started_from)
       @rerender_all = true
-    end
-    if @menu_info
-      show_menu
-      @menu_info = nil
     end
     prompt, prompt_width, prompt_list = check_multiline_prompt(whole_lines)
     cursor_column = (prompt_width + @cursor) % @screen_size.last
@@ -766,13 +978,13 @@ class Reline::LineEditor
     @previous_rendered_dialog_y = dialog_y
   end
 
-  private def update_each_dialog(dialog, cursor_column)
+  private def update_each_dialog(dialog, cursor_column, cursor_row = nil)
     if @in_pasting
       dialog.contents = nil
       dialog.trap_key = nil
       return
     end
-    dialog.set_cursor_pos(cursor_column, @first_line_started_from + @started_from)
+    dialog.set_cursor_pos(cursor_column, cursor_row || @first_line_started_from + @started_from)
     dialog_render_info = dialog.call(@last_key)
     if dialog_render_info.nil? or dialog_render_info.contents.nil? or dialog_render_info.contents.empty?
       dialog.contents = nil
