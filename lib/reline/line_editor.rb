@@ -193,7 +193,6 @@ class Reline::LineEditor
     @first_prompt = true
     @searching_prompt = nil
     @first_char = true
-    @just_cursor_moving = nil
     @eof = false
     @continuous_insertion_buffer = String.new(encoding: @encoding)
     @scroll_partial_screen = nil
@@ -209,14 +208,9 @@ class Reline::LineEditor
   def reset_line
     @byte_pointer = 0
     @buffer_of_lines = [String.new(encoding: @encoding)]
-    def @buffer_of_lines.[]=(index, value)
-      raise unless value
-      super
-    end
     @line_index = 0
     @line_backup_in_history = nil
     @multibyte_buffer = String.new(encoding: 'ASCII-8BIT')
-    @check_new_auto_indent = nil
   end
 
   def multiline_on
@@ -232,8 +226,15 @@ class Reline::LineEditor
     @buffer_of_lines[@line_index] = cursor_line
     @line_index += 1
     @byte_pointer = 0
-    @clear_dialog_trap = true
-    @just_cursor_moving = false
+    unless @in_pasting
+      if next_line.empty?
+        process_auto_indent @line_index - 1, cursor_dependent: false
+        process_auto_indent @line_index, add_newline: true
+      else
+        process_auto_indent @line_index - 1, cursor_dependent: false
+        process_auto_indent @line_index, cursor_dependent: false
+      end
+    end
   end
 
   private def split_by_width(str, max_width)
@@ -367,14 +368,27 @@ class Reline::LineEditor
     end
   end
 
-  def render_differential
-    @cursor_y ||= 0
-    @rendered_cache ||= {}
-
+  def editor_cursor_position
     line = prompt_list[@line_index] + whole_lines[@line_index].byteslice(0, @byte_pointer)
     wrapped_line_before_cursor = split_by_width(line, screen_width).first.compact
     editor_cursor_y = wrapped_lines[0...@line_index].sum(&:size) + wrapped_line_before_cursor.size - 1
     editor_cursor_x = Reline::Unicode.calculate_width(wrapped_line_before_cursor.last, true)
+    [editor_cursor_x, editor_cursor_y]
+  end
+
+  def update_dialogs
+    editor_cursor_x, editor_cursor_y = editor_cursor_position
+    @dialogs.each do |dialog|
+      dialog.trap_key = nil
+      update_each_dialog(dialog, editor_cursor_x, editor_cursor_y - screen_scroll_top)
+    end
+  end
+
+  def render_differential
+    @cursor_y ||= 0
+    @rendered_cache ||= {}
+
+    editor_cursor_x, editor_cursor_y = editor_cursor_position
 
     if editor_cursor_y < screen_scroll_top
       @scroll_partial_screen = editor_cursor_y
@@ -393,10 +407,9 @@ class Reline::LineEditor
 
 
     @dialogs.each_with_index do |dialog, index|
-      y = editor_cursor_y - screen_scroll_top
-      update_each_dialog(dialog, editor_cursor_x, y)
       next unless dialog.contents
-      x_range, y_range = dialog_range dialog, y
+
+      x_range, y_range = dialog_range dialog, editor_cursor_y - screen_scroll_top
       y_range.each do |row|
         next if row < 0 || row >= screen_height
         dialog_rows = (new_lines[row] ||= ['', []]).last
@@ -496,11 +509,6 @@ class Reline::LineEditor
       @scroll_partial_screen = nil
       return
     end
-    if @clear_dialog_trap
-      clear_dialog_with_trap_key
-      @clear_dialog_trap = false
-    end
-    @just_cursor_moving = false
   end
 
   class DialogProcScope
@@ -650,11 +658,6 @@ class Reline::LineEditor
   end
 
   private def update_each_dialog(dialog, cursor_column, cursor_row)
-    if @in_pasting
-      dialog.contents = nil
-      dialog.trap_key = nil
-      return
-    end
     dialog.set_cursor_pos(cursor_column, cursor_row)
     dialog_render_info = dialog.call(@last_key)
     if dialog_render_info.nil? or dialog_render_info.contents.nil? or dialog_render_info.contents.empty?
@@ -736,12 +739,6 @@ class Reline::LineEditor
       else
         colored_content
       end
-    end
-  end
-
-  private def clear_dialog_with_trap_key
-    @dialogs.each do |dialog|
-      dialog.trap_key = nil
     end
   end
 
@@ -888,11 +885,9 @@ class Reline::LineEditor
       end
     end
     completed = @completion_journey_data.list[@completion_journey_data.pointer]
-    new_line = (@completion_journey_data.preposing + completed + @completion_journey_data.postposing).split("\n")[@line_index]
-    @buffer_of_lines[@line_index] = new_line.nil? ? String.new(encoding: @encoding) : new_line
-    line_to_pointer = (@completion_journey_data.preposing + completed).split("\n").last
-    line_to_pointer = String.new(encoding: @encoding) if line_to_pointer.nil?
-    @byte_pointer = line_to_pointer.bytesize
+    line_to_pointer = (@completion_journey_data.preposing + completed).split("\n")[@line_index] || String.new(encoding: @encoding)
+    new_line = line_to_pointer + (@completion_journey_data.postposing.split("\n").first || '')
+    set_current_line(new_line, line_to_pointer.bytesize)
   end
 
   private def run_for_operators(key, method_symbol, &block)
@@ -1062,15 +1057,14 @@ class Reline::LineEditor
         return
       end
     end
-    @just_cursor_moving = nil
     if key.char.nil?
       if @first_char
-        self.current_line = ''
+        set_current_line('', 0)
       end
       finish
       return
     end
-    old_line = @buffer_of_lines[@line_index].dup
+    old_lines = @buffer_of_lines.dup
     @first_char = false
     completion_occurs = false
     if @config.editing_mode_is?(:emacs, :vi_insert) and key.char == "\C-i".ord
@@ -1113,18 +1107,15 @@ class Reline::LineEditor
       @completion_state = CompletionState::NORMAL
       @completion_journey_data = nil
     end
-    if not @in_pasting and @just_cursor_moving.nil?
-      if old_line == @buffer_of_lines[@line_index]
-        @just_cursor_moving = true
-        @clear_dialog_trap = true
-      else
-        @just_cursor_moving = false
+    if @in_pasting
+      @dialogs.each do |dialog|
+        dialog.contents = nil
+        dialog.trap_key = nil
       end
     else
+      @just_cursor_moving = old_lines == @buffer_of_lines
+      update_dialogs
       @just_cursor_moving = false
-    end
-    if @is_multiline and @auto_indent_proc
-      process_auto_indent
     end
   end
 
@@ -1158,53 +1149,34 @@ class Reline::LineEditor
     result
   end
 
-  private def process_auto_indent
-    return # TODO
-    return unless @check_new_auto_indent
+  private def process_auto_indent(line_index = @line_index, cursor_dependent: true, add_newline: false)
+    return unless @auto_indent_proc
 
-    line_index, new_line_index = @check_new_auto_indent
+    line = @buffer_of_lines[line_index]
+    byte_pointer = cursor_dependent && @line_index == line_index ? @byte_pointer : line.bytesize
+    new_indent = @auto_indent_proc.(@buffer_of_lines.take(line_index + 1).push(''), line_index, byte_pointer, add_newline)
+    return unless new_indent
 
-    if new_line_index
-      # Fix indent of a line when a newline is inserted to the next
-      new_lines = whole_lines
-      new_indent = @auto_indent_proc.(new_lines[0..-3].push(''), @line_index - 1, 0, true)
-      md = current_line.match(/\A */)
-      prev_indent = md[0].count(' ')
-      self.current_line = ' ' * new_indent + current_line.lstrip
-
-      new_indent = nil
-      result = @auto_indent_proc.(new_lines[0..-2], @line_index - 1, (new_lines[@line_index - 1].bytesize + 1), false)
-      if result
-        new_indent = result
-      end
-      if new_indent&.>= 0
-        self.current_line = ' ' * new_indent + current_line.lstrip
-      end
+    @buffer_of_lines[line_index] = ' ' * new_indent + line.lstrip
+    if @line_index == line_index
+      old_indent = line[/\A */].size
+      @byte_pointer = [@byte_pointer + new_indent - old_indent, 0].max
     end
-    new_lines = whole_lines
-    new_indent = @auto_indent_proc.(new_lines, @line_index, @byte_pointer, @check_new_auto_indent)
-    if new_indent&.>= 0
-      md = new_lines[@line_index].match(/\A */)
-      prev_indent = md[0].count(' ')
-      if @check_new_auto_indent
-        @byte_pointer = new_indent
-      else
-        @buffer_of_lines[@line_index] = ' ' * new_indent + current_line.lstrip
-        @byte_pointer += new_indent - prev_indent
-      end
-    end
-    @check_new_auto_indent = false
   end
 
   def current_line
     @buffer_of_lines[@line_index]
   end
 
-  def current_line=(line)
+  def set_current_line(line, byte_pointer = nil)
+    @modified = true
     @buffer_of_lines[@line_index] = line
-    unless line.byteslice(0, @byte_pointer).valid_encoding?
+    if byte_pointer
+      @byte_pointer = byte_pointer
+    else
       calculate_nearest_cursor
     end
+    process_auto_indent
   end
 
   def retrieve_completion_block(set_completion_quote_character = false)
@@ -1297,13 +1269,14 @@ class Reline::LineEditor
       @buffer_of_lines[@line_index] = byteinsert(@buffer_of_lines[@line_index], @byte_pointer, text)
     end
     @byte_pointer += text.bytesize
+    process_auto_indent
   end
 
   def delete_text(start = nil, length = nil)
     if start.nil? and length.nil?
       if @is_multiline
         if @buffer_of_lines.size == 1
-          @buffer_of_lines[@line_index].clear
+          @buffer_of_lines[@line_index] = ''
           @byte_pointer = 0
         elsif @line_index == (@buffer_of_lines.size - 1) and @line_index > 0
           @buffer_of_lines.pop
@@ -1314,15 +1287,13 @@ class Reline::LineEditor
           @byte_pointer = 0
         end
       else
-        self.current_line = ''
-        @byte_pointer = 0
+        set_current_line('', 0)
       end
     elsif not start.nil? and not length.nil?
       if current_line
         before = current_line.byteslice(0, start)
         after = current_line.byteslice(start + length, current_line.bytesize)
-        self.current_line = before + after
-        @byte_pointer = current_line.bytesize if @byte_pointer > current_line.bytesize
+        set_current_line(before + after)
       end
     elsif start.is_a?(Range)
       range = start
@@ -1332,11 +1303,10 @@ class Reline::LineEditor
       last += current_line.bytesize if last < 0
       first += current_line.bytesize if first < 0
       range = range.exclude_end? ? first...last : first..last
-      self.current_line = current_line.bytes.reject.with_index{ |c, i| range.include?(i) }.map{ |c| c.chr(Encoding::ASCII_8BIT) }.join.force_encoding(@encoding)
-      @byte_pointer = current_line.bytesize if @byte_pointer > current_line.bytesize
+      line = current_line.bytes.reject.with_index{ |c, i| range.include?(i) }.map{ |c| c.chr(Encoding::ASCII_8BIT) }.join.force_encoding(@encoding)
+      set_current_line(line)
     else
-      self.current_line = current_line.byteslice(0, start)
-      @byte_pointer = current_line.bytesize if @byte_pointer > current_line.bytesize
+      set_current_line(current_line.byteslice(0, start))
     end
   end
 
@@ -1389,12 +1359,9 @@ class Reline::LineEditor
 
   private def key_newline(key)
     if @is_multiline
-      # add_to_end = (@buffer_of_lines.size - 1) == @line_index and @line.bytesize == @byte_pointer
       next_line = current_line.byteslice(@byte_pointer, current_line.bytesize - @byte_pointer)
       cursor_line = current_line.byteslice(0, @byte_pointer)
       insert_new_line(cursor_line, next_line)
-      @check_new_auto_indent = [@line_index, @line_index + 1] unless @in_pasting
-      @clear_dialog_trap = true
     end
   end
 
@@ -1472,7 +1439,6 @@ class Reline::LineEditor
     elsif @is_multiline and @config.editing_mode_is?(:emacs) and @byte_pointer == current_line.bytesize and @line_index < @buffer_of_lines.size - 1
       @byte_pointer = 0
       @line_index += 1
-      @clear_dialog_trap = true
     end
     arg -= 1
     ed_next_char(key, arg: arg) if arg > 0
@@ -1486,7 +1452,6 @@ class Reline::LineEditor
     elsif @is_multiline and @config.editing_mode_is?(:emacs) and @byte_pointer == 0 and @line_index > 0
       @line_index -= 1
       @byte_pointer = current_line.bytesize
-      @clear_dialog_trap = true
     end
     arg -= 1
     ed_prev_char(key, arg: arg) if arg > 0
@@ -1610,7 +1575,8 @@ class Reline::LineEditor
             @byte_pointer = current_line.bytesize
             @searching_prompt = "(%s)`%s'" % [prompt_name, search_word]
           else
-            self.current_line = hit
+            @buffer_of_lines = [hit]
+            @byte_pointer = hit.bytesize
             @searching_prompt = "(%s)`%s': %s" % [prompt_name, search_word, hit]
           end
           last_hit = hit
@@ -1650,9 +1616,8 @@ class Reline::LineEditor
           @buffer_of_lines = buffer.split("\n")
           @buffer_of_lines = [String.new(encoding: @encoding)] if @buffer_of_lines.empty?
           @line_index = @buffer_of_lines.size - 1
-          calculate_nearest_cursor
         else
-          self.current_line = buffer
+          @buffer_of_lines = [buffer]
         end
         @searching_prompt = nil
         @waiting_proc = nil
@@ -1663,9 +1628,8 @@ class Reline::LineEditor
           @buffer_of_lines = @line_backup_in_history.split("\n")
           @buffer_of_lines = [String.new(encoding: @encoding)] if @buffer_of_lines.empty?
           @line_index = @buffer_of_lines.size - 1
-          calculate_nearest_cursor
         else
-          self.current_line = @line_backup_in_history
+          @buffer_of_lines = [@line_backup_in_history]
         end
         @history_pointer = nil
         @searching_prompt = nil
@@ -1687,10 +1651,9 @@ class Reline::LineEditor
             @buffer_of_lines = line.split("\n")
             @buffer_of_lines = [String.new(encoding: @encoding)] if @buffer_of_lines.empty?
             @line_index = @buffer_of_lines.size - 1
-            calculate_nearest_cursor
           else
             @line_backup_in_history = current_line
-            self.current_line = line
+            @buffer_of_lines = [line]
           end
           @searching_prompt = nil
           @waiting_proc = nil
@@ -1749,7 +1712,8 @@ class Reline::LineEditor
       @line_index = line_no
       calculate_nearest_cursor
     else
-      self.current_line = Reline::HISTORY[@history_pointer]
+      @buffer_of_lines = [Reline::HISTORY[@history_pointer]]
+      calculate_nearest_cursor
     end
     arg -= 1
     ed_search_prev_history(key, arg: arg) if arg > 0
@@ -1797,9 +1761,9 @@ class Reline::LineEditor
       @buffer_of_lines = [String.new(encoding: @encoding)] if @buffer_of_lines.empty?
     else
       if @history_pointer.nil? and substr.empty?
-        self.current_line = ''
+        set_current_line('', 0)
       else
-        self.current_line = Reline::HISTORY[@history_pointer]
+        set_current_line(Reline::HISTORY[@history_pointer])
       end
     end
     arg -= 1
@@ -1810,7 +1774,6 @@ class Reline::LineEditor
   private def ed_prev_history(key, arg: 1)
     if @is_multiline and @line_index > 0
       @line_index -= 1
-      @clear_dialog_trap = true
       calculate_nearest_cursor
       return
     end
@@ -1827,7 +1790,7 @@ class Reline::LineEditor
         calculate_nearest_cursor
       else
         @line_backup_in_history = whole_buffer
-        self.current_line = Reline::HISTORY[@history_pointer]
+        @buffer_of_lines = [Reline::HISTORY[@history_pointer]]
       end
     elsif @history_pointer.zero?
       return
@@ -1841,7 +1804,7 @@ class Reline::LineEditor
       else
         Reline::HISTORY[@history_pointer] = whole_buffer
         @history_pointer -= 1
-        self.current_line = Reline::HISTORY[@history_pointer]
+        @buffer_of_lines = [Reline::HISTORY[@history_pointer]]
       end
     end
     if @config.editing_mode_is?(:emacs, :vi_insert)
@@ -1857,7 +1820,6 @@ class Reline::LineEditor
   private def ed_next_history(key, arg: 1)
     if @is_multiline and @line_index < (@buffer_of_lines.size - 1)
       @line_index += 1
-      @clear_dialog_trap = true
       calculate_nearest_cursor
       return
     end
@@ -1871,7 +1833,7 @@ class Reline::LineEditor
         @line_index = 0
       else
         @history_pointer = nil
-        self.current_line = @line_backup_in_history
+        @buffer_of_lines = [@line_backup_in_history]
       end
     else
       if @is_multiline
@@ -1883,7 +1845,7 @@ class Reline::LineEditor
       else
         Reline::HISTORY[@history_pointer] = whole_buffer
         @history_pointer += 1
-        self.current_line = Reline::HISTORY[@history_pointer]
+        @buffer_of_lines = [Reline::HISTORY[@history_pointer]]
       end
     end
     if @config.editing_mode_is?(:emacs, :vi_insert)
@@ -1916,7 +1878,6 @@ class Reline::LineEditor
         else
           # should check confirm_multiline_termination to finish?
           @line_index = @buffer_of_lines.size - 1
-          @clear_dialog_trap = true
           @byte_pointer = current_line.bytesize
           finish
         end
@@ -1931,17 +1892,18 @@ class Reline::LineEditor
   end
 
   private def em_delete_prev_char(key, arg: 1)
-    if @is_multiline and @byte_pointer == 0 and @line_index > 0
-      @byte_pointer = @buffer_of_lines[@line_index - 1].bytesize
-      @buffer_of_lines[@line_index - 1] += @buffer_of_lines.delete_at(@line_index)
-      @line_index -= 1
-    elsif @byte_pointer > 0
-      byte_size = Reline::Unicode.get_prev_mbchar_size(current_line, @byte_pointer)
-      @byte_pointer -= byte_size
-      self.current_line, _ = byteslice!(current_line, @byte_pointer, byte_size)
+    arg.times do
+      if @is_multiline and @byte_pointer == 0 and @line_index > 0
+        @byte_pointer = @buffer_of_lines[@line_index - 1].bytesize
+        @buffer_of_lines[@line_index - 1] += @buffer_of_lines.delete_at(@line_index)
+        @line_index -= 1
+      elsif @byte_pointer > 0
+        byte_size = Reline::Unicode.get_prev_mbchar_size(current_line, @byte_pointer)
+        line, = byteslice!(current_line, @byte_pointer - byte_size, byte_size)
+        set_current_line(line, @byte_pointer - byte_size)
+      end
     end
-    arg -= 1
-    em_delete_prev_char(key, arg: arg) if arg > 0
+    process_auto_indent
   end
   alias_method :backward_delete_char, :em_delete_prev_char
 
@@ -1952,12 +1914,11 @@ class Reline::LineEditor
   #                from the cursor to the beginning of the current line.
   private def ed_kill_line(key)
     if current_line.bytesize > @byte_pointer
-      self.current_line, deleted = byteslice!(current_line, @byte_pointer, current_line.bytesize - @byte_pointer)
-      @byte_pointer = current_line.bytesize
+      line, deleted = byteslice!(current_line, @byte_pointer, current_line.bytesize - @byte_pointer)
+      set_current_line(line, line.bytesize)
       @kill_ring.append(deleted)
     elsif @is_multiline and @byte_pointer == current_line.bytesize and @buffer_of_lines.size > @line_index + 1
-      @byte_pointer = current_line.bytesize
-      self.current_line += @buffer_of_lines.delete_at(@line_index + 1)
+      set_current_line(current_line + @buffer_of_lines.delete_at(@line_index + 1), current_line.bytesize)
     end
   end
   alias_method :kill_line, :ed_kill_line
@@ -1969,8 +1930,8 @@ class Reline::LineEditor
   #                to the beginning of the current line.
   private def vi_kill_line_prev(key)
     if @byte_pointer > 0
-      self.current_line, deleted = byteslice!(current_line, 0, @byte_pointer)
-      @byte_pointer = 0
+      line, deleted = byteslice!(current_line, 0, @byte_pointer)
+      set_current_line(line, 0)
       @kill_ring.append(deleted, true)
     end
   end
@@ -1983,8 +1944,7 @@ class Reline::LineEditor
   private def em_kill_line(key)
     if current_line.size > 0
       @kill_ring.append(current_line.dup, true)
-      self.current_line = ''
-      @byte_pointer = 0
+      set_current_line('', 0)
     end
   end
   alias_method :kill_whole_line, :em_kill_line
@@ -2000,10 +1960,10 @@ class Reline::LineEditor
     elsif @byte_pointer < current_line.bytesize
       splitted_last = current_line.byteslice(@byte_pointer, current_line.bytesize)
       mbchar = splitted_last.grapheme_clusters.first
-      self.current_line, = byteslice!(current_line, @byte_pointer, mbchar.bytesize)
+      line, = byteslice!(current_line, @byte_pointer, mbchar.bytesize)
+      set_current_line(line)
     elsif @is_multiline and @byte_pointer == current_line.bytesize and @buffer_of_lines.size > @line_index + 1
-      @byte_pointer = current_line.bytesize
-      self.current_line += @buffer_of_lines.delete_at(@line_index + 1)
+      set_current_line(current_line + @buffer_of_lines.delete_at(@line_index + 1), current_line.bytesize)
     end
   end
   alias_method :delete_char, :em_delete
@@ -2029,9 +1989,8 @@ class Reline::LineEditor
   private def em_yank_pop(key)
     yanked, prev_yank = @kill_ring.yank_pop
     if yanked
-      prev_yank_width = calculate_width(prev_yank)
-      @byte_pointer -= prev_yank.bytesize
-      self.current_line, = byteslice!(current_line, @byte_pointer, prev_yank.bytesize)
+      line, = byteslice!(current_line, @byte_pointer - prev_yank.bytesize, prev_yank.bytesize)
+      set_current_line(line, @byte_pointer - prev_yank.bytesize)
       text_insert(yanked)
     end
   end
@@ -2061,7 +2020,8 @@ class Reline::LineEditor
   private def em_delete_next_word(key)
     if current_line.bytesize > @byte_pointer
       byte_size, _ = Reline::Unicode.em_forward_word(current_line, @byte_pointer)
-      self.current_line, word = byteslice!(current_line, @byte_pointer, byte_size)
+      line, word = byteslice!(current_line, @byte_pointer, byte_size)
+      set_current_line(line)
       @kill_ring.append(word)
     end
   end
@@ -2070,8 +2030,8 @@ class Reline::LineEditor
   private def ed_delete_prev_word(key)
     if @byte_pointer > 0
       byte_size, _ = Reline::Unicode.em_backward_word(current_line, @byte_pointer)
-      @byte_pointer -= byte_size
-      self.current_line, word = byteslice!(current_line, @byte_pointer, byte_size)
+      line, word = byteslice!(current_line, @byte_pointer - byte_size, byte_size)
+      set_current_line(line, @byte_pointer - byte_size)
       @kill_ring.append(word, true)
     end
   end
@@ -2088,7 +2048,7 @@ class Reline::LineEditor
         back2_byte_size = Reline::Unicode.get_prev_mbchar_size(current_line, @byte_pointer - back1_byte_size)
         back2_pointer = @byte_pointer - back1_byte_size - back2_byte_size
         line, back2_mbchar = byteslice!(current_line, back2_pointer, back2_byte_size)
-        self.current_line = byteinsert(line, @byte_pointer - back2_byte_size, back2_mbchar)
+        set_current_line(byteinsert(line, @byte_pointer - back2_byte_size, back2_mbchar))
       end
     end
   end
@@ -2102,9 +2062,8 @@ class Reline::LineEditor
     right_word = current_line.byteslice(right_word_start, after_start - right_word_start)
     after = current_line.byteslice(after_start, current_line.bytesize - after_start)
     return if left_word.empty? or right_word.empty?
-    self.current_line = before + right_word + middle + left_word + after
     from_head_to_left_word = before + right_word + middle + left_word
-    @byte_pointer = from_head_to_left_word.bytesize
+    set_current_line(from_head_to_left_word + after, from_head_to_left_word.bytesize)
   end
   alias_method :transpose_words, :ed_transpose_words
 
@@ -2113,8 +2072,7 @@ class Reline::LineEditor
       byte_size, _, new_str = Reline::Unicode.em_forward_word_with_capitalization(current_line, @byte_pointer)
       before = current_line.byteslice(0, @byte_pointer)
       after = current_line.byteslice((@byte_pointer + byte_size)..-1)
-      self.current_line = before + new_str + after
-      @byte_pointer += new_str.bytesize
+      set_current_line(before + new_str + after, @byte_pointer + new_str.bytesize)
     end
   end
   alias_method :capitalize_word, :em_capitol_case
@@ -2127,8 +2085,7 @@ class Reline::LineEditor
       }.join
       rest = current_line.byteslice((@byte_pointer + byte_size)..-1)
       line = current_line.byteslice(0, @byte_pointer) + part
-      @byte_pointer = line.bytesize
-      self.current_line = line + rest
+      set_current_line(line + rest, line.bytesize)
     end
   end
   alias_method :downcase_word, :em_lower_case
@@ -2141,8 +2098,7 @@ class Reline::LineEditor
       }.join
       rest = current_line.byteslice((@byte_pointer + byte_size)..-1)
       line = current_line.byteslice(0, @byte_pointer) + part
-      @byte_pointer = line.bytesize
-      self.current_line = line + rest
+      set_current_line(line + rest, line.bytesize)
     end
   end
   alias_method :upcase_word, :em_upper_case
@@ -2151,7 +2107,8 @@ class Reline::LineEditor
     if @byte_pointer > 0
       byte_size, _ = Reline::Unicode.em_big_backward_word(current_line, @byte_pointer)
       @byte_pointer -= byte_size
-      self.current_line, deleted = byteslice!(current_line, @byte_pointer - byte_size, byte_size)
+      line, deleted = byteslice!(current_line, @byte_pointer - byte_size, byte_size)
+      set_current_line(line)
       @kill_ring.append(deleted, true)
     end
   end
@@ -2251,10 +2208,12 @@ class Reline::LineEditor
       @byte_pointer = @buffer_of_lines[@line_index - 1].bytesize
       @buffer_of_lines[@line_index - 1] += @buffer_of_lines.delete_at(@line_index)
       @line_index -= 1
+      process_auto_indent cursor_dependent: false
     elsif @byte_pointer > 0
       byte_size = Reline::Unicode.get_prev_mbchar_size(current_line, @byte_pointer)
       @byte_pointer -= byte_size
-      self.current_line, _ = byteslice!(current_line, @byte_pointer, byte_size)
+      line, _ = byteslice!(current_line, @byte_pointer, byte_size)
+      set_current_line(line)
     end
   end
 
@@ -2274,7 +2233,8 @@ class Reline::LineEditor
       if @byte_pointer > 0
         byte_size = Reline::Unicode.get_prev_mbchar_size(current_line, @byte_pointer)
         @byte_pointer -= byte_size
-        self.current_line, mbchar = byteslice!(current_line, @byte_pointer, byte_size)
+        line, mbchar = byteslice!(current_line, @byte_pointer, byte_size)
+        set_current_line(line)
         deleted.prepend(mbchar)
       end
     end
@@ -2289,10 +2249,11 @@ class Reline::LineEditor
     @drop_terminate_spaces = true
     @waiting_operator_proc = proc { |byte_pointer_diff|
       if byte_pointer_diff > 0
-        self.current_line, cut = byteslice!(current_line, @byte_pointer, byte_pointer_diff)
+        line, cut = byteslice!(current_line, @byte_pointer, byte_pointer_diff)
       elsif byte_pointer_diff < 0
-        self.current_line, cut = byteslice!(current_line, @byte_pointer + byte_pointer_diff, -byte_pointer_diff)
+        line, cut = byteslice!(current_line, @byte_pointer + byte_pointer_diff, -byte_pointer_diff)
       end
+      set_current_line(line)
       copy_for_vi(cut)
       @byte_pointer += byte_pointer_diff if byte_pointer_diff < 0
       @config.editing_mode = :vi_insert
@@ -2309,8 +2270,7 @@ class Reline::LineEditor
         line, cut = byteslice!(current_line, @byte_pointer + byte_pointer_diff, -byte_pointer_diff)
       end
       copy_for_vi(cut)
-      @byte_pointer += byte_pointer_diff if byte_pointer_diff < 0
-      self.current_line = line
+      set_current_line(line, @byte_pointer + (byte_pointer_diff < 0 ? byte_pointer_diff : 0))
     }
     @waiting_operator_vi_arg = arg
   end
@@ -2329,7 +2289,7 @@ class Reline::LineEditor
 
   private def vi_list_or_eof(key)
     if (not @is_multiline and current_line.empty?) or (@is_multiline and current_line.empty? and @buffer_of_lines.size == 1)
-      self.current_line = ''
+      set_current_line('', 0)
       if @buffer_of_lines.size > 1
         # scroll_down(@highest_in_all - @first_line_started_from)
       end
@@ -2346,12 +2306,14 @@ class Reline::LineEditor
   private def ed_delete_next_char(key, arg: 1)
     byte_size = Reline::Unicode.get_next_mbchar_size(current_line, @byte_pointer)
     unless current_line.empty? || byte_size == 0
-      self.current_line, mbchar = byteslice!(current_line, @byte_pointer, byte_size)
+      line, mbchar = byteslice!(current_line, @byte_pointer, byte_size)
       copy_for_vi(mbchar)
       width = Reline::Unicode.get_mbchar_width(mbchar)
       if @byte_pointer > 0
-        byte_size = Reline::Unicode.get_prev_mbchar_size(current_line, @byte_pointer)
-        @byte_pointer -= byte_size
+        byte_size = Reline::Unicode.get_prev_mbchar_size(line, @byte_pointer)
+        set_current_line(line, @byte_pointer - byte_size)
+      else
+        set_current_line(line)
       end
     end
     arg -= 1
@@ -2365,15 +2327,13 @@ class Reline::LineEditor
     if @history_pointer.nil?
       @history_pointer = 0
       @line_backup_in_history = current_line
-      self.current_line = Reline::HISTORY[@history_pointer]
-      @byte_pointer = 0
+      set_current_line(Reline::HISTORY[@history_pointer], 0)
     elsif @history_pointer.zero?
       return
     else
       Reline::HISTORY[@history_pointer] = current_line
       @history_pointer = 0
-      self.current_line = Reline::HISTORY[@history_pointer]
-      @byte_pointer = 0
+      set_current_line(Reline::HISTORY[@history_pointer], 0)
     end
   end
 
@@ -2399,9 +2359,8 @@ class Reline::LineEditor
 
   private def vi_paste_prev(key, arg: 1)
     if @vi_clipboard.size > 0
-      self.current_line = byteinsert(current_line, @byte_pointer, @vi_clipboard)
       cursor_point = @vi_clipboard.grapheme_clusters[0..-2].join
-      @byte_pointer += cursor_point.bytesize
+      set_current_line(byteinsert(current_line, @byte_pointer, @vi_clipboard), @byte_pointer + cursor_point.bytesize)
     end
     arg -= 1
     vi_paste_prev(key, arg: arg) if arg > 0
@@ -2410,8 +2369,8 @@ class Reline::LineEditor
   private def vi_paste_next(key, arg: 1)
     if @vi_clipboard.size > 0
       byte_size = Reline::Unicode.get_next_mbchar_size(current_line, @byte_pointer)
-      self.current_line = byteinsert(current_line, @byte_pointer + byte_size, @vi_clipboard)
-      @byte_pointer += @vi_clipboard.bytesize
+      line = byteinsert(current_line, @byte_pointer + byte_size, @vi_clipboard)
+      set_current_line(line, @byte_pointer + @vi_clipboard.bytesize)
     end
     arg -= 1
     vi_paste_next(key, arg: arg) if arg > 0
@@ -2457,7 +2416,7 @@ class Reline::LineEditor
         before = current_line.byteslice(0, @byte_pointer)
         remaining_point = @byte_pointer + byte_size
         after = current_line.byteslice(remaining_point, current_line.bytesize - remaining_point)
-        self.current_line = before + k.chr + after
+        set_current_line(before + k.chr + after)
         @waiting_proc = nil
       elsif arg > 1
         byte_size = 0
@@ -2468,8 +2427,7 @@ class Reline::LineEditor
         remaining_point = @byte_pointer + byte_size
         after = current_line.byteslice(remaining_point, current_line.bytesize - remaining_point)
         replaced = k.chr * arg
-        @byte_pointer += replaced.bytesize
-        self.current_line = before + replaced + after
+        set_current_line(before + replaced + after, @byte_pointer + replaced.bytesize)
         @waiting_proc = nil
       end
     }
@@ -2575,8 +2533,8 @@ class Reline::LineEditor
 
   private def vi_join_lines(key, arg: 1)
     if @is_multiline and @buffer_of_lines.size > @line_index + 1
-      @byte_pointer = current_line.bytesize
-      self.current_line += ' ' + @buffer_of_lines.delete_at(@line_index + 1).lstrip
+      next_line = @buffer_of_lines.delete_at(@line_index + 1).lstrip
+      set_current_line(current_line + ' ' + next_line, current_line.bytesize)
     end
     arg -= 1
     vi_join_lines(key, arg: arg) if arg > 0
@@ -2592,7 +2550,6 @@ class Reline::LineEditor
     new_pointer = [@byte_pointer, @line_index]
     @byte_pointer, @line_index = @mark_pointer
     @mark_pointer = new_pointer
-    @clear_dialog_trap = true
   end
   alias_method :exchange_point_and_mark, :em_exchange_mark
 
