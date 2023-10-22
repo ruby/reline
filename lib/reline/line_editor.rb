@@ -144,8 +144,15 @@ class Reline::LineEditor
 
   def resize
     return unless @resized
-    @resized = false
+
     @screen_size = Reline::IOGate.get_screen_size
+    @resized = false
+    scroll_into_view
+    Reline::IOGate.move_cursor_up @cursor_y
+    @cursor_base_y = Reline::IOGate.cursor_pos.y
+    @cursor_y = 0
+    @rendered_screen_cache = nil
+    render_differential
   end
 
   def set_signal_handlers
@@ -195,13 +202,16 @@ class Reline::LineEditor
     @first_char = true
     @eof = false
     @continuous_insertion_buffer = String.new(encoding: @encoding)
-    @scroll_partial_screen = nil
+    @scroll_partial_screen = 0
     @drop_terminate_spaces = false
     @in_pasting = false
     @auto_indent_proc = nil
     @dialogs = []
     @last_key = nil
     @resized = false
+    @cursor_y = 0
+    @cache = {}
+    @rendered_screen_cache = nil
     reset_line
   end
 
@@ -209,6 +219,7 @@ class Reline::LineEditor
     @byte_pointer = 0
     @buffer_of_lines = [String.new(encoding: @encoding)]
     @line_index = 0
+    @cache.clear
     @line_backup_in_history = nil
     @multibyte_buffer = String.new(encoding: 'ASCII-8BIT')
   end
@@ -242,8 +253,6 @@ class Reline::LineEditor
   end
 
   private def scroll_down(val)
-    @cursor_y ||= 0
-    @cursor_base_y ||= 0
     if @cursor_base_y + @cursor_y + val < screen_height
       Reline::IOGate.move_cursor_down(val)
       @cursor_y += val
@@ -294,7 +303,6 @@ class Reline::LineEditor
   end
 
   def with_cache(key, *deps)
-    @cache ||= {}
     cached_deps, value = @cache[key]
     if cached_deps != deps
       @cache[key] = [deps, value = yield(*deps)]
@@ -321,7 +329,7 @@ class Reline::LineEditor
   end
 
   def screen_scroll_top
-    @scroll_partial_screen || 0
+    @scroll_partial_screen
   end
 
   def wrapped_lines
@@ -347,7 +355,7 @@ class Reline::LineEditor
     old_items = [[0, old_line_width, old_line]] + old_overlays
     new_items = [[0, new_line_width, new_line]] + new_overlays
     old_levels = calculate_overlay_levels(old_items.zip(new_items).each_with_index.map {|((x, w, c), (nx, _nw, nc)), i| [x, w, c == nc && x == nx ? i : -1] if x }.compact)
-    new_levels = calculate_overlay_levels(new_items.each_with_index.map { |(x, w), i| [x, w, i] if x }.compact)
+    new_levels = calculate_overlay_levels(new_items.each_with_index.map { |(x, w), i| [x, w, i] if x }.compact).take(screen_width)
     base_x = 0
     new_levels.zip(old_levels).chunk {|n, o| o == n ? -1 : n || 0 }.each do |level, chunk|
       width = chunk.size
@@ -385,18 +393,9 @@ class Reline::LineEditor
   end
 
   def render_differential
-    @cursor_y ||= 0
-    @rendered_cache ||= {}
-
     editor_cursor_x, editor_cursor_y = editor_cursor_position
 
-    if editor_cursor_y < screen_scroll_top
-      @scroll_partial_screen = editor_cursor_y
-    end
-    if editor_cursor_y >= screen_scroll_top + screen_height
-      @scroll_partial_screen = editor_cursor_y - screen_height + 1
-    end
-    rendered_lines = @rendered_cache[:rendered_lines] || []
+    rendered_lines = @rendered_screen_cache || []
     new_lines = wrapped_lines.flatten[screen_scroll_top, screen_height].map { [_1, []]}
     if @menu_info
       @menu_info.list.sort!.each do |item|
@@ -427,9 +426,13 @@ class Reline::LineEditor
 
       Reline::IOGate.move_cursor_down i - @cursor_y
       @cursor_y = i
+      unless rendered_lines[i]
+        Reline::IOGate.move_cursor_column 0
+        Reline::IOGate.erase_after_cursor
+      end
       render_line_differential(*rendered_line, *line_to_render)
     end
-    @rendered_cache[:rendered_lines] = new_lines
+    @rendered_screen_cache = new_lines
     y = editor_cursor_y - screen_scroll_top
     Reline::IOGate.move_cursor_column editor_cursor_x
     Reline::IOGate.move_cursor_down y - @cursor_y
@@ -451,63 +454,32 @@ class Reline::LineEditor
 
   def rerender_all
     process_insert(force: true)
-    handle_clear_resize
-    update
+    handle_cleared
     render_differential unless @in_pasting
   end
 
-  def with_output
-    $output ||= @output
-    Reline::IOGate.class_variable_set :@@output, @output = $output
-    yield
-    require 'stringio'
-    Reline::IOGate.class_variable_set :@@output, @output = StringIO.new
-  end
+  def handle_cleared
+    return unless @cleared
 
-  def handle_clear_resize
-    if @cleared || @resized
-      if @cleared
-        @rendered_cache = {}
-      end
-      if @resized
-        @screen_size = Reline::IOGate.get_screen_size
-      end
-      with_output do
-        Reline::IOGate.clear_screen if @cleared
-        @cursor_base_y = Reline::IOGate.cursor_pos.y
-        @cursor_y = 0
-      end
-      @cleared = false
-      @resized = false
-    end
+    @cleared = false
+    @rendered_screen_cache = nil
+    Reline::IOGate.clear_screen
+    @screen_size = Reline::IOGate.get_screen_size
+    @cursor_base_y = 0
+    @cursor_y = 0
+    scroll_into_view
+    render_differential
   end
 
   def rerender
-    with_output{}
     finished = finished?
-    handle_clear_resize
-    update
-    with_output do
-      scrolldown = render_differential unless @in_pasting
-      if finished
-        @rendered_cache = nil
-        @cache = nil
-        scroll_down scrolldown
-        Reline::IOGate.move_cursor_column 0
-        @cursor_y = 0
-      end
-    end
-  end
-
-  def update
-    if @cleared
-      @cleared = false
-      return
-    end
-    if @is_multiline and finished? and @scroll_partial_screen
-      # Re-output all code higher than the screen when finished.
-      @scroll_partial_screen = nil
-      return
+    handle_cleared
+    scrolldown = render_differential unless @in_pasting
+    if finished
+      @rendered_screen_cache = nil
+      scroll_down scrolldown
+      Reline::IOGate.move_cursor_column 0
+      @cursor_y = 0
     end
   end
 
@@ -973,7 +945,6 @@ class Reline::LineEditor
       end
       @kill_ring.process
       if @vi_arg
-        @rerender_al = true
         @vi_arg = nil
       end
     elsif @vi_arg
@@ -1116,6 +1087,17 @@ class Reline::LineEditor
       @just_cursor_moving = old_lines == @buffer_of_lines
       update_dialogs
       @just_cursor_moving = false
+      scroll_into_view
+    end
+  end
+
+  def scroll_into_view
+    _editor_cursor_x, editor_cursor_y = editor_cursor_position
+    if editor_cursor_y < screen_scroll_top
+      @scroll_partial_screen = editor_cursor_y
+    end
+    if editor_cursor_y >= screen_scroll_top + screen_height
+      @scroll_partial_screen = editor_cursor_y - screen_height + 1
     end
   end
 
