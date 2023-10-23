@@ -6,7 +6,6 @@ require 'tempfile'
 class Reline::LineEditor
   # TODO: undo
   # TODO: Use "private alias_method" idiom after drop Ruby 2.5.
-  attr_reader :line
   attr_reader :byte_pointer
   attr_accessor :confirm_multiline_termination_proc
   attr_accessor :completion_proc
@@ -157,7 +156,11 @@ class Reline::LineEditor
 
   def set_signal_handlers
     @old_trap = Signal.trap('INT') {
-      # TODO: move cursor
+      clear_dialogs
+      scrolldown = render_differential
+      Reline::IOGate.move_cursor_down scrolldown
+      Reline::IOGate.move_cursor_column 0
+      @rendered_screen_cache = nil
       case @old_trap
       when 'DEFAULT', 'SYSTEM_DEFAULT'
         raise Interrupt
@@ -382,6 +385,13 @@ class Reline::LineEditor
     editor_cursor_y = wrapped_lines[0...@line_index].sum(&:size) + wrapped_line_before_cursor.size - 1
     editor_cursor_x = Reline::Unicode.calculate_width(wrapped_line_before_cursor.last, true)
     [editor_cursor_x, editor_cursor_y]
+  end
+
+  def clear_dialogs
+    @dialogs.each do |dialog|
+      dialog.contents = nil
+      dialog.trap_key = nil
+    end
   end
 
   def update_dialogs
@@ -1079,10 +1089,7 @@ class Reline::LineEditor
       @completion_journey_data = nil
     end
     if @in_pasting
-      @dialogs.each do |dialog|
-        dialog.contents = nil
-        dialog.trap_key = nil
-      end
+      clear_dialogs
     else
       @just_cursor_moving = old_lines == @buffer_of_lines
       update_dialogs
