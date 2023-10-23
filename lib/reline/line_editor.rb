@@ -803,7 +803,7 @@ class Reline::LineEditor
       end
       contents = contents[dialog.scroll_top, height]
     end
-    if dialog_render_info.scrollbar and dialog_render_info.contents.size > height
+    if dialog_render_info[:scrollbar] and dialog_render_info.contents.size > height
       bar_max_height = height * 2
       moving_distance = (dialog_render_info.contents.size - height) * 2
       position_ratio = dialog.scroll_top.zero? ? 0.0 : ((dialog.scroll_top * 2).to_f / moving_distance)
@@ -832,10 +832,10 @@ class Reline::LineEditor
       dialog.width = @screen_size.last
     end
     face = Reline::Face[dialog_render_info.face || :default]
-    scrollbar_sgr = face.scrollbar
-    default_sgr = face.default
+    scrollbar_sgr = face[:scrollbar]
+    default_sgr = face[:default]
     dialog.contents = contents.map.with_index do |item, i|
-      line_sgr = i == pointer ? face.enhanced : default_sgr
+      line_sgr = i == pointer ? face[:enhanced] : default_sgr
       str_width = dialog.width - (scrollbar_pos.nil? ? 0 : @block_elem_width)
       str = padding_space_with_escape_sequences(Reline::Unicode.take_range(item, 0, str_width), str_width)
       colored_content = "#{line_sgr}#{str}"

@@ -60,19 +60,26 @@ class Reline::Face
     RESET_SGR = "\e[0m".freeze
 
     def initialize(name, &block)
+      @definition = {}
       block.call(self)
       ESSENTIAL_DEFINE_NAMES.each do |name|
-        define(name, style: :default) unless self.respond_to?(name)
+        @definition[name] ||= { style: :default, escape_sequence: RESET_SGR }
       end
     end
+
+    attr_reader :definition
 
     def define(name, foreground: nil, background: nil, style: nil)
       values = {}
       values[:foreground] = foreground if foreground
       values[:background] = background if background
       values[:style] = style if style
-      sgr = format_to_sgr(values)
-      define_singleton_method(name) { sgr }
+      values[:escape_sequence] = format_to_sgr(values).freeze
+      @definition[name] = values
+    end
+
+    def [](name)
+      @definition.dig(name, :escape_sequence) or raise ArgumentError, "unknown face: #{name}"
     end
 
     private
@@ -123,6 +130,10 @@ class Reline::Face
   def self.config(name, &block)
     @configs ||= {}
     @configs[name] = Config.new(name, &block)
+  end
+
+  def self.configs
+    @configs.transform_values(&:definition)
   end
 
 end

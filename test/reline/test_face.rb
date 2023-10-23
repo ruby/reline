@@ -13,9 +13,21 @@ class Reline::Face::Test < Reline::TestCase
     end
 
     def test_my_insufficient_config_line
-      assert_equal RESET_SGR, @face.default
-      assert_equal RESET_SGR, @face.enhanced
-      assert_equal RESET_SGR, @face.scrollbar
+      assert_equal RESET_SGR, @face[:default]
+      assert_equal RESET_SGR, @face[:enhanced]
+      assert_equal RESET_SGR, @face[:scrollbar]
+    end
+
+    def test_my_insufficient_configs
+      my_configs = Reline::Face.configs[:my_insufficient_config]
+      assert_equal(
+        {
+          default: { style: :default, escape_sequence: RESET_SGR },
+          enhanced: { style: :default, escape_sequence: RESET_SGR },
+          scrollbar: { style: :default, escape_sequence: RESET_SGR }
+        },
+        my_configs
+      )
     end
   end
 
@@ -31,12 +43,34 @@ class Reline::Face::Test < Reline::TestCase
       @face = Reline::Face[:my_config]
     end
 
+    def test_my_configs
+      my_configs = Reline::Face.configs[:my_config]
+      assert_equal(
+        {
+          default: {
+            escape_sequence: "#{RESET_SGR}\e[34m", foreground: :blue
+          },
+          enhanced: {
+            background: :black,
+            foreground: "#FF1020",
+            style: [:bold, :underlined],
+            escape_sequence: "\e[0m\e[38;2;255;16;32;40;1;4m"
+          },
+          scrollbar: {
+            style: :default,
+            escape_sequence: "\e[0m"
+          }
+        },
+        my_configs
+      )
+    end
+
     def test_my_config_line
-      assert_equal "#{RESET_SGR}\e[34m", @face.default
+      assert_equal "#{RESET_SGR}\e[34m", @face[:default]
     end
 
     def test_my_config_enhanced
-      assert_equal "#{RESET_SGR}\e[38;2;255;16;32;40;1;4m", @face.enhanced
+      assert_equal "#{RESET_SGR}\e[38;2;255;16;32;40;1;4m", @face[:enhanced]
     end
 
     def test_not_respond_to_another_label
@@ -51,7 +85,14 @@ class Reline::Face::Test < Reline::TestCase
         # do nothing
       end
       face = Reline::Face[:my_config]
-      assert_equal RESET_SGR, face.default
+      assert_equal RESET_SGR, face[:default]
+    end
+
+    def test_style_does_not_exist
+      face = Reline::Face[:default]
+      assert_raise ArgumentError do
+        face[:style_does_not_exist]
+      end
     end
 
     def test_invalid_keyword
