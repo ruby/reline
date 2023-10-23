@@ -278,8 +278,12 @@ module Reline
           Reline::HISTORY << whole_buffer
         end
 
-        line_editor.reset_line if line_editor.whole_buffer.nil?
-        whole_buffer
+        if line_editor.eof?
+          line_editor.reset_line
+          nil
+        else
+          whole_buffer
+        end
       end
     end
 
