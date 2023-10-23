@@ -32,6 +32,7 @@ module Reline
       Reline::GeneralIO.reset(encoding: encoding) unless ansi
       core.config.instance_variable_set(:@test_mode, true)
       core.config.reset
+      Reline.line_editor.instance_variable_set(:@screen_size, [24, 80])
     end
 
     def test_reset
@@ -147,11 +148,22 @@ class Reline::TestCase < Test::Unit::TestCase
   end
 
   def assert_cursor(expected)
-    assert_equal(expected, @line_editor.instance_variable_get(:@cursor))
+    # This test satisfies nothing because there is no `@cursor` anymore
+    # Test editor_cursor_position instead
+    cursor_x = @line_editor.instance_eval do
+      line_before_cursor = whole_lines[@line_index].byteslice(0, @byte_pointer)
+      Reline::Unicode.calculate_width(line_before_cursor)
+    end
+    assert_equal(expected, cursor_x)
   end
 
   def assert_cursor_max(expected)
-    assert_equal(expected, @line_editor.instance_variable_get(:@cursor_max))
+    # This test satisfies nothing because there is no `@cursor_max` anymore
+    cursor_max = @line_editor.instance_eval do
+      line = whole_lines[@line_index]
+      Reline::Unicode.calculate_width(line)
+    end
+    assert_equal(expected, cursor_max)
   end
 
   def assert_line_index(expected)
