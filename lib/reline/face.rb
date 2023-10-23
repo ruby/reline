@@ -103,7 +103,7 @@ class Reline::Face
           rendition_expression
         end
       end.join(';') + "m"
-      sgr == "\e[m" ? RESET_SGR : RESET_SGR + sgr
+      sgr == RESET_SGR ? RESET_SGR : RESET_SGR + sgr
     end
 
     def rgb_expression?(color)
