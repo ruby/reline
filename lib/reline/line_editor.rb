@@ -318,8 +318,8 @@ class Reline::LineEditor
   end
 
   def prompt_list
-    with_cache(__method__, whole_lines) do
-      check_multiline_prompt(_1)
+    with_cache(__method__, whole_lines, @vi_arg, @searching_prompt) do |lines|
+      check_multiline_prompt(lines)
     end
   end
 
@@ -380,10 +380,10 @@ class Reline::LineEditor
   end
 
   def editor_cursor_position
-    line = prompt_list[@line_index] + whole_lines[@line_index].byteslice(0, @byte_pointer)
+    line = ' ' * calculate_width(prompt_list[@line_index], true) + whole_lines[@line_index].byteslice(0, @byte_pointer)
     wrapped_line_before_cursor = split_by_width(line, screen_width).first.compact
     editor_cursor_y = wrapped_lines[0...@line_index].sum(&:size) + wrapped_line_before_cursor.size - 1
-    editor_cursor_x = Reline::Unicode.calculate_width(wrapped_line_before_cursor.last, true)
+    editor_cursor_x = calculate_width(wrapped_line_before_cursor.last)
     [editor_cursor_x, editor_cursor_y]
   end
 
@@ -1151,6 +1151,10 @@ class Reline::LineEditor
       old_indent = line[/\A */].size
       @byte_pointer = [@byte_pointer + new_indent - old_indent, 0].max
     end
+  end
+
+  def line()
+    current_line unless eof?
   end
 
   def current_line
@@ -1971,7 +1975,7 @@ class Reline::LineEditor
 
   private def em_yank(key)
     yanked = @kill_ring.yank
-    text_insert(yanked) if yanked
+    insert_text(yanked) if yanked
   end
   alias_method :yank, :em_yank
 
@@ -1980,7 +1984,7 @@ class Reline::LineEditor
     if yanked
       line, = byteslice!(current_line, @byte_pointer - prev_yank.bytesize, prev_yank.bytesize)
       set_current_line(line, @byte_pointer - prev_yank.bytesize)
-      text_insert(yanked)
+      insert_text(yanked)
     end
   end
   alias_method :yank_pop, :em_yank_pop
@@ -2095,9 +2099,8 @@ class Reline::LineEditor
   private def em_kill_region(key)
     if @byte_pointer > 0
       byte_size, _ = Reline::Unicode.em_big_backward_word(current_line, @byte_pointer)
-      @byte_pointer -= byte_size
       line, deleted = byteslice!(current_line, @byte_pointer - byte_size, byte_size)
-      set_current_line(line)
+      set_current_line(line, @byte_pointer - byte_size)
       @kill_ring.append(deleted, true)
     end
   end
@@ -2151,7 +2154,6 @@ class Reline::LineEditor
     if inclusive and arg.zero?
       byte_size = Reline::Unicode.get_next_mbchar_size(current_line, @byte_pointer)
       if byte_size > 0
-        c = current_line.byteslice(@byte_pointer, byte_size)
         @byte_pointer += byte_size
       end
     end
@@ -2185,7 +2187,6 @@ class Reline::LineEditor
     if inclusive and arg.zero?
       byte_size = Reline::Unicode.get_next_mbchar_size(current_line, @byte_pointer)
       if byte_size > 0
-        c = current_line.byteslice(@byte_pointer, byte_size)
         @byte_pointer += byte_size
       end
     end
@@ -2259,7 +2260,7 @@ class Reline::LineEditor
         line, cut = byteslice!(current_line, @byte_pointer + byte_pointer_diff, -byte_pointer_diff)
       end
       copy_for_vi(cut)
-      set_current_line(line, @byte_pointer + (byte_pointer_diff < 0 ? byte_pointer_diff : 0))
+      set_current_line(line || '', @byte_pointer + (byte_pointer_diff < 0 ? byte_pointer_diff : 0))
     }
     @waiting_operator_vi_arg = arg
   end
@@ -2297,12 +2298,11 @@ class Reline::LineEditor
     unless current_line.empty? || byte_size == 0
       line, mbchar = byteslice!(current_line, @byte_pointer, byte_size)
       copy_for_vi(mbchar)
-      width = Reline::Unicode.get_mbchar_width(mbchar)
-      if @byte_pointer > 0
+      if @byte_pointer > 0 && current_line.bytesize == @byte_pointer + byte_size
         byte_size = Reline::Unicode.get_prev_mbchar_size(line, @byte_pointer)
         set_current_line(line, @byte_pointer - byte_size)
       else
-        set_current_line(line)
+        set_current_line(line, @byte_pointer)
       end
     end
     arg -= 1
