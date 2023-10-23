@@ -56,11 +56,14 @@ class Reline::Face
   }.freeze
 
   class Config
+    ESSENTIAL_DEFINE_NAMES = %i(default enhanced scrollbar).freeze
     RESET_SGR = "\e[0m".freeze
 
     def initialize(name, &block)
       block.call(self)
-      define(:default) unless self.respond_to?(:default)
+      ESSENTIAL_DEFINE_NAMES.each do |name|
+        define(name, style: :default) unless self.respond_to?(name)
+      end
     end
 
     def define(name, foreground: nil, background: nil, style: nil)

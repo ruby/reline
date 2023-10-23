@@ -5,6 +5,20 @@ require_relative 'helper'
 class Reline::Face::Test < Reline::TestCase
   RESET_SGR = "\e[0m"
 
+  class WithInsufficientSetupTest < self
+    def setup
+      Reline::Face.config(:my_insufficient_config) do |face|
+      end
+      @face = Reline::Face[:my_insufficient_config]
+    end
+
+    def test_my_insufficient_config_line
+      assert_equal RESET_SGR, @face.default
+      assert_equal RESET_SGR, @face.enhanced
+      assert_equal RESET_SGR, @face.scrollbar
+    end
+  end
+
   class WithSetupTest < self
     def setup
       Reline::Face.config(:my_config) do |face|
