@@ -351,23 +351,20 @@ class Reline::LineEditor
     levels
   end
 
-  def render_line_differential(old_line, old_overlays, new_line, new_overlays)
-    # overlays: Array of [x, width, content] | nil
-    old_line_width = calculate_width(old_line, true)
-    new_line_width = calculate_width(new_line, true)
-    old_items = [[0, old_line_width, old_line]] + old_overlays
-    new_items = [[0, new_line_width, new_line]] + new_overlays
+  def render_line_differential(old_items, new_items)
     old_levels = calculate_overlay_levels(old_items.zip(new_items).each_with_index.map {|((x, w, c), (nx, _nw, nc)), i| [x, w, c == nc && x == nx ? i : -1] if x }.compact)
     new_levels = calculate_overlay_levels(new_items.each_with_index.map { |(x, w), i| [x, w, i] if x }.compact).take(screen_width)
     base_x = 0
-    new_levels.zip(old_levels).chunk {|n, o| o == n ? -1 : n || 0 }.each do |level, chunk|
+    new_levels.zip(old_levels).chunk { |n, o| n == o ? :skip : n || :blank }.each do |level, chunk|
       width = chunk.size
-      if level >= 0
+      if level == :skip
+        # do nothing
+      elsif level == :blank
+        Reline::IOGate.move_cursor_column base_x
+        @output.write "\e[0m#{' ' * width}"
+      else
         x, w, content = new_items[level]
-        unless x == base_x && w == width
-          content = Reline::Unicode.take_range(content, base_x - x, width)
-          content += ' ' * (width - Reline::Unicode.calculate_width(content, true))
-        end
+        content = Reline::Unicode.take_range(content, base_x - x, width) unless x == base_x && w == width
         Reline::IOGate.move_cursor_column base_x
         @output.write "\e[0m#{content}\e[0m"
       end
@@ -395,6 +392,7 @@ class Reline::LineEditor
   end
 
   def update_dialogs
+    @dialog_initialzed = true
     editor_cursor_x, editor_cursor_y = editor_cursor_position
     @dialogs.each do |dialog|
       dialog.trap_key = nil
@@ -403,17 +401,20 @@ class Reline::LineEditor
   end
 
   def render_differential
+    unless @dialog_initialzed
+      update_dialogs
+    end
+
     editor_cursor_x, editor_cursor_y = editor_cursor_position
 
     rendered_lines = @rendered_screen_cache || []
-    new_lines = wrapped_lines.flatten[screen_scroll_top, screen_height].map { [_1, []]}
+    new_lines = wrapped_lines.flatten[screen_scroll_top, screen_height].map { [[0, Reline::Unicode.calculate_width(_1, true), _1]]}
     if @menu_info
       @menu_info.list.sort!.each do |item|
-        new_lines << [item, []]
+        new_lines << [[0, Reline::Unicode.calculate_width(item), item]]
       end
       @menu_info = nil # TODO: do not change state here
     end
-
 
     @dialogs.each_with_index do |dialog, index|
       next unless dialog.contents
@@ -421,8 +422,8 @@ class Reline::LineEditor
       x_range, y_range = dialog_range dialog, editor_cursor_y - screen_scroll_top
       y_range.each do |row|
         next if row < 0 || row >= screen_height
-        dialog_rows = (new_lines[row] ||= ['', []]).last
-        dialog_rows[index] = [x_range.begin, dialog.width, dialog.contents[row - y_range.begin]]
+        dialog_rows = new_lines[row] ||= []
+        dialog_rows[index + 1] = [x_range.begin, dialog.width, dialog.contents[row - y_range.begin]]
       end
     end
 
@@ -430,8 +431,8 @@ class Reline::LineEditor
     scroll_down(num_lines - 1 - @cursor_y) if (num_lines - 1 - @cursor_y) > 0
     @cursor_y = num_lines - 1
     num_lines.times do |i|
-      rendered_line = rendered_lines[i] || ['', []]
-      line_to_render = new_lines[i] || ['', []]
+      rendered_line = rendered_lines[i] || []
+      line_to_render = new_lines[i] || []
       next if rendered_line == line_to_render
 
       Reline::IOGate.move_cursor_down i - @cursor_y
@@ -440,7 +441,7 @@ class Reline::LineEditor
         Reline::IOGate.move_cursor_column 0
         Reline::IOGate.erase_after_cursor
       end
-      render_line_differential(*rendered_line, *line_to_render)
+      render_line_differential(rendered_line, line_to_render)
     end
     @rendered_screen_cache = new_lines
     y = editor_cursor_y - screen_scroll_top
@@ -487,7 +488,7 @@ class Reline::LineEditor
     scrolldown = render_differential unless @in_pasting
     if finished
       @rendered_screen_cache = nil
-      scroll_down scrolldown
+      scroll_down scrolldown if scrolldown
       Reline::IOGate.move_cursor_column 0
       @cursor_y = 0
     end
@@ -1139,6 +1140,7 @@ class Reline::LineEditor
   end
 
   private def process_auto_indent(line_index = @line_index, cursor_dependent: true, add_newline: false)
+    return if @in_pasting
     return unless @auto_indent_proc
 
     line = @buffer_of_lines[line_index]
