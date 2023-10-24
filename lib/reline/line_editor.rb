@@ -486,12 +486,14 @@ class Reline::LineEditor
   def rerender
     finished = finished?
     handle_cleared
-    scrolldown = render_differential unless @in_pasting
     if finished
       @rendered_screen_cache = nil
-      scroll_down scrolldown if scrolldown
+      scrolldown = render_differential
+      scroll_down scrolldown
       Reline::IOGate.move_cursor_column 0
       @cursor_y = 0
+    elsif !@in_pasting
+      render_differential
     end
   end
 
