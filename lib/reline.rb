@@ -341,6 +341,7 @@ module Reline
         io_gate.set_default_key_bindings(config)
       end
 
+      line_editor.print_nomultiline_prompt(prompt)
       line_editor.rerender
 
       begin
