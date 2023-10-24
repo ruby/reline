@@ -238,13 +238,19 @@ class Reline::LineEditor
     @buffer_of_lines[@line_index] = cursor_line
     @line_index += 1
     @byte_pointer = 0
-    unless @in_pasting
+    if @auto_indent_proc && !@in_pasting
       if next_line.empty?
-        process_auto_indent @line_index - 1, cursor_dependent: false
+        (
+          # For compatibility, use this calculation instead of just `process_auto_indent @line_index - 1, cursor_dependent: false`
+          indent1 = @auto_indent_proc.(@buffer_of_lines.take(@line_index - 1).push(''), @line_index - 1, 0, true)
+          indent2 = @auto_indent_proc.(@buffer_of_lines.take(@line_index), @line_index - 1, @buffer_of_lines[@line_index - 1].bytesize, false)
+          indent = indent2 || indent1
+          @buffer_of_lines[@line_index - 1] = ' ' * indent + @buffer_of_lines[@line_index - 1].gsub(/\A */, '')
+        )
         process_auto_indent @line_index, add_newline: true
       else
         process_auto_indent @line_index - 1, cursor_dependent: false
-        process_auto_indent @line_index, add_newline: true # Useless, but for compatibility
+        process_auto_indent @line_index, add_newline: true # Need for compatibility
         process_auto_indent @line_index, cursor_dependent: false
       end
     end
