@@ -210,7 +210,6 @@ class Reline::LineEditor
     @in_pasting = false
     @auto_indent_proc = nil
     @dialogs = []
-    @last_key = nil
     @resized = false
     @cursor_y = 0
     @cache = {}
@@ -395,12 +394,12 @@ class Reline::LineEditor
     end
   end
 
-  def update_dialogs
+  def update_dialogs(key = nil)
     @dialog_initialzed = true
     editor_cursor_x, editor_cursor_y = editor_cursor_position
     @dialogs.each do |dialog|
       dialog.trap_key = nil
-      update_each_dialog(dialog, editor_cursor_x, editor_cursor_y - screen_scroll_top)
+      update_each_dialog(dialog, editor_cursor_x, editor_cursor_y - screen_scroll_top, key)
     end
   end
 
@@ -646,9 +645,9 @@ class Reline::LineEditor
     [x_range, y_range]
   end
 
-  private def update_each_dialog(dialog, cursor_column, cursor_row)
+  private def update_each_dialog(dialog, cursor_column, cursor_row, key = nil)
     dialog.set_cursor_pos(cursor_column, cursor_row)
-    dialog_render_info = dialog.call(@last_key)
+    dialog_render_info = dialog.call(key)
     if dialog_render_info.nil? or dialog_render_info.contents.nil? or dialog_render_info.contents.empty?
       dialog.contents = nil
       dialog.trap_key = nil
@@ -1038,7 +1037,6 @@ class Reline::LineEditor
   end
 
   def input_key(key)
-    @last_key = key
     @config.reset_oneshot_key_bindings
     @dialogs.each do |dialog|
       if key.char.instance_of?(Symbol) and key.char == dialog.name
@@ -1099,7 +1097,7 @@ class Reline::LineEditor
       clear_dialogs
     else
       @just_cursor_moving = old_lines == @buffer_of_lines
-      update_dialogs
+      update_dialogs(key)
       @just_cursor_moving = false
       scroll_into_view
     end
