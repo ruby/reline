@@ -1036,6 +1036,16 @@ class Reline::LineEditor
     end
   end
 
+  def update(key)
+    modified = input_key(key)
+    unless @in_pasting
+      scroll_into_view
+      @just_cursor_moving = !modified
+      update_dialogs(key)
+      @just_cursor_moving = false
+    end
+  end
+
   def input_key(key)
     @config.reset_oneshot_key_bindings
     @dialogs.each do |dialog|
@@ -1096,10 +1106,7 @@ class Reline::LineEditor
     if @in_pasting
       clear_dialogs
     else
-      @just_cursor_moving = old_lines == @buffer_of_lines
-      update_dialogs(key)
-      @just_cursor_moving = false
-      scroll_into_view
+      return old_lines != @buffer_of_lines
     end
   end
 

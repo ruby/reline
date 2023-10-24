@@ -350,10 +350,8 @@ module Reline
           prev_pasting_state = io_gate.in_pasting?
           read_io(config.keyseq_timeout) { |inputs|
             line_editor.set_pasting_state(io_gate.in_pasting?)
-            inputs.each { |c|
-              line_editor.input_key(c)
-              line_editor.rerender
-            }
+            inputs.each { |c| line_editor.update(c) }
+            line_editor.rerender
             if @bracketed_paste_finished
               line_editor.rerender_all
               @bracketed_paste_finished = false
