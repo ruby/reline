@@ -246,6 +246,7 @@ class Reline::LineEditor
         process_auto_indent @line_index, add_newline: true
       else
         process_auto_indent @line_index - 1, cursor_dependent: false
+        process_auto_indent @line_index, add_newline: true # Useless, but for compatibility
         process_auto_indent @line_index, cursor_dependent: false
       end
     end
