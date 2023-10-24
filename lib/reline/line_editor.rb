@@ -402,6 +402,10 @@ class Reline::LineEditor
     end
   end
 
+  def render_full_content
+    @output.puts wrapped_lines.flatten.map { |l| "#{l}\r\n" }.join
+  end
+
   def render_differential
     unless @dialog_initialzed
       update_dialogs
@@ -488,11 +492,11 @@ class Reline::LineEditor
     finished = finished?
     handle_cleared
     if finished
-      @rendered_screen_cache = nil
-      scrolldown = render_differential
-      scroll_down scrolldown
+      clear_dialogs
+      render_differential
+      Reline::IOGate.move_cursor_up @cursor_y
       Reline::IOGate.move_cursor_column 0
-      @cursor_y = 0
+      render_full_content
     elsif !@in_pasting
       render_differential
     end
