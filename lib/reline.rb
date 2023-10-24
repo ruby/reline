@@ -330,7 +330,7 @@ module Reline
       line_editor.prompt_proc = prompt_proc
       line_editor.auto_indent_proc = auto_indent_proc
       line_editor.dig_perfect_match_proc = dig_perfect_match_proc
-      line_editor.pre_input_hook = pre_input_hook
+      pre_input_hook&.call
       @dialog_proc_list.each_pair do |name_sym, d|
         line_editor.add_dialog_proc(name_sym, d.dialog_proc, d.context)
       end

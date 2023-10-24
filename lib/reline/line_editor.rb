@@ -13,7 +13,6 @@ class Reline::LineEditor
   attr_accessor :output_modifier_proc
   attr_accessor :prompt_proc
   attr_accessor :auto_indent_proc
-  attr_accessor :pre_input_hook
   attr_accessor :dig_perfect_match_proc
   attr_writer :output
 
@@ -730,8 +729,6 @@ class Reline::LineEditor
     end
   end
 
-  # TODO: @pre_input_hook&.call
-
   private def modify_lines(before)
     if after = @output_modifier_proc&.call("#{before.join("\n")}\n", complete: finished?)
       after.lines("\n").map { |l| l.chomp('') }
@@ -1326,7 +1323,6 @@ class Reline::LineEditor
   end
 
   def whole_buffer
-    # TODO: @buffer_of_lines.size == 1 and @line.nil?
     whole_lines.join("\n")
   end
 
