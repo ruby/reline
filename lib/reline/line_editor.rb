@@ -270,9 +270,12 @@ class Reline::LineEditor
     end
   end
 
-  private def calculate_nearest_cursor
+  def current_byte_pointer_cursor
+    calculate_width(current_line.byteslice(0, @byte_pointer))
+  end
+
+  private def calculate_nearest_cursor(cursor)
     line_to_calc = current_line
-    cursor = calculate_width(line_to_calc.byteslice(0, @byte_pointer))
     new_cursor_max = calculate_width(line_to_calc)
     new_cursor = 0
     new_byte_pointer = 0
@@ -1168,11 +1171,12 @@ class Reline::LineEditor
 
   def set_current_line(line, byte_pointer = nil)
     @modified = true
+    cursor = current_byte_pointer_cursor
     @buffer_of_lines[@line_index] = line
     if byte_pointer
       @byte_pointer = byte_pointer
     else
-      calculate_nearest_cursor
+      calculate_nearest_cursor(cursor)
     end
     process_auto_indent
   end
@@ -1704,14 +1708,15 @@ class Reline::LineEditor
     end
     return if h_pointer.nil?
     @history_pointer = h_pointer
+    cursor = current_byte_pointer_cursor
     if @is_multiline
       @buffer_of_lines = Reline::HISTORY[@history_pointer].split("\n")
       @buffer_of_lines = [String.new(encoding: @encoding)] if @buffer_of_lines.empty?
       @line_index = line_no
-      calculate_nearest_cursor
+      calculate_nearest_cursor(cursor)
     else
       @buffer_of_lines = [Reline::HISTORY[@history_pointer]]
-      calculate_nearest_cursor
+      calculate_nearest_cursor(cursor)
     end
     arg -= 1
     ed_search_prev_history(key, arg: arg) if arg > 0
@@ -1752,9 +1757,10 @@ class Reline::LineEditor
         @line_index = 0
         @byte_pointer = 0
       else
+        cursor = current_byte_pointer_cursor
         @buffer_of_lines = Reline::HISTORY[@history_pointer].split("\n")
         @line_index = line_no
-        calculate_nearest_cursor
+        calculate_nearest_cursor(cursor)
       end
       @buffer_of_lines = [String.new(encoding: @encoding)] if @buffer_of_lines.empty?
     else
@@ -1771,8 +1777,9 @@ class Reline::LineEditor
 
   private def ed_prev_history(key, arg: 1)
     if @is_multiline and @line_index > 0
+      cursor = current_byte_pointer_cursor
       @line_index -= 1
-      calculate_nearest_cursor
+      calculate_nearest_cursor(cursor)
       return
     end
     if Reline::HISTORY.empty?
@@ -1780,15 +1787,17 @@ class Reline::LineEditor
     end
     if @history_pointer.nil?
       @history_pointer = Reline::HISTORY.size - 1
+      cursor = current_byte_pointer_cursor
       if @is_multiline
         @line_backup_in_history = whole_buffer
         @buffer_of_lines = Reline::HISTORY[@history_pointer].split("\n")
         @buffer_of_lines = [String.new(encoding: @encoding)] if @buffer_of_lines.empty?
         @line_index = @buffer_of_lines.size - 1
-        calculate_nearest_cursor
+        calculate_nearest_cursor(cursor)
       else
         @line_backup_in_history = whole_buffer
         @buffer_of_lines = [Reline::HISTORY[@history_pointer]]
+        calculate_nearest_cursor(cursor)
       end
     elsif @history_pointer.zero?
       return
@@ -1817,8 +1826,9 @@ class Reline::LineEditor
 
   private def ed_next_history(key, arg: 1)
     if @is_multiline and @line_index < (@buffer_of_lines.size - 1)
+      cursor = current_byte_pointer_cursor
       @line_index += 1
-      calculate_nearest_cursor
+      calculate_nearest_cursor(cursor)
       return
     end
     if @history_pointer.nil?
