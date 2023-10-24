@@ -316,7 +316,7 @@ class Reline::LineEditor
   end
 
   def modified_lines
-    with_cache(__method__, whole_lines) { modify_lines(_1) }
+    with_cache(__method__, whole_lines) { |l| modify_lines(l) }
   end
 
   def prompt_list
@@ -414,7 +414,9 @@ class Reline::LineEditor
     editor_cursor_x, editor_cursor_y = editor_cursor_position
 
     rendered_lines = @rendered_screen_cache || []
-    new_lines = wrapped_lines.flatten[screen_scroll_top, screen_height].map { [[0, Reline::Unicode.calculate_width(_1, true), _1]]}
+    new_lines = wrapped_lines.flatten[screen_scroll_top, screen_height].map do |l|
+      [[0, Reline::Unicode.calculate_width(l, true), l]]
+    end
     if @menu_info
       @menu_info.list.sort!.each do |item|
         new_lines << [[0, Reline::Unicode.calculate_width(item), item]]
