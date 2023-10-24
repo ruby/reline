@@ -55,6 +55,8 @@ class Reline::LineEditor
   def initialize(config, encoding)
     @config = config
     @completion_append_character = ''
+    @cursor_base_y = 0
+    @screen_size = Reline::IOGate.get_screen_size
     reset_variables(encoding: encoding)
   end
 
@@ -284,7 +286,7 @@ class Reline::LineEditor
     new_cursor = 0
     new_byte_pointer = 0
     height = 1
-    max_width = @screen_size.last
+    max_width = screen_width
     if @config.editing_mode_is?(:vi_command)
       last_byte_size = Reline::Unicode.get_prev_mbchar_size(line_to_calc, line_to_calc.bytesize)
       if last_byte_size > 0
@@ -701,7 +703,7 @@ class Reline::LineEditor
     upper_space = upper_space_height
     dialog.column = dialog_render_info.pos.x
     dialog.width += @block_elem_width if scrollbar_pos
-    diff = (dialog.column + dialog.width) - (@screen_size.last)
+    diff = (dialog.column + dialog.width) - screen_width
     if diff > 0
       dialog.column -= diff
     end
@@ -714,7 +716,7 @@ class Reline::LineEditor
     end
     if dialog.column < 0
       dialog.column = 0
-      dialog.width = @screen_size.last
+      dialog.width = screen_width
     end
     face = Reline::Face[dialog_render_info.face || :default]
     scrollbar_sgr = face[:scrollbar]
@@ -1064,7 +1066,7 @@ class Reline::LineEditor
     end
     if key.char.nil?
       if @first_char
-        set_current_line('', 0)
+        @eof = true
       end
       finish
       return
