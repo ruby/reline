@@ -571,15 +571,16 @@ class Reline::LineEditor
     end
 
     def screen_width
-      @line_editor.instance_variable_get(:@screen_size).last
+      @line_editor.screen_width
     end
 
     def screen_height
-      @line_editor.instance_variable_get(:@screen_size).first
+      @line_editor.screen_height
     end
 
     def preferred_dialog_height
-      [cursor_pos.y - @line_editor.screen_scroll_top, @line_editor.rest_height, (screen_height + 6) / 5].max
+      _editor_cursor_x, editor_cursor_y = @line_editor.editor_cursor_position
+      [editor_cursor_y - @line_editor.screen_scroll_top, @line_editor.rest_height, (screen_height + 6) / 5].max
     end
 
     def completion_journey_data
