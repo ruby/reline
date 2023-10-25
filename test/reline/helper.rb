@@ -29,13 +29,19 @@ module Reline
       else
         encoding = Encoding::UTF_8
       end
+      @original_get_screen_size = IOGate.method(:get_screen_size)
+      IOGate.singleton_class.remove_method(:get_screen_size)
+      def IOGate.get_screen_size
+        [24, 80]
+      end
       Reline::GeneralIO.reset(encoding: encoding) unless ansi
       core.config.instance_variable_set(:@test_mode, true)
       core.config.reset
-      Reline.line_editor.instance_variable_set(:@screen_size, [24, 80])
     end
 
     def test_reset
+      IOGate.singleton_class.remove_method(:get_screen_size)
+      IOGate.define_singleton_method(:get_screen_size, @original_get_screen_size)
       remove_const('IOGate')
       const_set('IOGate', @original_iogate)
       Reline::GeneralIO.reset
