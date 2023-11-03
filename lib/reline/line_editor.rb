@@ -803,7 +803,7 @@ class Reline::LineEditor
       end
       contents = contents[dialog.scroll_top, height]
     end
-    if dialog_render_info[:scrollbar] and dialog_render_info.contents.size > height
+    if dialog_render_info.scrollbar and dialog_render_info.contents.size > height
       bar_max_height = height * 2
       moving_distance = (dialog_render_info.contents.size - height) * 2
       position_ratio = dialog.scroll_top.zero? ? 0.0 : ((dialog.scroll_top * 2).to_f / moving_distance)
