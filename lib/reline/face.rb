@@ -41,7 +41,7 @@ class Reline::Face
       bright_white: 107,
     },
     style: {
-      default: 0,
+      reset: 0,
       bold: 1,
       faint: 2,
       italicized: 3,

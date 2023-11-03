@@ -147,6 +147,17 @@ class Reline::Face::Test < Reline::TestCase
       )
     end
 
+    def test_format_to_sgr_with_reset
+      assert_equal(
+        RESET_SGR,
+        @config.send(:format_to_sgr, style: :reset)
+      )
+      assert_equal(
+        "#{RESET_SGR}\e[37;0;41m",
+        @config.send(:format_to_sgr, foreground: :white, style: :reset, background: :red)
+      )
+    end
+
     def test_format_to_sgr_with_single_style
       assert_equal(
         "#{RESET_SGR}\e[37;41;1m",
