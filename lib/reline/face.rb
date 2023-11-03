@@ -105,7 +105,11 @@ class Reline::Face
             sgr_rgb(key, value)
           end
         when :style
-          [ value ].flatten.map { |style_name| SGR_PARAMETERS[:style][style_name] }
+          [ value ].flatten.map do |style_name|
+            SGR_PARAMETERS[:style][style_name]
+          end.then do |sgr_parameters|
+            sgr_parameters.include?(nil) ? nil : sgr_parameters
+          end
         end.then do |rendition_expression|
           unless rendition_expression
             raise ArgumentError, "invalid SGR parameter: #{value.inspect}"

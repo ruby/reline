@@ -119,6 +119,14 @@ class Reline::Face::Test < Reline::TestCase
       end
     end
 
+    def test_invalid_style_name
+      assert_raise ArgumentError do
+        Reline::Face.config(:invalid_config) do |face|
+          face.define :default, style: :invalid_name
+        end
+      end
+    end
+
     def test_private_constants
       [:SGR_PARAMETER, :Config, :CONFIGS].each do |name|
         assert_equal false, Reline::Face.constants.include?(name)

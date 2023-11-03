@@ -603,9 +603,9 @@ else
 end
 
 Reline::Face.config(:default) do |face|
-  face.define :default, style: :default
-  face.define :enhanced, style: :default
-  face.define :scrollbar, style: :default
+  face.define :default, style: :reset
+  face.define :enhanced, style: :reset
+  face.define :scrollbar, style: :reset
 end
 
 Reline::Face.config(:completion_dialog) do |face|
