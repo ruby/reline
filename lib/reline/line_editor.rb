@@ -385,9 +385,11 @@ class Reline::LineEditor
         Reline::IOGate.move_cursor_column base_x
         @output.write "\e[0m#{' ' * width}"
       else
-        x, w, content = new_items[level]
-        content = Reline::Unicode.take_range(content, base_x - x, width) unless x == base_x && w == width
-        Reline::IOGate.move_cursor_column base_x
+        x, _w, content = new_items[level]
+        cover_begin = base_x != 0 && new_levels[base_x - 1] == level
+        cover_end = new_levels[base_x + width] == level
+        content, pos = Reline::Unicode.take_mbchar_range(content, base_x - x, width, cover_begin: cover_begin, cover_end: cover_end, padding: true)
+        Reline::IOGate.move_cursor_column x + pos
         @output.write "\e[0m#{content}\e[0m"
       end
       base_x += width
@@ -688,13 +690,6 @@ class Reline::LineEditor
 
   DIALOG_DEFAULT_HEIGHT = 20
 
-  private def padding_space_with_escape_sequences(str, width)
-    padding_width = width - calculate_width(str, true)
-    # padding_width should be only positive value. But macOS and Alacritty returns negative value.
-    padding_width = 0 if padding_width < 0
-    str + (' ' * padding_width)
-  end
-
   private def dialog_range(dialog, dialog_y)
     x_range = dialog.column...dialog.column + dialog.width
     y_range = dialog_y + dialog.vertical_offset...dialog_y + dialog.vertical_offset + dialog.contents.size
@@ -768,7 +763,7 @@ class Reline::LineEditor
     dialog.contents = contents.map.with_index do |item, i|
       line_sgr = i == pointer ? enhanced_sgr : default_sgr
       str_width = dialog.width - (scrollbar_pos.nil? ? 0 : @block_elem_width)
-      str = padding_space_with_escape_sequences(Reline::Unicode.take_range(item, 0, str_width), str_width)
+      str, = Reline::Unicode.take_mbchar_range(item, 0, str_width, padding: true)
       colored_content = "#{line_sgr}#{str}"
       if scrollbar_pos
         if scrollbar_pos <= (i * 2) and (i * 2 + 1) < (scrollbar_pos + bar_height)
