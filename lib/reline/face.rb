@@ -69,12 +69,8 @@ class Reline::Face
 
     attr_reader :definition
 
-    def define(name, foreground: nil, background: nil, style: nil)
-      values = {}
-      values[:foreground] = foreground if foreground
-      values[:background] = background if background
-      values[:style] = style if style
-      values[:escape_sequence] = format_to_sgr(values).freeze
+    def define(name, **values)
+      values[:escape_sequence] = format_to_sgr(values.to_a).freeze
       @definition[name] = values
     end
 
@@ -94,8 +90,9 @@ class Reline::Face
       end + value[1, 6].scan(/../).map(&:hex).join(";")
     end
 
-    def format_to_sgr(values)
-      sgr = "\e[" + values.map do |key, value|
+    def format_to_sgr(ordered_values)
+      sgr = "\e[" + ordered_values.map do |key_value|
+        key, value = key_value
         case key
         when :foreground, :background
           case value

@@ -139,6 +139,17 @@ class Reline::Face::Test < Reline::TestCase
       @config = Reline::Face.const_get(:Config).new(:my_config) { }
     end
 
+    def test_the_order_of_define_values_should_be_preserved
+      any_instance_of(Reline::Face.const_get(:Config)) do |config|
+        mock(config).format_to_sgr(
+          [[:foreground, :blue], [:style, [:bold, :italicized]], [:background, :red]]
+        )
+      end
+      Reline::Face.config(:my_config) do |face|
+        face.define :default, foreground: :blue, style: [:bold, :italicized], background: :red
+      end
+    end
+
     def test_rgb?
       assert_equal true, @config.send(:rgb_expression?, "#FFFFFF")
     end
