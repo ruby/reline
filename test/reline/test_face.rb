@@ -76,7 +76,6 @@ class Reline::Face::Test < Reline::TestCase
     def test_not_respond_to_another_label
       assert_equal false, @face.respond_to?(:another_label)
     end
-
   end
 
   class WithoutSetupTest < self
