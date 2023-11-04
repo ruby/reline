@@ -131,7 +131,7 @@ class Reline::Face::Test < Reline::TestCase
         assert_equal false, Reline::Face.constants.include?(name)
       end
     end
-   end
+  end
 
   class ConfigTest < self
     def setup
