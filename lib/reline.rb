@@ -602,16 +602,6 @@ else
   io
 end
 
-Reline::Face.config(:default) do |face|
-  face.define :default, style: :reset
-  face.define :enhanced, style: :reset
-  face.define :scrollbar, style: :reset
-end
-
-Reline::Face.config(:completion_dialog) do |face|
-  face.define :default, foreground: :white, background: :cyan
-  face.define :enhanced, foreground: :white, background: :magenta
-  face.define :scrollbar, foreground: :white, background: :cyan
-end
+Reline::Face.load_initial_config
 
 Reline::HISTORY = Reline::History.new(Reline.core.config)

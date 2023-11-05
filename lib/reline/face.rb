@@ -137,5 +137,21 @@ class Reline::Face
     @configs.transform_values(&:definition)
   end
 
-end
+  def self.load_initial_config
+    config(:default) do |conf|
+      conf.define :default, style: :reset
+      conf.define :enhanced, style: :reset
+      conf.define :scrollbar, style: :reset
+    end
+    config(:completion_dialog) do |conf|
+      conf.define :default, foreground: :white, background: :cyan
+      conf.define :enhanced, foreground: :white, background: :magenta
+      conf.define :scrollbar, foreground: :white, background: :cyan
+    end
+  end
 
+  def self.reset_to_initial_config
+    @configs = {}
+    load_initial_config
+  end
+end

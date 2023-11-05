@@ -5,6 +5,10 @@ require_relative 'helper'
 class Reline::Face::Test < Reline::TestCase
   RESET_SGR = "\e[0m"
 
+  def teardown
+    Reline::Face.reset_to_initial_config
+  end
+
   class WithInsufficientSetupTest < self
     def setup
       Reline::Face.config(:my_insufficient_config) do |face|
@@ -41,6 +45,15 @@ class Reline::Face::Test < Reline::TestCase
         face.define :another_label, foreground: :red
       end
       @face = Reline::Face[:my_config]
+    end
+
+    def test_now_there_are_four_configs
+      assert_equal %i(default completion_dialog my_config another_config), Reline::Face.configs.keys
+    end
+
+    def test_resetting_config_discards_user_defined_configs
+      Reline::Face.reset_to_initial_config
+      assert_equal %i(default completion_dialog), Reline::Face.configs.keys
     end
 
     def test_my_configs
