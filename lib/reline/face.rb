@@ -63,7 +63,7 @@ class Reline::Face
       @definition = {}
       block.call(self)
       ESSENTIAL_DEFINE_NAMES.each do |name|
-        @definition[name] ||= { style: :default, escape_sequence: RESET_SGR }
+        @definition[name] ||= { style: :reset, escape_sequence: RESET_SGR }
       end
     end
 

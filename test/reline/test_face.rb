@@ -26,9 +26,9 @@ class Reline::Face::Test < Reline::TestCase
       my_configs = Reline::Face.configs[:my_insufficient_config]
       assert_equal(
         {
-          default: { style: :default, escape_sequence: RESET_SGR },
-          enhanced: { style: :default, escape_sequence: RESET_SGR },
-          scrollbar: { style: :default, escape_sequence: RESET_SGR }
+          default: { style: :reset, escape_sequence: RESET_SGR },
+          enhanced: { style: :reset, escape_sequence: RESET_SGR },
+          scrollbar: { style: :reset, escape_sequence: RESET_SGR }
         },
         my_configs
       )
@@ -70,7 +70,7 @@ class Reline::Face::Test < Reline::TestCase
             escape_sequence: "\e[0m\e[38;2;255;16;32;40;1;4m"
           },
           scrollbar: {
-            style: :default,
+            style: :reset,
             escape_sequence: "\e[0m"
           }
         },
