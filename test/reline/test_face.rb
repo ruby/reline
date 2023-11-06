@@ -6,7 +6,7 @@ class Reline::Face::Test < Reline::TestCase
   RESET_SGR = "\e[0m"
 
   def teardown
-    Reline::Face.reset_to_initial_config
+    Reline::Face.reset_to_initial_configs
   end
 
   class WithInsufficientSetupTest < self
@@ -52,7 +52,7 @@ class Reline::Face::Test < Reline::TestCase
     end
 
     def test_resetting_config_discards_user_defined_configs
-      Reline::Face.reset_to_initial_config
+      Reline::Face.reset_to_initial_configs
       assert_equal %i(default completion_dialog), Reline::Face.configs.keys
     end
 

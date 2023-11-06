@@ -137,7 +137,7 @@ class Reline::Face
     @configs.transform_values(&:definition)
   end
 
-  def self.load_initial_config
+  def self.load_initial_configs
     config(:default) do |conf|
       conf.define :default, style: :reset
       conf.define :enhanced, style: :reset
@@ -150,8 +150,8 @@ class Reline::Face
     end
   end
 
-  def self.reset_to_initial_config
+  def self.reset_to_initial_configs
     @configs = {}
-    load_initial_config
+    load_initial_configs
   end
 end

@@ -602,6 +602,6 @@ else
   io
 end
 
-Reline::Face.load_initial_config
+Reline::Face.load_initial_configs
 
 Reline::HISTORY = Reline::History.new(Reline.core.config)
