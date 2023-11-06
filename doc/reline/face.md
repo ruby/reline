@@ -19,7 +19,7 @@ end
 If you provide the above code to an IRB session in some way, you can apply the configuration.
 It's generally done by writing it in `.irbrc`.
 
-Regarding `.irbrc`, please refer to the following link: [[https://docs.ruby-lang.org/en/master/IRB.html]]
+Regarding `.irbrc`, please refer to the following link: [https://docs.ruby-lang.org/en/master/IRB.html](https://docs.ruby-lang.org/en/master/IRB.html)
 
 ## Available parameters
 
