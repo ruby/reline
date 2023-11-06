@@ -13,3 +13,5 @@ gem 'bundler'
 gem 'rake'
 gem 'test-unit'
 gem 'test-unit-rr'
+
+gem 'racc'
