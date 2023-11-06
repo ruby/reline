@@ -84,7 +84,7 @@ class Reline::Face
       return nil unless rgb_expression?(value)
       case key
       when :foreground
-       "38;2;"
+        "38;2;"
       when :background
         "48;2;"
       end + value[1, 6].scan(/../).map(&:hex).join(";")
