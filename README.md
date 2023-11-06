@@ -55,6 +55,13 @@ end
 
 See also: [test/reline/yamatanooroti/multiline_repl](https://github.com/ruby/reline/blob/master/test/reline/yamatanooroti/multiline_repl)
 
+## Documentation
+
+### Reline::Face
+
+You can modify the text color and text decorations in your terminal emulator.
+See [doc/reline/face.md](./doc/reline/face.md)
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/ruby/reline.
