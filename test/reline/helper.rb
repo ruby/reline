@@ -4,7 +4,15 @@ ENV['TERM'] = 'xterm' # for some CI environments
 
 require 'reline'
 require 'test/unit'
-require 'test/unit/rr'
+
+begin
+  unless ENV['TEST_UNIT_RR'] == 'no'
+    require 'test/unit/rr'
+    ENV['TEST_UNIT_RR'] = 'yes'
+  end
+rescue LoadError
+  ENV['TEST_UNIT_RR'] = 'no'
+end
 
 begin
   require 'rbconfig'

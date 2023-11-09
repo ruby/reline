@@ -161,6 +161,7 @@ class Reline::Face::Test < Reline::TestCase
     end
 
     def test_define_method_proxies_the_order_of_arguments
+      pend "skip because test-unit-rr could not be loaded" if ENV['TEST_UNIT_RR'] == 'no'
       mock(@config).format_to_sgr(
         [[:foreground, :blue], [:style, [:bold, :italicized]], [:background, :red]]
       )
