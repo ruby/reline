@@ -160,7 +160,15 @@ class Reline::Face::Test < Reline::TestCase
       assert_equal false, @config.send(:rgb_expression?, "#FFFFF")
     end
 
-    def test_format_to_sgr_preserves_order
+    def test_define_method_proxies_the_order_of_arguments
+      pend "skip because test-unit-rr could not be loaded" if ENV['TEST_UNIT_RR'] == 'no'
+      mock(@config).format_to_sgr(
+        [[:foreground, :blue], [:style, [:bold, :italicized]], [:background, :red]]
+      )
+      @config.define :default, foreground: :blue, style: [:bold, :italicized], background: :red
+    end
+
+    def test_format_to_sgr_preserves_order_of_values
       assert_equal(
         "#{RESET_SGR}\e[37;41;1;3m",
         @config.send(:format_to_sgr, foreground: :white, background: :red, style: [:bold, :italicized])
