@@ -82,12 +82,38 @@ class Reline::Face
 
     def sgr_rgb(key, value)
       return nil unless rgb_expression?(value)
+      if ENV['COLORTERM'] == 'truecolor'
+        sgr_rgb_truecolor(key, value)
+      else
+        sgr_rgb_256color(key, value)
+      end
+    end
+
+    def sgr_rgb_truecolor(key, value)
       case key
       when :foreground
         "38;2;"
       when :background
         "48;2;"
       end + value[1, 6].scan(/../).map(&:hex).join(";")
+    end
+
+    def sgr_rgb_256color(key, value)
+      # 256 colors are
+      # 0..15: standard colors, hight intensity colors
+      # 16..232: 216 colors (R, G, B each 6 steps)
+      # 233..255: grayscale colors (24 steps)
+      # This methods converts rgb_expression to 216 colors
+      rgb = value[1, 6].scan(/../).map(&:hex)
+      # Color steps are [0, 95, 135, 175, 215, 255]
+      r, g, b = rgb.map { |v| v <= 95 ? v / 48 : (v - 35) / 40 }
+      color = (16 + 36 * r + 6 * g + b)
+      case key
+      when :foreground
+        "38;5;#{color}"
+      when :background
+        "48;5;#{color}"
+      end
     end
 
     def format_to_sgr(ordered_values)
