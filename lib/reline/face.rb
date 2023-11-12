@@ -74,6 +74,13 @@ class Reline::Face
       @definition[name] = values
     end
 
+    def reconfigure
+      @definition.each_value do |values|
+        values.delete(:escape_sequence)
+        values[:escape_sequence] = format_to_sgr(values.to_a).freeze
+      end
+    end
+
     def [](name)
       @definition.dig(name, :escape_sequence) or raise ArgumentError, "unknown face: #{name}"
     end
@@ -82,7 +89,7 @@ class Reline::Face
 
     def sgr_rgb(key, value)
       return nil unless rgb_expression?(value)
-      if ENV['COLORTERM'] == 'truecolor'
+      if Reline::Face.truecolor?
         sgr_rgb_truecolor(key, value)
       else
         sgr_rgb_256color(key, value)
@@ -149,6 +156,15 @@ class Reline::Face
   end
 
   private_constant :SGR_PARAMETERS, :Config
+
+  def self.truecolor?
+    @force_truecolor || %w[truecolor 24bit].include?(ENV['COLORTERM'])
+  end
+
+  def self.force_truecolor
+    @force_truecolor = true
+    @configs&.each_value(&:reconfigure)
+  end
 
   def self.[](name)
     @configs[name]
