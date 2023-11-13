@@ -50,7 +50,7 @@ class Reline::Test < Reline::TestCase
   def test_basic_word_break_characters
     basic_word_break_characters = Reline.basic_word_break_characters
 
-    assert_equal(" \t\n`><=;|&{(", Reline.basic_word_break_characters)
+    assert_equal(" \t\n`><=;|&{([", Reline.basic_word_break_characters)
 
     Reline.basic_word_break_characters = "[".encode(Encoding::ASCII)
     assert_equal("[", Reline.basic_word_break_characters)
@@ -62,7 +62,7 @@ class Reline::Test < Reline::TestCase
   def test_completer_word_break_characters
     completer_word_break_characters = Reline.completer_word_break_characters
 
-    assert_equal(" \t\n`><=;|&{(", Reline.completer_word_break_characters)
+    assert_equal(" \t\n`><=;|&{([", Reline.completer_word_break_characters)
 
     Reline.completer_word_break_characters = "[".encode(Encoding::ASCII)
     assert_equal("[", Reline.completer_word_break_characters)

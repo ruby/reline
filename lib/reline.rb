@@ -553,8 +553,8 @@ module Reline
       core.key_stroke = Reline::KeyStroke.new(core.config)
       core.line_editor = Reline::LineEditor.new(core.config, core.encoding)
 
-      core.basic_word_break_characters = " \t\n`><=;|&{("
-      core.completer_word_break_characters = " \t\n`><=;|&{("
+      core.basic_word_break_characters = " \t\n`><=;|&{(["
+      core.completer_word_break_characters = " \t\n`><=;|&{(["
       core.basic_quote_characters = '"\''
       core.completer_quote_characters = '"\''
       core.filename_quote_characters = ""
