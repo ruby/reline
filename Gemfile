@@ -12,5 +12,3 @@ end
 gem 'bundler'
 gem 'rake'
 gem 'test-unit'
-
-gem 'racc'
