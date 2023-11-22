@@ -410,8 +410,29 @@ class Reline::LineEditor
     end
   end
 
+  def clear_rendered_lines
+    Reline::IOGate.move_cursor_up @cursor_y
+    Reline::IOGate.move_cursor_column 0
+
+    num_lines = @rendered_screen_cache&.size
+    return unless num_lines && num_lines >= 1
+
+    Reline::IOGate.move_cursor_down num_lines - 1
+    (num_lines - 1).times do
+      Reline::IOGate.erase_after_cursor
+      Reline::IOGate.move_cursor_up 1
+    end
+    Reline::IOGate.erase_after_cursor
+    @rendered_screen_cache = nil
+  end
+
   def render_full_content
-    @output.puts wrapped_lines.flatten.map { |l| "#{l}\r\n" }.join
+    lines = @buffer_of_lines.size.times.map do |i|
+      line = prompt_list[i] + modified_lines[i]
+      wrapped_lines, = split_by_width(line, screen_width)
+      wrapped_lines.last.empty? ? "#{line} " : line
+    end
+    @output.puts lines.map { |l| "#{l}\r\n" }.join
   end
 
   def print_nomultiline_prompt(prompt)
@@ -510,10 +531,7 @@ class Reline::LineEditor
     finished = finished?
     handle_cleared
     if finished
-      clear_dialogs
-      render_differential
-      Reline::IOGate.move_cursor_up @cursor_y
-      Reline::IOGate.move_cursor_column 0
+      clear_rendered_lines
       render_full_content
     elsif !@in_pasting
       render_differential
