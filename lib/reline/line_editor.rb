@@ -324,7 +324,9 @@ class Reline::LineEditor
   end
 
   def modified_lines
-    with_cache(__method__, whole_lines) { |l| modify_lines(l) }
+    with_cache(__method__, [whole_lines, finished?]) do |whole, complete|
+      modify_lines(whole, complete)
+    end
   end
 
   def prompt_list
@@ -770,8 +772,8 @@ class Reline::LineEditor
     end
   end
 
-  private def modify_lines(before)
-    if after = @output_modifier_proc&.call("#{before.join("\n")}\n", complete: finished?)
+  private def modify_lines(before, complete)
+    if after = @output_modifier_proc&.call("#{before.join("\n")}\n", complete: complete)
       after.lines("\n").map { |l| l.chomp('') }
     else
       before

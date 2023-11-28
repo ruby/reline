@@ -2013,7 +2013,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     $VERBOSE = verbose
     @line_editor.output_modifier_proc = proc { |output| Reline::Unicode.escape_for_print(output) }
     input_keys("abcdef\n")
-    result = @line_editor.__send__(:modify_lines, @line_editor.whole_lines)
+    result = @line_editor.__send__(:modify_lines, @line_editor.whole_lines, @line_editor.finished?)
     $/ = nil
     assert_equal(['abcdef'], result)
   ensure
