@@ -318,13 +318,13 @@ class Reline::LineEditor
   def with_cache(key, *deps)
     cached_deps, value = @cache[key]
     if cached_deps != deps
-      @cache[key] = [deps, value = yield(*deps)]
+      @cache[key] = [deps, value = yield(*deps, cached_deps, value)]
     end
     value
   end
 
   def modified_lines
-    with_cache(__method__, [whole_lines, finished?]) do |whole, complete|
+    with_cache(__method__, whole_lines, finished?) do |whole, complete|
       modify_lines(whole, complete)
     end
   end
@@ -348,9 +348,19 @@ class Reline::LineEditor
   end
 
   def wrapped_lines
-    with_cache(__method__, @buffer_of_lines.size, modified_lines, prompt_list, screen_width) do |n, lines, prompts, width|
+    with_cache(__method__, @buffer_of_lines.size, modified_lines, prompt_list, screen_width) do |n, lines, prompts, width, prev_cache_key, cached_value|
+      prev_n, prev_lines, prev_prompts, prev_width = prev_cache_key
+      cached_wraps = {}
+      if prev_width == width
+        prev_n.times do |i|
+          cached_wraps[[prev_prompts[i], prev_lines[i]]] = cached_value[i]
+        end
+      end
+
       n.times.map do |i|
-        split_by_width("#{prompts[i]}#{lines[i]}", width).first.compact
+        prompt = prompts[i]
+        line = lines[i]
+        cached_wraps[[prompt, line]] || split_by_width("#{prompt}#{line}", width).first.compact
       end
     end
   end
