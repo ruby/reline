@@ -2013,10 +2013,6 @@ class Reline::LineEditor
 
   private def em_delete(key)
     if current_line.empty? and (not @is_multiline or @buffer_of_lines.size == 1) and key == "\C-d".ord
-      if @buffer_of_lines.size > 1
-        # scroll_down(@highest_in_all - @first_line_started_from)
-      end
-      Reline::IOGate.move_cursor_column(0)
       @eof = true
       finish
     elsif @byte_pointer < current_line.bytesize
@@ -2349,10 +2345,6 @@ class Reline::LineEditor
   private def vi_list_or_eof(key)
     if (not @is_multiline and current_line.empty?) or (@is_multiline and current_line.empty? and @buffer_of_lines.size == 1)
       set_current_line('', 0)
-      if @buffer_of_lines.size > 1
-        # scroll_down(@highest_in_all - @first_line_started_from)
-      end
-      Reline::IOGate.move_cursor_column(0)
       @eof = true
       finish
     else
