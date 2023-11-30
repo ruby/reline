@@ -159,7 +159,7 @@ class Reline::LineEditor
     @old_trap = Signal.trap('INT') {
       clear_dialogs
       scrolldown = render_differential
-      Reline::IOGate.move_cursor_down scrolldown
+      Reline::IOGate.scroll_down scrolldown
       Reline::IOGate.move_cursor_column 0
       @rendered_screen_cache = nil
       case @old_trap
