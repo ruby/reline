@@ -278,8 +278,12 @@ module Reline
           Reline::HISTORY << whole_buffer
         end
 
-        line_editor.reset_line if line_editor.whole_buffer.nil?
-        whole_buffer
+        if line_editor.eof?
+          line_editor.reset_line
+          nil
+        else
+          whole_buffer
+        end
       end
     end
 
@@ -326,7 +330,7 @@ module Reline
       line_editor.prompt_proc = prompt_proc
       line_editor.auto_indent_proc = auto_indent_proc
       line_editor.dig_perfect_match_proc = dig_perfect_match_proc
-      line_editor.pre_input_hook = pre_input_hook
+      pre_input_hook&.call
       @dialog_proc_list.each_pair do |name_sym, d|
         line_editor.add_dialog_proc(name_sym, d.dialog_proc, d.context)
       end
@@ -337,6 +341,7 @@ module Reline
         io_gate.set_default_key_bindings(config)
       end
 
+      line_editor.print_nomultiline_prompt(prompt)
       line_editor.rerender
 
       begin
@@ -346,10 +351,8 @@ module Reline
           prev_pasting_state = io_gate.in_pasting?
           read_io(config.keyseq_timeout) { |inputs|
             line_editor.set_pasting_state(io_gate.in_pasting?)
-            inputs.each { |c|
-              line_editor.input_key(c)
-              line_editor.rerender
-            }
+            inputs.each { |c| line_editor.update(c) }
+            line_editor.rerender
             if @bracketed_paste_finished
               line_editor.rerender_all
               @bracketed_paste_finished = false
