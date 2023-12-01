@@ -464,6 +464,9 @@ begin
       write("def a\n  8\nend\ndef b\n  3\nend\C-s8")
       close
       assert_screen(<<~EOC)
+        prompt>   8
+        prompt> end
+        => :a
         (i-search)`8'def a
         (i-search)`8'  8
         (i-search)`8'end
@@ -475,6 +478,9 @@ begin
       write("def a\n  8\nend\ndef b\n  3\nend\C-r8\C-j")
       close
       assert_screen(<<~EOC)
+        prompt>   8
+        prompt> end
+        => :a
         prompt> def a
         prompt>   8
         prompt> end
@@ -1026,8 +1032,8 @@ begin
       iterate_over_face_configs do |config_name, config_file|
         start_terminal(10, 50, %W{ruby -I#{@pwd}/lib -r#{config_file.path} #{@pwd}/test/reline/yamatanooroti/multiline_repl --autocomplete}, startup_message: 'Multiline REPL.')
         write("\n" * 10)
-        write("if 1\n  sSt\nend")
-        write("\C-p\C-h\C-e")
+        write("if 1\n  sSts\nend")
+        write("\C-p\C-h\C-e\C-h")
         close
         assert_screen(<<~'EOC')
           prompt>
@@ -1054,8 +1060,8 @@ begin
           prompt>   2
           prompt>   3#
           prompt>   4
-          prompt>   5
-          prompt>   6 Ruby is...
+          prompt>   5 Ruby is...
+          prompt>   6 A dynamic, open source programming
         EOC
       end
     end
