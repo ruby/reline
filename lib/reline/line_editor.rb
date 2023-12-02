@@ -145,7 +145,6 @@ class Reline::LineEditor
   def resize
     return unless @resized
 
-    Reline::IOGate.hide_cursor
     @screen_size = Reline::IOGate.get_screen_size
     @resized = false
     scroll_into_view
@@ -154,18 +153,15 @@ class Reline::LineEditor
     @cursor_y = 0
     @rendered_screen_cache = nil
     render_differential
-    Reline::IOGate.show_cursor
   end
 
   def set_signal_handlers
     @old_trap = Signal.trap('INT') {
-      Reline::IOGate.hide_cursor
       clear_dialogs
       scrolldown = render_differential
       Reline::IOGate.scroll_down scrolldown
       Reline::IOGate.move_cursor_column 0
       @rendered_screen_cache = nil
-      Reline::IOGate.show_cursor
       case @old_trap
       when 'DEFAULT', 'SYSTEM_DEFAULT'
         raise Interrupt
@@ -488,23 +484,27 @@ class Reline::LineEditor
       end
     end
 
-    num_lines = [[new_lines.size, rendered_lines.size].max, screen_height].min
-    scroll_down(num_lines - 1 - @cursor_y) if (num_lines - 1 - @cursor_y) > 0
-    @cursor_y = num_lines - 1
-    num_lines.times do |i|
-      rendered_line = rendered_lines[i] || []
-      line_to_render = new_lines[i] || []
-      next if rendered_line == line_to_render
+    if new_lines != rendered_lines
+      Reline::IOGate.hide_cursor
+      num_lines = [[new_lines.size, rendered_lines.size].max, screen_height].min
+      scroll_down(num_lines - 1 - @cursor_y) if (num_lines - 1 - @cursor_y) > 0
+      @cursor_y = num_lines - 1
+      num_lines.times do |i|
+        rendered_line = rendered_lines[i] || []
+        line_to_render = new_lines[i] || []
+        next if rendered_line == line_to_render
 
-      Reline::IOGate.move_cursor_down i - @cursor_y
-      @cursor_y = i
-      unless rendered_lines[i]
-        Reline::IOGate.move_cursor_column 0
-        Reline::IOGate.erase_after_cursor
+        Reline::IOGate.move_cursor_down i - @cursor_y
+        @cursor_y = i
+        unless rendered_lines[i]
+          Reline::IOGate.move_cursor_column 0
+          Reline::IOGate.erase_after_cursor
+        end
+        render_line_differential(rendered_line, line_to_render)
       end
-      render_line_differential(rendered_line, line_to_render)
+      @rendered_screen_cache = new_lines
+      Reline::IOGate.show_cursor
     end
-    @rendered_screen_cache = new_lines
     y = editor_cursor_y - screen_scroll_top
     Reline::IOGate.move_cursor_column editor_cursor_x
     Reline::IOGate.move_cursor_down y - @cursor_y
@@ -525,11 +525,9 @@ class Reline::LineEditor
   end
 
   def rerender_all
-    Reline::IOGate.hide_cursor
     process_insert(force: true)
     handle_cleared
     render_differential unless @in_pasting
-    Reline::IOGate.show_cursor
   end
 
   def handle_cleared
@@ -546,7 +544,6 @@ class Reline::LineEditor
   end
 
   def rerender
-    Reline::IOGate.hide_cursor
     finished = finished?
     handle_cleared
     if finished
@@ -555,7 +552,6 @@ class Reline::LineEditor
     elsif !@in_pasting
       render_differential
     end
-    Reline::IOGate.show_cursor
   end
 
   class DialogProcScope
