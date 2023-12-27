@@ -219,25 +219,23 @@ module Reline
 
     Reline::DEFAULT_DIALOG_PROC_AUTOCOMPLETE = ->() {
       # autocomplete
-      return nil unless config.autocompletion
-      if just_cursor_moving and completion_journey_data.nil?
+      return unless config.autocompletion
+
+      journey_data = completion_journey_data
+      if just_cursor_moving and journey_data.nil?
         # Auto complete starts only when edited
-        return nil
+        return
       end
-      pre, target, post = retrieve_completion_block(true)
-      if target.nil? or target.empty? or (completion_journey_data&.pointer == -1 and target.size <= 3)
-        return nil
-      end
-      if completion_journey_data and completion_journey_data.list
-        result = completion_journey_data.list.dup
-        result.shift
-        pointer = completion_journey_data.pointer - 1
+      if journey_data
+        result = journey_data.list.drop(1)
+        pointer = journey_data.pointer - 1
+        target = journey_data.list[journey_data.pointer]
       else
+        pre, target, post = retrieve_completion_block(true)
+        return if target.nil? || target.empty?
+
         result = call_completion_proc_with_checking_args(pre, target, post)
-        pointer = nil
-      end
-      if result and result.size == 1 and result[0] == target and pointer != 0
-        result = nil
+        return if result and result.size == 1 and result[0] == target
       end
       target_width = Reline::Unicode.calculate_width(target)
       x = cursor_pos.x - target_width
