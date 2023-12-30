@@ -1002,10 +1002,19 @@ class Reline::LineEditor
   end
 
   private def process_key(key, method_symbol)
+    if @waiting_proc
+      if key.is_a?(Symbol)
+        @waiting_proc = nil
+        @searching_prompt = nil
+      else
+        @waiting_proc.call(key)
+        @kill_ring.process
+        return
+      end
+    end
+
     if method_symbol and respond_to?(method_symbol, true)
       method_obj = method(method_symbol)
-    else
-      method_obj = nil
     end
     if method_symbol and key.is_a?(Symbol)
       if @vi_arg and argumentable?(method_obj)
@@ -1027,8 +1036,6 @@ class Reline::LineEditor
           run_for_operators(key, method_symbol) do |with_operator|
             wrap_method_call(method_symbol, method_obj, key, with_operator)
           end
-        elsif @waiting_proc
-          @waiting_proc.(key)
         elsif method_obj
           wrap_method_call(method_symbol, method_obj, key)
         else
@@ -1039,9 +1046,6 @@ class Reline::LineEditor
           @vi_arg = nil
         end
       end
-    elsif @waiting_proc
-      @waiting_proc.(key)
-      @kill_ring.process
     elsif method_obj
       if method_symbol == :ed_argument_digit
         wrap_method_call(method_symbol, method_obj, key)
