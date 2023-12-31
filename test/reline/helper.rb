@@ -141,6 +141,16 @@ class Reline::TestCase < Test::Unit::TestCase
     assert_equal(expected, @line_editor.line)
   end
 
+  def assert_cursor_line(before, after)
+    before = convert_str(before)
+    after = convert_str(after)
+    line = @line_editor.line
+    byte_pointer = @line_editor.instance_variable_get(:@byte_pointer)
+    actual_before = line.byteslice(0, byte_pointer)
+    actual_after = line.byteslice(byte_pointer..)
+    assert_equal([before, after], [actual_before, actual_after])
+  end
+
   def assert_byte_pointer_size(expected)
     expected = convert_str(expected)
     byte_pointer = @line_editor.instance_variable_get(:@byte_pointer)
