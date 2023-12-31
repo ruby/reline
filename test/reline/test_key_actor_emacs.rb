@@ -2165,6 +2165,17 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_line('')
   end
 
+  def test_incremental_search_history_cancel_by_symbol_key
+    # ed_prev_char should move cursor left and cancel incremental search
+    input_keys("abc\C-rdef")
+    input_key_by_symbol(:ed_prev_char)
+    input_keys("g")
+    assert_byte_pointer_size('abg')
+    assert_cursor(3)
+    assert_cursor_max(4)
+    assert_line('abgc')
+  end
+
   # Unicode emoji test
   def test_ed_insert_for_include_zwj_emoji
     omit "This test is for UTF-8 but the locale is #{Reline.core.encoding}" if Reline.core.encoding != Encoding::UTF_8

@@ -1253,7 +1253,20 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_byte_pointer_size('aaa bbb ')
     assert_cursor(8)
     assert_cursor_max(9)
-    assert_line('aaa bbb c')
+    input_keys('d2h')
+    assert_byte_pointer_size('aaa bb')
+    assert_cursor(6)
+    assert_cursor_max(7)
+    assert_line('aaa bbc')
+    input_keys('2d3h')
+    assert_byte_pointer_size('aaa')
+    assert_cursor(3)
+    assert_cursor_max(4)
+    assert_line('aaac')
+    input_keys('dd')
+    assert_line('')
+    assert_cursor(0)
+    assert_cursor_max(0)
   end
 
   def test_vi_change_meta
@@ -1295,6 +1308,48 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_cursor(8)
     assert_cursor_max(14)
     assert_line('foo  hoge  baz')
+  end
+
+
+  def test_vi_waiting_operator_cancel
+    input_keys("aaa bbb ccc\C-[02w")
+    assert_byte_pointer_size('aaa bbb ')
+    assert_cursor(8)
+    assert_cursor_max(11)
+    assert_line('aaa bbb ccc')
+    # dc dy should cancel delete_meta
+    # cd cy should cancel change_meta
+    # yd yc yy should cancel yank_meta
+    # p should not paste yanked text because yank_meta is canceled
+    input_keys('dchdyhcdhcyhydhychyyhp')
+    assert_byte_pointer_size('a')
+    assert_cursor(1)
+    assert_cursor_max(11)
+    assert_line('aaa bbb ccc')
+  end
+
+  def test_cancel_waiting_with_symbol_key
+    input_keys("aaa bbb lll\C-[0")
+    assert_byte_pointer_size('')
+    assert_cursor(0)
+    assert_cursor_max(11)
+    assert_line('aaa bbb lll')
+    # ed_next_char should move cursor right and cancel vi_next_char
+    input_keys('f')
+    input_key_by_symbol(:ed_next_char)
+    input_keys('l')
+    assert_byte_pointer_size('aa')
+    assert_cursor(2)
+    assert_cursor_max(11)
+    assert_line('aaa bbb lll')
+    # ed_next_char should move cursor right and cancel delete_meta
+    input_keys('d')
+    input_key_by_symbol(:ed_next_char)
+    input_keys('l')
+    assert_byte_pointer_size('aaa ')
+    assert_cursor(4)
+    assert_cursor_max(11)
+    assert_line('aaa bbb lll')
   end
 
   def test_unimplemented_vi_command_should_be_no_op
