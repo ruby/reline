@@ -697,6 +697,12 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_line_around_cursor('aaa bbb ', 'ccc')
     input_keys('2dl')
     assert_line_around_cursor('aaa bbb ', 'c')
+    input_keys('d2h')
+    assert_line_around_cursor('aaa bb', 'c')
+    input_keys('2d3h')
+    assert_line_around_cursor('aaa', 'c')
+    input_keys('dd')
+    assert_line_around_cursor('', '')
   end
 
   def test_vi_change_meta
@@ -717,6 +723,33 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_line_around_cursor('foo  hoge', '  baz')
     input_keys("\C-[")
     assert_line_around_cursor('foo  hog', 'e  baz')
+  end
+
+
+  def test_vi_waiting_operator_cancel
+    input_keys("aaa bbb ccc\C-[02w")
+    assert_line_around_cursor('aaa bbb ', 'ccc')
+    # dc dy should cancel delete_meta
+    # cd cy should cancel change_meta
+    # yd yc yy should cancel yank_meta
+    # p should not paste yanked text because yank_meta is canceled
+    input_keys('dchdyhcdhcyhydhychyyhp')
+    assert_line_around_cursor('a', 'aa bbb ccc')
+  end
+
+  def test_cancel_waiting_with_symbol_key
+    input_keys("aaa bbb lll\C-[0")
+    assert_line_around_cursor('', 'aaa bbb lll')
+    # ed_next_char should move cursor right and cancel vi_next_char
+    input_keys('f')
+    input_key_by_symbol(:ed_next_char)
+    input_keys('l')
+    assert_line_around_cursor('aa', 'a bbb lll')
+    # ed_next_char should move cursor right and cancel delete_meta
+    input_keys('d')
+    input_key_by_symbol(:ed_next_char)
+    input_keys('l')
+    assert_line_around_cursor('aaa ', 'bbb lll')
   end
 
   def test_unimplemented_vi_command_should_be_no_op
