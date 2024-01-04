@@ -7,14 +7,21 @@ on:
     - cron: "30 14 * * *"
 
 jobs:
+  ruby-versions:
+    uses: ruby/actions/.github/workflows/ruby_versions.yml@master
+    with:
+      engine: cruby
+      min_version: 2.6
+
   reline:
+    needs: ruby-versions
     name: >-
       reline ${{ matrix.os }} ${{ matrix.ruby }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        ruby: [ 'head', '3.2', '3.1', '3.0', '2.7', '2.6' ]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -60,13 +67,16 @@ jobs:
         run: bundle exec rake ci-test
 
   irb:
+    needs: ruby-versions
     name: >-
       irb ${{ matrix.ruby }}  ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        ruby: [ 'head', '3.2' ]
+        ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         os: [ ubuntu-latest ]
+        exclude:
+          - ruby: 2.6
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -107,13 +117,14 @@ jobs:
           bundle exec rake test_yamatanooroti
 
   vterm-yamatanooroti:
+    needs: ruby-versions
     name: >-
       vterm-yamatanooroti ${{ matrix.os }} ${{ matrix.ruby }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         os: [ ubuntu-latest ]
-        ruby: [ 'head', '3.2', '3.1', '3.0', '2.7', '2.6' ]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
