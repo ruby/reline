@@ -1323,6 +1323,16 @@ class Reline::LineEditor
     @confirm_multiline_termination_proc.(temp_buffer.join("\n") + "\n")
   end
 
+  def insert_pasted_text(text)
+    pre = @buffer_of_lines[@line_index].byteslice(0, @byte_pointer)
+    post = @buffer_of_lines[@line_index].byteslice(@byte_pointer..)
+    lines = (pre + text.gsub("\t", '  ').gsub(/\r\n?/, "\n") + post).split("\n", -1)
+    lines << '' if lines.empty?
+    @buffer_of_lines[@line_index, 1] = lines
+    @line_index += lines.size - 1
+    @byte_pointer = @buffer_of_lines[@line_index].bytesize - post.bytesize
+  end
+
   def insert_text(text)
     if @buffer_of_lines[@line_index].bytesize == @byte_pointer
       @buffer_of_lines[@line_index] += text

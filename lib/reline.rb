@@ -78,7 +78,6 @@ module Reline
       @dialog_proc_list = {}
       yield self
       @completion_quote_character = nil
-      @bracketed_paste_finished = false
     end
 
     def io_gate
@@ -351,12 +350,13 @@ module Reline
           prev_pasting_state = io_gate.in_pasting?
           read_io(config.keyseq_timeout) { |inputs|
             line_editor.set_pasting_state(io_gate.in_pasting?)
-            inputs.each { |c| line_editor.update(c) }
-            line_editor.rerender
-            if @bracketed_paste_finished
-              line_editor.rerender_all
-              @bracketed_paste_finished = false
+            if inputs.is_a?(String) # bracketed paste
+              line_editor.insert_pasted_text(inputs)
+              line_editor.scroll_into_view
+            else
+              inputs.each { |c| line_editor.update(c) }
             end
+            line_editor.rerender
           }
           if prev_pasting_state == true and not io_gate.in_pasting? and not line_editor.finished?
             line_editor.set_pasting_state(false)
@@ -398,7 +398,6 @@ module Reline
         c = io_gate.getc(Float::INFINITY)
         if c == -1
           result = :unmatched
-          @bracketed_paste_finished = true
         else
           buffer << c
           result = key_stroke.match_status(buffer)
@@ -406,7 +405,14 @@ module Reline
         case result
         when :matched
           expanded = key_stroke.expand(buffer).map{ |expanded_c|
-            Reline::Key.new(expanded_c, expanded_c, false)
+            if expanded_c == :bracketed_paste_start
+              # TODO: quoted_insert (C-v) should be handled similarly
+              # TODO: this break seems weird, but key_stroke.expand should be fixed.
+              # One possible idea is: `matched_key, rest_bytes = expand(buffer)` because rest_bytes might be content of paste or :matching state.
+              break io_gate.read_bracketed_paste(keyseq_timeout)
+            else
+              Reline::Key.new(expanded_c, expanded_c, false)
+            end
           }
           block.(expanded)
           break
