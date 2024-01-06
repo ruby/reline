@@ -350,7 +350,12 @@ module Reline
         loop do
           read_io(config.keyseq_timeout) { |inputs|
             line_editor.set_pasting_state(io_gate.in_pasting?)
-            inputs.each { |key| line_editor.update(key) }
+            if inputs.is_a?(String) # bracketed paste
+              line_editor.insert_pasted_text(inputs)
+              line_editor.scroll_into_view
+            else
+              inputs.each { |key| line_editor.update(key) }
+            end
           }
           if line_editor.finished?
             line_editor.render_finished
@@ -400,7 +405,14 @@ module Reline
         case result
         when :matched
           expanded = key_stroke.expand(buffer).map{ |expanded_c|
-            Reline::Key.new(expanded_c, expanded_c, false)
+            if expanded_c == :bracketed_paste_start
+              # TODO: quoted_insert (C-v) should be handled similarly
+              # TODO: this break seems weird, but key_stroke.expand should be fixed.
+              # One possible idea is: `matched_key, rest_bytes = expand(buffer)` because rest_bytes might be content of paste or :matching state.
+              break io_gate.read_bracketed_paste(keyseq_timeout)
+            else
+              Reline::Key.new(expanded_c, expanded_c, false)
+            end
           }
           block.(expanded)
           break
