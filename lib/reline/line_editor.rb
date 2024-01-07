@@ -65,6 +65,7 @@ class Reline::LineEditor
   end
 
   def set_pasting_state(in_pasting)
+    process_insert(force: true) if @in_pasting && !in_pasting
     @in_pasting = in_pasting
   end
 
@@ -422,6 +423,11 @@ class Reline::LineEditor
     end
   end
 
+  def render_finished
+    clear_rendered_lines
+    render_full_content
+  end
+
   def clear_rendered_lines
     Reline::IOGate.move_cursor_up @cursor_y
     Reline::IOGate.move_cursor_column 0
@@ -524,12 +530,6 @@ class Reline::LineEditor
     screen_height - @cursor_y - @cursor_base_y - 1
   end
 
-  def rerender_all
-    process_insert(force: true)
-    handle_cleared
-    render_differential unless @in_pasting
-  end
-
   def handle_cleared
     return unless @cleared
 
@@ -544,14 +544,8 @@ class Reline::LineEditor
   end
 
   def rerender
-    finished = finished?
     handle_cleared
-    if finished
-      clear_rendered_lines
-      render_full_content
-    elsif !@in_pasting
-      render_differential
-    end
+    render_differential unless @in_pasting
   end
 
   class DialogProcScope
