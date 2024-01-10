@@ -4,6 +4,7 @@ ENV['TERM'] = 'xterm' # for some CI environments
 
 require 'reline'
 require 'test/unit'
+require 'stringio'
 
 begin
   require 'rbconfig'
@@ -185,5 +186,140 @@ class Reline::TestCase < Test::Unit::TestCase
       @config.editing_mode = editing_mode
       assert_equal(method_symbol, @config.editing_mode.default_key_bindings[input.bytes])
     end
+  end
+
+  class PseudoTerminalIO
+    def initialize(&block)
+      @fiber = Fiber.new(&block)
+      @buffer = []
+    end
+
+    def start
+      @fiber.resume
+    end
+
+    def close
+      raise 'Already closed' if @closed
+
+      @buffer << nil
+      @closed = true
+      @fiber.resume
+    end
+
+    def read(one)
+      raise ArgumentError, 'Only supports read(1)' unless one == 1
+      loop do
+        Fiber.yield if @buffer.empty? && !@closed
+        byte_or_time = @buffer.shift
+        case byte_or_time
+        when Integer
+          return byte_or_time
+        when Float
+          next
+        when nil
+          return -1
+        end
+      end
+    end
+
+    def wait_readable(timeout)
+      loop do
+        Fiber.yield if @buffer.empty? && !@closed
+        case @buffer.first
+        when Integer
+          return self
+        when Float
+          timeout -= @buffer.shift
+          return nil if timeout < 0
+        when nil # closed
+          return nil
+        end
+      end
+    end
+
+    def current_screen(color: false)
+      rendered_lines = Reline.core.line_editor.instance_variable_get(:@rendered_screen).lines
+      screen = rendered_lines.map do |items|
+        item_ids = []
+        items.each_with_index { |(x, w), i| item_ids.fill(i, x, w) }
+        (0...item_ids.size).chunk { |i| item_ids[i] || -1 }.map do |id, chunk|
+          if id == -1
+            ' ' * chunk.size
+          else
+            x, _w, text = items[id]
+            Reline::Unicode.take_range(text, chunk[0] - x, chunk.size)
+          end
+        end.join
+      end
+      unless color
+        screen.map! do |line|
+          line.gsub(/\e\[[0-9;]*m/, '').rstrip
+        end
+      end
+      screen
+    end
+
+    def cursor_y
+      Reline.core.line_editor.instance_variable_get(:@rendered_screen).cursor_y
+    end
+
+    def cursor_x
+      # Unlike cursor_y, LineEditor does not store last rendered cursor_x position.
+      # So, we need to use calculated value from current state which might not been reflected to terminal screen yet.
+      Reline.core.line_editor.wrapped_cursor_position.first
+    end
+
+    def write(text)
+      raise 'Already closed' if @closed
+
+      text.each_byte { |byte| @buffer << byte }
+      @fiber.resume
+    end
+
+    def wait(time)
+      @buffer << time.to_f
+      @fiber.resume
+    end
+  end
+
+  def assert_readmultiline(prompt: '', add_hist: false, termination_proc:, expected: :unspecified, &block)
+    action = -> { Reline.readmultiline(prompt, add_hist, &termination_proc) }
+    result = with_pseudo_terminal(action, &block)
+    assert_equal(expected, result) unless expected == :unspecified
+  end
+
+  def assert_readline(prompt: '', add_hist: false, expected: :unspecified, &block)
+    action = -> { Reline.readline(prompt, add_hist) }
+    result = with_pseudo_terminal(action, &block)
+    assert_equal(expected, result) unless expected == :unspecified
+  end
+
+  def with_pseudo_terminal(block)
+    original_output = Reline.instance_variable_get(:@output)
+    original_input = Reline::GeneralIO.class_variable_get(:@@input)
+    original_getc = Reline::GeneralIO.method(:getc)
+    Reline::GeneralIO.singleton_class.remove_method(:getc)
+    Reline::GeneralIO.define_singleton_method :getc do |timeout_second|
+      buf = Reline::GeneralIO.class_variable_get(:@@buf)
+      return buf.shift unless buf.empty?
+      input = Reline::GeneralIO.class_variable_get(:@@input)
+      input.read(1) if input.wait_readable(timeout_second)
+    end
+
+    Reline.output = StringIO.new
+    result = :not_ended
+    io = PseudoTerminalIO.new do
+      result = block.call
+    end
+
+    Reline::GeneralIO.input = io
+    io.start
+    yield io
+    result
+  ensure
+    Reline::GeneralIO.input = original_input
+    Reline.output = original_output
+    Reline::GeneralIO.singleton_class.remove_method(:getc)
+    Reline::GeneralIO.define_singleton_method(:getc, original_getc)
   end
 end
