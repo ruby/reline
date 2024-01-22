@@ -65,6 +65,8 @@ class Reline::LineEditor
   end
 
   def set_pasting_state(in_pasting)
+    # While pasting, text to be inserted is stored to @continuous_insertion_buffer.
+    # After pasting, this buffer should be force inserted.
     process_insert(force: true) if @in_pasting && !in_pasting
     @in_pasting = in_pasting
   end
