@@ -348,7 +348,7 @@ module Reline
         loop do
           read_io(config.keyseq_timeout) { |inputs|
             line_editor.set_pasting_state(io_gate.in_pasting?)
-            inputs.each { |c| line_editor.update(c) }
+            inputs.each { |key| line_editor.update(key) }
           }
           if line_editor.finished?
             line_editor.render_finished
