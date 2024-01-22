@@ -539,8 +539,6 @@ class Reline::LineEditor
     @screen_size = Reline::IOGate.get_screen_size
     @cursor_base_y = 0
     @cursor_y = 0
-    scroll_into_view
-    render_differential
   end
 
   def rerender
