@@ -268,15 +268,14 @@ class Reline::LineEditor
   private def scroll_down(val)
     if @cursor_base_y + @cursor_y + val < screen_height
       Reline::IOGate.move_cursor_down(val)
-      @cursor_y += val
     else
       move = screen_height - @cursor_base_y - @cursor_y - 1
       scroll = val - move
-      Reline::IOGate.scroll_down(move)
+      Reline::IOGate.move_cursor_down(move)
       Reline::IOGate.scroll_down(scroll)
-      @cursor_y += move
       @cursor_base_y = [@cursor_base_y - scroll, 0].max
     end
+    @cursor_y += val
   end
 
   def current_byte_pointer_cursor
@@ -495,8 +494,7 @@ class Reline::LineEditor
     if new_lines != rendered_lines
       Reline::IOGate.hide_cursor
       num_lines = [[new_lines.size, rendered_lines.size].max, screen_height].min
-      scroll_down(num_lines - 1 - @cursor_y) if (num_lines - 1 - @cursor_y) > 0
-      @cursor_y = num_lines - 1
+      scroll_down(num_lines - 1 - @cursor_y) if num_lines - 1 - @cursor_y > 0
       num_lines.times do |i|
         rendered_line = rendered_lines[i] || []
         line_to_render = new_lines[i] || []
@@ -524,12 +522,12 @@ class Reline::LineEditor
     wrapped_lines.flatten[editor_cursor_y]
   end
 
-  def upper_space_height
-    @cursor_y - 1
+  def upper_space_height(editor_cursor_y)
+    editor_cursor_y - screen_scroll_top
   end
 
-  def rest_height
-    screen_height - @cursor_y - @cursor_base_y - 1
+  def rest_height(editor_cursor_y)
+    screen_height - editor_cursor_y + screen_scroll_top - @cursor_base_y - 1
   end
 
   def handle_cleared
@@ -608,7 +606,7 @@ class Reline::LineEditor
 
     def preferred_dialog_height
       _editor_cursor_x, editor_cursor_y = @line_editor.editor_cursor_position
-      [editor_cursor_y - @line_editor.screen_scroll_top, @line_editor.rest_height, (screen_height + 6) / 5].max
+      [@line_editor.upper_space_height(editor_cursor_y), @line_editor.rest_height(editor_cursor_y), (screen_height + 6) / 5].max
     end
 
     def completion_journey_data
@@ -737,16 +735,15 @@ class Reline::LineEditor
     else
       scrollbar_pos = nil
     end
-    upper_space = upper_space_height
     dialog.column = dialog_render_info.pos.x
     dialog.width += @block_elem_width if scrollbar_pos
     diff = (dialog.column + dialog.width) - screen_width
     if diff > 0
       dialog.column -= diff
     end
-    if (rest_height - dialog_render_info.pos.y) >= height
+    if rest_height(screen_scroll_top + cursor_row) - dialog_render_info.pos.y >= height
       dialog.vertical_offset = dialog_render_info.pos.y + 1
-    elsif upper_space >= height
+    elsif cursor_row >= height
       dialog.vertical_offset = dialog_render_info.pos.y - height
     else
       dialog.vertical_offset = dialog_render_info.pos.y + 1
