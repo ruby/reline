@@ -204,9 +204,9 @@ class Reline::LineEditor
     @completion_state = CompletionState::NORMAL
     @perfect_matched = nil
     @menu_info = nil
-    @first_prompt = true
     @searching_prompt = nil
     @first_char = true
+    @just_cursor_moving = false
     @eof = false
     @continuous_insertion_buffer = String.new(encoding: @encoding)
     @scroll_partial_screen = 0
@@ -215,6 +215,7 @@ class Reline::LineEditor
     @auto_indent_proc = nil
     @dialogs = []
     @resized = false
+    @dialog_initialzed = false
     @cursor_y = 0
     @cache = {}
     @rendered_screen_cache = nil
