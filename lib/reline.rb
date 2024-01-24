@@ -341,6 +341,7 @@ module Reline
       end
 
       line_editor.print_nomultiline_prompt(prompt)
+      line_editor.update_dialogs
       line_editor.rerender
 
       begin

@@ -215,7 +215,6 @@ class Reline::LineEditor
     @auto_indent_proc = nil
     @dialogs = []
     @resized = false
-    @dialog_initialzed = false
     @cursor_y = 0
     @cache = {}
     @rendered_screen_cache = nil
@@ -417,7 +416,6 @@ class Reline::LineEditor
   end
 
   def update_dialogs(key = nil)
-    @dialog_initialzed = true
     editor_cursor_x, editor_cursor_y = editor_cursor_position
     @dialogs.each do |dialog|
       dialog.trap_key = nil
@@ -464,10 +462,6 @@ class Reline::LineEditor
   end
 
   def render_differential
-    unless @dialog_initialzed
-      update_dialogs
-    end
-
     editor_cursor_x, editor_cursor_y = editor_cursor_position
 
     rendered_lines = @rendered_screen_cache || []
