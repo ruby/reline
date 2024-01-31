@@ -1756,10 +1756,12 @@ class Reline::LineEditor
     if @is_multiline
       @buffer_of_lines = Reline::HISTORY[@history_pointer].split("\n")
       @buffer_of_lines = [String.new(encoding: @encoding)] if @buffer_of_lines.empty?
+      @line_backup_in_history = whole_buffer
       @line_index = line_no
       calculate_nearest_cursor(cursor)
     else
       @buffer_of_lines = [Reline::HISTORY[@history_pointer]]
+      @line_backup_in_history = whole_buffer
       calculate_nearest_cursor(cursor)
     end
     arg -= 1
