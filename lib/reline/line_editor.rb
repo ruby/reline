@@ -388,12 +388,13 @@ class Reline::LineEditor
     end
   end
 
-  def editor_cursor_position
+  # Calculate cursor position in word wrapped content.
+  def wrapped_cursor_position
     line = ' ' * calculate_width(prompt_list[@line_index], true) + whole_lines[@line_index].byteslice(0, @byte_pointer)
     wrapped_line_before_cursor = split_by_width(line, screen_width).first.compact
-    editor_cursor_y = wrapped_lines[0...@line_index].sum(&:size) + wrapped_line_before_cursor.size - 1
-    editor_cursor_x = calculate_width(wrapped_line_before_cursor.last)
-    [editor_cursor_x, editor_cursor_y]
+    wrapped_cursor_y = wrapped_lines[0...@line_index].sum(&:size) + wrapped_line_before_cursor.size - 1
+    wrapped_cursor_x = calculate_width(wrapped_line_before_cursor.last)
+    [wrapped_cursor_x, wrapped_cursor_y]
   end
 
   def clear_dialogs
@@ -404,10 +405,10 @@ class Reline::LineEditor
   end
 
   def update_dialogs(key = nil)
-    editor_cursor_x, editor_cursor_y = editor_cursor_position
+    wrapped_cursor_x, wrapped_cursor_y = wrapped_cursor_position
     @dialogs.each do |dialog|
       dialog.trap_key = nil
-      update_each_dialog(dialog, editor_cursor_x, editor_cursor_y - screen_scroll_top, key)
+      update_each_dialog(dialog, wrapped_cursor_x, wrapped_cursor_y - screen_scroll_top, key)
     end
   end
 
@@ -452,7 +453,7 @@ class Reline::LineEditor
   end
 
   def render_differential
-    editor_cursor_x, editor_cursor_y = editor_cursor_position
+    wrapped_cursor_x, wrapped_cursor_y = wrapped_cursor_position
 
     rendered_lines = @rendered_screen.lines || []
     new_lines = wrapped_lines.flatten[screen_scroll_top, screen_height].map do |l|
@@ -468,7 +469,7 @@ class Reline::LineEditor
     @dialogs.each_with_index do |dialog, index|
       next unless dialog.contents
 
-      x_range, y_range = dialog_range dialog, editor_cursor_y - screen_scroll_top
+      x_range, y_range = dialog_range dialog, wrapped_cursor_y - screen_scroll_top
       y_range.each do |row|
         next if row < 0 || row >= screen_height
         dialog_rows = new_lines[row] ||= []
@@ -501,23 +502,23 @@ class Reline::LineEditor
       @rendered_screen.lines = new_lines
       Reline::IOGate.show_cursor
     end
-    y = editor_cursor_y - screen_scroll_top
-    Reline::IOGate.move_cursor_column editor_cursor_x
+    y = wrapped_cursor_y - screen_scroll_top
+    Reline::IOGate.move_cursor_column wrapped_cursor_x
     Reline::IOGate.move_cursor_down y - cursor_y
     @rendered_screen.cursor_y = y
     new_lines.size - y
   end
 
   def current_row
-    wrapped_lines.flatten[editor_cursor_y]
+    wrapped_lines.flatten[wrapped_cursor_y]
   end
 
-  def upper_space_height(editor_cursor_y)
-    editor_cursor_y - screen_scroll_top
+  def upper_space_height(wrapped_cursor_y)
+    wrapped_cursor_y - screen_scroll_top
   end
 
-  def rest_height(editor_cursor_y)
-    screen_height - editor_cursor_y + screen_scroll_top - @rendered_screen.base_y - 1
+  def rest_height(wrapped_cursor_y)
+    screen_height - wrapped_cursor_y + screen_scroll_top - @rendered_screen.base_y - 1
   end
 
   def handle_cleared
@@ -595,8 +596,8 @@ class Reline::LineEditor
     end
 
     def preferred_dialog_height
-      _editor_cursor_x, editor_cursor_y = @line_editor.editor_cursor_position
-      [@line_editor.upper_space_height(editor_cursor_y), @line_editor.rest_height(editor_cursor_y), (screen_height + 6) / 5].max
+      _wrapped_cursor_x, wrapped_cursor_y = @line_editor.wrapped_cursor_position
+      [@line_editor.upper_space_height(wrapped_cursor_y), @line_editor.rest_height(wrapped_cursor_y), (screen_height + 6) / 5].max
     end
 
     def completion_journey_data
@@ -1146,12 +1147,12 @@ class Reline::LineEditor
   end
 
   def scroll_into_view
-    _editor_cursor_x, editor_cursor_y = editor_cursor_position
-    if editor_cursor_y < screen_scroll_top
-      @scroll_partial_screen = editor_cursor_y
+    _wrapped_cursor_x, wrapped_cursor_y = wrapped_cursor_position
+    if wrapped_cursor_y < screen_scroll_top
+      @scroll_partial_screen = wrapped_cursor_y
     end
-    if editor_cursor_y >= screen_scroll_top + screen_height
-      @scroll_partial_screen = editor_cursor_y - screen_height + 1
+    if wrapped_cursor_y >= screen_scroll_top + screen_height
+      @scroll_partial_screen = wrapped_cursor_y - screen_height + 1
     end
   end
 
