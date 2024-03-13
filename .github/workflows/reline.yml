@@ -35,6 +35,10 @@ jobs:
         env:
           TERM: xterm-256color
         run:  bundle exec rake test
+      - name: rake test (frozen string literal)
+        env:
+          TERM: xterm-256color
+        run: bundle exec rake test RUBYOPT="--enable-frozen-string-literal"
 
   readline:
     name: >-
