@@ -279,6 +279,7 @@ module Reline
 
         if line_editor.eof?
           line_editor.reset_line
+          # Return nil if the input is aborted by C-d.
           nil
         else
           whole_buffer

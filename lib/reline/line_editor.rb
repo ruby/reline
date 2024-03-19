@@ -51,7 +51,6 @@ class Reline::LineEditor
   CompletionJourneyData = Struct.new(:preposing, :postposing, :list, :pointer)
   MenuInfo = Struct.new(:target, :list)
 
-  PROMPT_LIST_CACHE_TIMEOUT = 0.5
   MINIMUM_SCROLLBAR_HEIGHT = 1
 
   def initialize(config, encoding)
@@ -390,8 +389,9 @@ class Reline::LineEditor
 
   # Calculate cursor position in word wrapped content.
   def wrapped_cursor_position
-    line = ' ' * calculate_width(prompt_list[@line_index], true) + whole_lines[@line_index].byteslice(0, @byte_pointer)
-    wrapped_line_before_cursor = split_by_width(line, screen_width).first.compact
+    prompt_width = calculate_width(prompt_list[@line_index], true)
+    line_before_cursor = whole_lines[@line_index].byteslice(0, @byte_pointer)
+    wrapped_line_before_cursor = split_by_width(' ' * prompt_width + line_before_cursor, screen_width).first.compact
     wrapped_cursor_y = wrapped_lines[0...@line_index].sum(&:size) + wrapped_line_before_cursor.size - 1
     wrapped_cursor_x = calculate_width(wrapped_line_before_cursor.last)
     [wrapped_cursor_x, wrapped_cursor_y]
@@ -479,6 +479,7 @@ class Reline::LineEditor
 
     cursor_y = @rendered_screen.cursor_y
     if new_lines != rendered_lines
+      # Hide cursor while rendering to avoid cursor flickering.
       Reline::IOGate.hide_cursor
       num_lines = [[new_lines.size, rendered_lines.size].max, screen_height].min
       if @rendered_screen.base_y + num_lines > screen_height
@@ -1211,7 +1212,6 @@ class Reline::LineEditor
   end
 
   def set_current_line(line, byte_pointer = nil)
-    @modified = true
     cursor = current_byte_pointer_cursor
     @buffer_of_lines[@line_index] = line
     if byte_pointer

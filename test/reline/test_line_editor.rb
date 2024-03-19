@@ -25,7 +25,7 @@ class Reline::LineEditor
     end
 
     def assert_output(expected)
-      @output.reopen('')
+      @output.reopen(+'')
       yield
       actual = @output.string
       assert_equal(expected, actual.gsub("\e[0m", ''))
@@ -46,7 +46,7 @@ class Reline::LineEditor
       end
     end
 
-    def test_dialog_apear_disappear
+    def test_dialog_appear_disappear
       assert_output '[COL_3]dialog' do
         @line_editor.render_line_differential([[0, 1, 'a']], [[0, 1, 'a'], [3, 6, 'dialog']])
       end
@@ -106,7 +106,7 @@ class Reline::LineEditor
       end
     end
 
-    def test_complex
+    def test_complicated
       state_a = [nil, [19, 7, 'bbbbbbb'], [15, 8, 'cccccccc'], [10, 5, 'ddddd'], [18, 4, 'eeee'], [1, 3, 'fff'], [17, 2, 'gg'], [7, 1, 'h']]
       state_b = [[5, 9, 'aaaaaaaaa'], nil, [15, 8, 'cccccccc'], nil, [18, 4, 'EEEE'], [25, 4, 'ffff'], [17, 2, 'gg'], [2, 2, 'hh']]
       # state_a: " fff   h  dddddccggeeecbbb"
