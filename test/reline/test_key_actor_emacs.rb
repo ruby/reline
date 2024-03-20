@@ -17,6 +17,34 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     Reline.test_reset
   end
 
+  def test_foobar
+    Reline.autocompletion = true
+    Reline::HISTORY << 'abc'
+    Reline.completion_proc = ->(target,_pre,_post){100.times.map{|i|"a#{i}"}.select{_1.start_with? target}}
+    t=Time.now
+    100.times do
+      assert_readmultiline(expected: "a\nb", prompt: '>', termination_proc: ->*{true}) do |io|
+        io.write "a\C-r\e"
+        assert_equal io.current_screen, ["(reverse-i-search)`': a"]
+        io.wait 0.49999999999 # This does not spend 0.5s of real time.
+        assert_equal io.current_screen, ["(reverse-i-search)`': a"]
+        io.wait 0.00000000002 # No flaky test even if the wait time is too short.
+        assert_equal io.current_screen, [">a"]
+        io.write "\C-e\e\nb"
+        assert_equal io.current_screen, [">a", ">b"]
+        assert_equal [1, 2], [io.cursor_y, io.cursor_x]
+        io.write "\n"
+      end
+
+      assert_readline(expected: 'a2b', prompt: '> ') do |io|
+        io.write "a\C-i\C-i\C-ib"
+        assert_equal ["> a2b"], io.current_screen
+        io.close
+      end
+    end
+    p Time.now - t
+  end
+
   def test_ed_insert_one
     input_keys('a')
     assert_line('a')
