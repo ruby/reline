@@ -415,6 +415,7 @@ class Reline::LineEditor
   def render_finished
     clear_rendered_lines
     render_full_content
+    @output.flush
   end
 
   def clear_rendered_lines
@@ -507,6 +508,7 @@ class Reline::LineEditor
     Reline::IOGate.move_cursor_column wrapped_cursor_x
     Reline::IOGate.move_cursor_down y - cursor_y
     @rendered_screen.cursor_y = y
+    @output.flush
     new_lines.size - y
   end
 
@@ -1091,6 +1093,7 @@ class Reline::LineEditor
       end
     end
     if key.char.nil?
+      process_insert(force: true)
       if @first_char
         @eof = true
       end
