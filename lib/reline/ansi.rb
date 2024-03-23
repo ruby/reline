@@ -149,7 +149,11 @@ class Reline::ANSI
   end
 
   def self.with_raw_input
-    @@input.raw { yield }
+    if @@input.tty?
+      @@input.raw(intr: true) { yield }
+    else
+      yield
+    end
   end
 
   @@buf = []
@@ -157,16 +161,15 @@ class Reline::ANSI
     unless @@buf.empty?
       return @@buf.shift
     end
-    until c = @@input.raw(intr: true) { @@input.wait_readable(0.1) && @@input.getbyte }
+    until @@input.wait_readable(0.1)
       timeout_second -= 0.1
       return nil if timeout_second <= 0
       Reline.core.line_editor.resize
     end
-    (c == 0x16 && @@input.raw(min: 0, time: 0, &:getbyte)) || c
+    c = @@input.getbyte
+    (c == 0x16 && @@input.tty? && @@input.raw(min: 0, time: 0, &:getbyte)) || c
   rescue Errno::EIO
     # Maybe the I/O has been closed.
-    nil
-  rescue Errno::ENOTTY
     nil
   end
 
@@ -255,6 +258,8 @@ class Reline::ANSI
     begin
       res = +''
       m = nil
+      raise Errno::ENOTTY unless @@input.tty? && @@output.tty?
+
       @@input.raw do |stdin|
         @@output << "\e[6n"
         @@output.flush
@@ -276,7 +281,7 @@ class Reline::ANSI
         buf = @@output.pread(@@output.pos, 0)
         row = buf.count("\n")
         column = buf.rindex("\n") ? (buf.size - buf.rindex("\n")) - 1 : 0
-      rescue Errno::ESPIPE
+      rescue Errno::ESPIPE, IOError
         # Just returns column 1 for ambiguous width because this I/O is not
         # tty and can't seek.
         row = 0

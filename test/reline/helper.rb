@@ -23,7 +23,7 @@ module Reline
     def test_mode(ansi: false)
       @original_iogate = IOGate
       remove_const('IOGate')
-      const_set('IOGate', ansi ? Reline::ANSI : Reline::GeneralIO)
+      const_set('IOGate', ansi ? Reline::ANSI : Reline::TestDumbIO)
       if ENV['RELINE_TEST_ENCODING']
         encoding = Encoding.find(ENV['RELINE_TEST_ENCODING'])
       else
@@ -34,7 +34,7 @@ module Reline
       def IOGate.get_screen_size
         [24, 80]
       end
-      Reline::GeneralIO.reset(encoding: encoding) unless ansi
+      Reline::TestDumbIO.reset(encoding: encoding) unless ansi
       core.config.instance_variable_set(:@test_mode, true)
       core.config.reset
     end
@@ -44,7 +44,7 @@ module Reline
       IOGate.define_singleton_method(:get_screen_size, @original_get_screen_size)
       remove_const('IOGate')
       const_set('IOGate', @original_iogate)
-      Reline::GeneralIO.reset
+      Reline::TestDumbIO.reset
       Reline.instance_variable_set(:@core, nil)
     end
 
@@ -79,11 +79,11 @@ module Reline
 end
 
 def start_pasting
-  Reline::GeneralIO.start_pasting
+  Reline::TestDumbIO.start_pasting
 end
 
 def finish_pasting
-  Reline::GeneralIO.finish_pasting
+  Reline::TestDumbIO.finish_pasting
 end
 
 class Reline::TestCase < Test::Unit::TestCase
@@ -149,7 +149,7 @@ class Reline::TestCase < Test::Unit::TestCase
       expected.bytesize, byte_pointer,
       <<~EOM)
         <#{expected.inspect} (#{expected.encoding.inspect})> expected but was
-        <#{chunk.inspect} (#{chunk.encoding.inspect})> in <Terminal #{Reline::GeneralIO.encoding.inspect}>
+        <#{chunk.inspect} (#{chunk.encoding.inspect})> in <Terminal #{Reline::TestDumbIO.encoding.inspect}>
       EOM
   end
 

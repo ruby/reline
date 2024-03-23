@@ -1,6 +1,6 @@
 require 'io/wait'
 
-class Reline::GeneralIO
+class Reline::TestDumbIO
   def self.reset(encoding: nil)
     @@pasting = false
     if encoding

@@ -264,7 +264,6 @@ module Reline
     Reline::DEFAULT_DIALOG_CONTEXT = Array.new
 
     def readmultiline(prompt = '', add_hist = false, &confirm_multiline_termination)
-      Reline.update_iogate
       io_gate.with_raw_input do
         unless confirm_multiline_termination
           raise ArgumentError.new('#readmultiline needs block to confirm multiline termination')
@@ -288,8 +287,9 @@ module Reline
     end
 
     def readline(prompt = '', add_hist = false)
-      Reline.update_iogate
-      inner_readline(prompt, add_hist, false)
+      io_gate.with_raw_input do
+        inner_readline(prompt, add_hist, false)
+      end
 
       line = line_editor.line.dup
       line.taint if RUBY_VERSION < '2.7'
@@ -473,7 +473,7 @@ module Reline
     end
 
     private def may_req_ambiguous_char_width
-      @ambiguous_width = 2 if io_gate == Reline::GeneralIO or !STDOUT.tty?
+      @ambiguous_width = 2 if io_gate == Reline::TestDumbIO || !STDIN.tty? || !STDOUT.tty?
       return if defined? @ambiguous_width
       io_gate.move_cursor_column(0)
       begin
@@ -567,37 +567,21 @@ module Reline
   def self.line_editor
     core.line_editor
   end
-
-  def self.update_iogate
-    return if core.config.test_mode
-
-    # Need to change IOGate when `$stdout.tty?` change from false to true by `$stdout.reopen`
-    # Example: rails/spring boot the application in non-tty, then run console in tty.
-    if ENV['TERM'] != 'dumb' && core.io_gate == Reline::GeneralIO && $stdout.tty?
-      require 'reline/ansi'
-      remove_const(:IOGate)
-      const_set(:IOGate, Reline::ANSI)
-    end
-  end
 end
 
-require 'reline/general_io'
-io = Reline::GeneralIO
-unless ENV['TERM'] == 'dumb'
-  case RbConfig::CONFIG['host_os']
-  when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
-    require 'reline/windows'
-    tty = (io = Reline::Windows).msys_tty?
-  else
-    tty = $stdout.tty?
-  end
+require 'reline/test_dumb_io'
+if ENV['TERM'] == 'dumb'
+  io = Reline::TestDumbIO
+elsif /mswin|msys|mingw|cygwin|bccwin|wince|emc/.match?(RbConfig::CONFIG['host_os'])
+  require 'reline/windows'
+  io = Reline::Windows unless Reline::Windows.msys_tty?
 end
-Reline::IOGate = if tty
+unless io
   require 'reline/ansi'
-  Reline::ANSI
-else
-  io
+  io = Reline::ANSI
 end
+
+Reline::IOGate = io
 
 Reline::Face.load_initial_configs
 
