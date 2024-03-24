@@ -1,5 +1,5 @@
 require_relative 'helper'
-require 'reline/ansi'
+require 'reline/io/ansi'
 
 class Reline::ANSI::TestWithoutTerminfo < Reline::TestCase
   def setup

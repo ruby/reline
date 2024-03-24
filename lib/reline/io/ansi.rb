@@ -1,6 +1,6 @@
 require 'io/console'
 require 'io/wait'
-require_relative 'terminfo'
+require_relative '../terminfo'
 
 class Reline::ANSI
   RESET_COLOR = "\e[0m"

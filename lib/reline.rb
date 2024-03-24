@@ -576,26 +576,26 @@ module Reline
     # Need to change IOGate when `$stdout.tty?` change from false to true by `$stdout.reopen`
     # Example: rails/spring boot the application in non-tty, then run console in tty.
     if ENV['TERM'] != 'dumb' && core.io_gate == Reline::GeneralIO && $stdout.tty?
-      require 'reline/ansi'
+      require 'reline/io/ansi'
       remove_const(:IOGate)
       const_set(:IOGate, Reline::ANSI)
     end
   end
 end
 
-require 'reline/general_io'
+require 'reline/io/general_io'
 io = Reline::GeneralIO
 unless ENV['TERM'] == 'dumb'
   case RbConfig::CONFIG['host_os']
   when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
-    require 'reline/windows'
+    require 'reline/io/windows'
     tty = (io = Reline::Windows).msys_tty?
   else
     tty = $stdout.tty?
   end
 end
 Reline::IOGate = if tty
-  require 'reline/ansi'
+  require 'reline/io/ansi'
   Reline::ANSI
 else
   io
