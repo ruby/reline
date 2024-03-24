@@ -475,7 +475,7 @@ module Reline
     end
 
     private def may_req_ambiguous_char_width
-      @ambiguous_width = 2 if io_gate == Reline::GeneralIO or !STDOUT.tty?
+      @ambiguous_width = 2 if io_gate.dumb? or !STDOUT.tty?
       return if defined? @ambiguous_width
       io_gate.move_cursor_column(0)
       begin
@@ -575,7 +575,7 @@ module Reline
 
     # Need to change IOGate when `$stdout.tty?` change from false to true by `$stdout.reopen`
     # Example: rails/spring boot the application in non-tty, then run console in tty.
-    if ENV['TERM'] != 'dumb' && core.io_gate == Reline::GeneralIO && $stdout.tty?
+    if ENV['TERM'] != 'dumb' && core.io_gate.dumb? && $stdout.tty?
       require 'reline/io/ansi'
       remove_const(:IOGate)
       const_set(:IOGate, Reline::ANSI)

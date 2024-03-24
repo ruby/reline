@@ -36,6 +36,10 @@ class Reline::ANSI
     Reline::Terminfo.setupterm(0, 2)
   end
 
+  def self.dumb?
+    false
+  end
+
   def self.encoding
     Encoding.default_external
   end
