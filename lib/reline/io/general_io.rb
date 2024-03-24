@@ -3,25 +3,16 @@ require 'io/wait'
 class Reline::GeneralIO
   RESET_COLOR = '' # Do not send color reset sequence
 
-  def initialize
+  def initialize(encoding: Encoding.default_external)
     @input = STDIN
     @buf = []
     @pasting = false
-    @encoding = Encoding.default_external
+    @encoding = encoding
     @screen_size = [24, 80]
   end
 
   def dumb?
     true
-  end
-
-  def reset(encoding: nil)
-    @pasting = false
-    if encoding
-      @encoding = encoding
-    elsif defined?(@encoding)
-      @encoding = nil
-    end
   end
 
   def encoding
