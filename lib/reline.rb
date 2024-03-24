@@ -578,28 +578,36 @@ module Reline
     if ENV['TERM'] != 'dumb' && core.io_gate.dumb? && $stdout.tty?
       require 'reline/io/ansi'
       remove_const(:IOGate)
-      const_set(:IOGate, Reline::ANSI)
+      const_set(:IOGate, Reline::ANSI.new)
     end
   end
 end
 
 require 'reline/io/general_io'
-io = Reline::GeneralIO
-unless ENV['TERM'] == 'dumb'
-  case RbConfig::CONFIG['host_os']
-  when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
-    require 'reline/io/windows'
-    tty = (io = Reline::Windows).msys_tty?
+
+Reline::IOGate =
+  if ENV['TERM'] == 'dumb'
+    Reline::GeneralIO.new
   else
-    tty = $stdout.tty?
+    require 'reline/io/ansi'
+
+    case RbConfig::CONFIG['host_os']
+    when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
+      require 'reline/io/windows'
+      io = Reline::Windows.new
+      if io.msys_tty?
+        Reline::ANSI.new
+      else
+        io
+      end
+    else
+      if $stdout.tty?
+        Reline::ANSI.new
+      else
+        Reline::GeneralIO.new
+      end
+    end
   end
-end
-Reline::IOGate = if tty
-  require 'reline/io/ansi'
-  Reline::ANSI
-else
-  io
-end
 
 Reline::Face.load_initial_configs
 

@@ -3,22 +3,30 @@ require 'io/wait'
 class Reline::GeneralIO
   RESET_COLOR = '' # Do not send color reset sequence
 
-  def self.dumb?
+  def initialize
+    @input = STDIN
+    @buf = []
+    @pasting = false
+    @encoding = Encoding.default_external
+    @screen_size = [24, 80]
+  end
+
+  def dumb?
     true
   end
 
-  def self.reset(encoding: nil)
-    @@pasting = false
+  def reset(encoding: nil)
+    @pasting = false
     if encoding
-      @@encoding = encoding
-    elsif defined?(@@encoding)
-      remove_class_variable(:@@encoding)
+      @encoding = encoding
+    elsif defined?(@encoding)
+      @encoding = nil
     end
   end
 
-  def self.encoding
-    if defined?(@@encoding)
-      @@encoding
+  def encoding
+    if @encoding
+      @encoding
     elsif RUBY_PLATFORM =~ /mswin|mingw/
       Encoding::UTF_8
     else
@@ -26,89 +34,85 @@ class Reline::GeneralIO
     end
   end
 
-  def self.win?
+  def win?
     false
   end
 
-  def self.set_default_key_bindings(_)
+  def set_default_key_bindings(_)
   end
 
-  @@buf = []
-  @@input = STDIN
-
-  def self.input=(val)
-    @@input = val
+  def input=(val)
+    @input = val
   end
 
-  def self.with_raw_input
+  def with_raw_input
     yield
   end
 
-  def self.getc(_timeout_second)
-    unless @@buf.empty?
-      return @@buf.shift
+  def getc(_timeout_second)
+    unless @buf.empty?
+      return @buf.shift
     end
     c = nil
     loop do
-      result = @@input.wait_readable(0.1)
+      result = @input.wait_readable(0.1)
       next if result.nil?
-      c = @@input.read(1)
+      c = @input.read(1)
       break
     end
     c&.ord
   end
 
-  def self.ungetc(c)
-    @@buf.unshift(c)
+  def ungetc(c)
+    @buf.unshift(c)
   end
 
-  def self.get_screen_size
-    [24, 80]
+  def get_screen_size
+    @screen_size
   end
 
-  def self.cursor_pos
+  def cursor_pos
     Reline::CursorPos.new(1, 1)
   end
 
-  def self.hide_cursor
+  def hide_cursor
   end
 
-  def self.show_cursor
+  def show_cursor
   end
 
-  def self.move_cursor_column(val)
+  def move_cursor_column(val)
   end
 
-  def self.move_cursor_up(val)
+  def move_cursor_up(val)
   end
 
-  def self.move_cursor_down(val)
+  def move_cursor_down(val)
   end
 
-  def self.erase_after_cursor
+  def erase_after_cursor
   end
 
-  def self.scroll_down(val)
+  def scroll_down(val)
   end
 
-  def self.clear_screen
+  def clear_screen
   end
 
-  def self.set_screen_size(rows, columns)
+  def set_screen_size(rows, columns)
+    @screen_size = [rows, columns]
   end
 
-  def self.set_winch_handler(&handler)
+  def set_winch_handler(&handler)
   end
 
-  @@pasting = false
-
-  def self.in_pasting?
-    @@pasting
+  def in_pasting?
+    @pasting
   end
 
-  def self.prep
+  def prep
   end
 
-  def self.deprep(otio)
+  def deprep(otio)
   end
 end
