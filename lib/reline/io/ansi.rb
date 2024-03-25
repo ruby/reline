@@ -1,10 +1,7 @@
 require 'io/console'
 require 'io/wait'
-require_relative 'terminfo'
 
-class Reline::ANSI
-  RESET_COLOR = "\e[0m"
-
+class Reline::ANSI < Reline::IO
   CAPNAME_KEY_BINDINGS = {
     'khome' => :ed_move_to_beg,
     'kend'  => :ed_move_to_end,
@@ -36,15 +33,19 @@ class Reline::ANSI
     Reline::Terminfo.setupterm(0, 2)
   end
 
-  def self.encoding
+  def initialize
+    @input = STDIN
+    @output = STDOUT
+    @buf = []
+    @in_bracketed_paste_mode = false
+    @old_winch_handler = nil
+  end
+
+  def encoding
     Encoding.default_external
   end
 
-  def self.win?
-    false
-  end
-
-  def self.set_default_key_bindings(config, allow_terminfo: true)
+  def set_default_key_bindings(config, allow_terminfo: true)
     set_default_key_bindings_ansi_cursor(config)
     if allow_terminfo && Reline::Terminfo.enabled?
       set_default_key_bindings_terminfo(config)
@@ -66,7 +67,7 @@ class Reline::ANSI
     end
   end
 
-  def self.set_default_key_bindings_ansi_cursor(config)
+  def set_default_key_bindings_ansi_cursor(config)
     ANSI_CURSOR_KEY_BINDINGS.each do |char, (default_func, modifiers)|
       bindings = [["\e[#{char}", default_func]] # CSI + char
       if modifiers[:ctrl]
@@ -88,7 +89,7 @@ class Reline::ANSI
     end
   end
 
-  def self.set_default_key_bindings_terminfo(config)
+  def set_default_key_bindings_terminfo(config)
     key_bindings = CAPNAME_KEY_BINDINGS.map do |capname, key_binding|
       begin
         key_code = Reline::Terminfo.tigetstr(capname)
@@ -105,7 +106,7 @@ class Reline::ANSI
     end
   end
 
-  def self.set_default_key_bindings_comprehensive_list(config)
+  def set_default_key_bindings_comprehensive_list(config)
     {
       # Console (80x25)
       [27, 91, 49, 126] => :ed_move_to_beg, # Home
@@ -140,31 +141,28 @@ class Reline::ANSI
     end
   end
 
-  @@input = STDIN
-  def self.input=(val)
-    @@input = val
+  def input=(val)
+    @input = val
   end
 
-  @@output = STDOUT
-  def self.output=(val)
-    @@output = val
+  def output=(val)
+    @output = val
   end
 
-  def self.with_raw_input
-    @@input.raw { yield }
+  def with_raw_input
+    @input.raw { yield }
   end
 
-  @@buf = []
-  def self.inner_getc(timeout_second)
-    unless @@buf.empty?
-      return @@buf.shift
+  def inner_getc(timeout_second)
+    unless @buf.empty?
+      return @buf.shift
     end
-    until c = @@input.raw(intr: true) { @@input.wait_readable(0.1) && @@input.getbyte }
+    until c = @input.raw(intr: true) { @input.wait_readable(0.1) && @input.getbyte }
       timeout_second -= 0.1
       return nil if timeout_second <= 0
       Reline.core.line_editor.resize
     end
-    (c == 0x16 && @@input.raw(min: 0, time: 0, &:getbyte)) || c
+    (c == 0x16 && @input.raw(min: 0, time: 0, &:getbyte)) || c
   rescue Errno::EIO
     # Maybe the I/O has been closed.
     nil
@@ -172,18 +170,17 @@ class Reline::ANSI
     nil
   end
 
-  @@in_bracketed_paste_mode = false
   START_BRACKETED_PASTE = String.new("\e[200~,", encoding: Encoding::ASCII_8BIT)
   END_BRACKETED_PASTE = String.new("\e[200~.", encoding: Encoding::ASCII_8BIT)
-  def self.getc_with_bracketed_paste(timeout_second)
+  def getc_with_bracketed_paste(timeout_second)
     buffer = String.new(encoding: Encoding::ASCII_8BIT)
     buffer << inner_getc(timeout_second)
     while START_BRACKETED_PASTE.start_with?(buffer) or END_BRACKETED_PASTE.start_with?(buffer) do
       if START_BRACKETED_PASTE == buffer
-        @@in_bracketed_paste_mode = true
+        @in_bracketed_paste_mode = true
         return inner_getc(timeout_second)
       elsif END_BRACKETED_PASTE == buffer
-        @@in_bracketed_paste_mode = false
+        @in_bracketed_paste_mode = false
         ungetc(-1)
         return inner_getc(timeout_second)
       end
@@ -202,7 +199,7 @@ class Reline::ANSI
   end
 
   # if the usage expects to wait indefinitely, use Float::INFINITY for timeout_second
-  def self.getc(timeout_second)
+  def getc(timeout_second)
     if Reline.core.config.enable_bracketed_paste
       getc_with_bracketed_paste(timeout_second)
     else
@@ -210,34 +207,34 @@ class Reline::ANSI
     end
   end
 
-  def self.in_pasting?
-    @@in_bracketed_paste_mode or (not empty_buffer?)
+  def in_pasting?
+    @in_bracketed_paste_mode or (not empty_buffer?)
   end
 
-  def self.empty_buffer?
-    unless @@buf.empty?
+  def empty_buffer?
+    unless @buf.empty?
       return false
     end
-    !@@input.wait_readable(0)
+    !@input.wait_readable(0)
   end
 
-  def self.ungetc(c)
-    @@buf.unshift(c)
+  def ungetc(c)
+    @buf.unshift(c)
   end
 
-  def self.retrieve_keybuffer
+  def retrieve_keybuffer
     begin
-      return unless @@input.wait_readable(0.001)
-      str = @@input.read_nonblock(1024)
+      return unless @input.wait_readable(0.001)
+      str = @input.read_nonblock(1024)
       str.bytes.each do |c|
-        @@buf.push(c)
+        @buf.push(c)
       end
     rescue EOFError
     end
   end
 
-  def self.get_screen_size
-    s = @@input.winsize
+  def get_screen_size
+    s = @input.winsize
     return s if s[0] > 0 && s[1] > 0
     s = [ENV["LINES"].to_i, ENV["COLUMNS"].to_i]
     return s if s[0] > 0 && s[1] > 0
@@ -246,20 +243,20 @@ class Reline::ANSI
     [24, 80]
   end
 
-  def self.set_screen_size(rows, columns)
-    @@input.winsize = [rows, columns]
+  def set_screen_size(rows, columns)
+    @input.winsize = [rows, columns]
     self
   rescue Errno::ENOTTY
     self
   end
 
-  def self.cursor_pos
+  def cursor_pos
     begin
       res = +''
       m = nil
-      @@input.raw do |stdin|
-        @@output << "\e[6n"
-        @@output.flush
+      @input.raw do |stdin|
+        @output << "\e[6n"
+        @output.flush
         loop do
           c = stdin.getc
           next if c.nil?
@@ -275,7 +272,7 @@ class Reline::ANSI
       row = m[:row].to_i - 1
     rescue Errno::ENOTTY
       begin
-        buf = @@output.pread(@@output.pos, 0)
+        buf = @output.pread(@output.pos, 0)
         row = buf.count("\n")
         column = buf.rindex("\n") ? (buf.size - buf.rindex("\n")) - 1 : 0
       rescue Errno::ESPIPE
@@ -288,30 +285,30 @@ class Reline::ANSI
     Reline::CursorPos.new(column, row)
   end
 
-  def self.move_cursor_column(x)
-    @@output.write "\e[#{x + 1}G"
+  def move_cursor_column(x)
+    @output.write "\e[#{x + 1}G"
   end
 
-  def self.move_cursor_up(x)
+  def move_cursor_up(x)
     if x > 0
-      @@output.write "\e[#{x}A"
+      @output.write "\e[#{x}A"
     elsif x < 0
       move_cursor_down(-x)
     end
   end
 
-  def self.move_cursor_down(x)
+  def move_cursor_down(x)
     if x > 0
-      @@output.write "\e[#{x}B"
+      @output.write "\e[#{x}B"
     elsif x < 0
       move_cursor_up(-x)
     end
   end
 
-  def self.hide_cursor
+  def hide_cursor
     if Reline::Terminfo.enabled?
       begin
-        @@output.write Reline::Terminfo.tigetstr('civis')
+        @output.write Reline::Terminfo.tigetstr('civis')
       rescue Reline::Terminfo::TerminfoError
         # civis is undefined
       end
@@ -320,10 +317,10 @@ class Reline::ANSI
     end
   end
 
-  def self.show_cursor
+  def show_cursor
     if Reline::Terminfo.enabled?
       begin
-        @@output.write Reline::Terminfo.tigetstr('cnorm')
+        @output.write Reline::Terminfo.tigetstr('cnorm')
       rescue Reline::Terminfo::TerminfoError
         # cnorm is undefined
       end
@@ -332,34 +329,33 @@ class Reline::ANSI
     end
   end
 
-  def self.erase_after_cursor
-    @@output.write "\e[K"
+  def erase_after_cursor
+    @output.write "\e[K"
   end
 
   # This only works when the cursor is at the bottom of the scroll range
   # For more details, see https://github.com/ruby/reline/pull/577#issuecomment-1646679623
-  def self.scroll_down(x)
+  def scroll_down(x)
     return if x.zero?
     # We use `\n` instead of CSI + S because CSI + S would cause https://github.com/ruby/reline/issues/576
-    @@output.write "\n" * x
+    @output.write "\n" * x
   end
 
-  def self.clear_screen
-    @@output.write "\e[2J"
-    @@output.write "\e[1;1H"
+  def clear_screen
+    @output.write "\e[2J"
+    @output.write "\e[1;1H"
   end
 
-  @@old_winch_handler = nil
-  def self.set_winch_handler(&handler)
-    @@old_winch_handler = Signal.trap('WINCH', &handler)
+  def set_winch_handler(&handler)
+    @old_winch_handler = Signal.trap('WINCH', &handler)
   end
 
-  def self.prep
+  def prep
     retrieve_keybuffer
     nil
   end
 
-  def self.deprep(otio)
-    Signal.trap('WINCH', @@old_winch_handler) if @@old_winch_handler
+  def deprep(otio)
+    Signal.trap('WINCH', @old_winch_handler) if @old_winch_handler
   end
 end
