@@ -366,18 +366,14 @@ module Reline
       rescue Errno::EIO
         # Maybe the I/O has been closed.
       rescue StandardError => e
-        line_editor.finalize
-        io_gate.deprep(otio)
         raise e
       rescue Exception
         # Including Interrupt
+        raise
+      ensure
         line_editor.finalize
         io_gate.deprep(otio)
-        raise
       end
-
-      line_editor.finalize
-      io_gate.deprep(otio)
     end
 
     # GNU Readline waits for "keyseq-timeout" milliseconds to see if the ESC
