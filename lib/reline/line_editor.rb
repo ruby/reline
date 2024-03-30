@@ -908,31 +908,30 @@ class Reline::LineEditor
   end
 
   private def move_completed_list(direction)
-    if @completion_journey_state
-      if (delta = { up: -1, down: +1 }[direction])
-        @completion_journey_state.pointer = (@completion_journey_state.pointer + delta) % @completion_journey_state.list.size
-      end
-    else
-      preposing, target, postposing = retrieve_completion_block
-      return false unless target
+    @completion_journey_state ||= retrieve_completion_journey_state
+    return false unless @completion_journey_state
 
-      list = call_completion_proc
-      return false unless list.is_a?(Array)
-
-      candidates = list.select{ |item| item.start_with?(target) }
-      return false if candidates.empty?
-
-      pre = preposing.split("\n", -1).last || ''
-      post = postposing.split("\n", -1).first || ''
-      pointer = direction == :up ? candidates.size : 1
-      @completion_journey_state = CompletionJourneyState.new(
-        @line_index, pre, target, post, [target] + candidates, pointer
-      )
+    if (delta = { up: -1, down: +1 }[direction])
+      @completion_journey_state.pointer = (@completion_journey_state.pointer + delta) % @completion_journey_state.list.size
     end
-
     completed = @completion_journey_state.list[@completion_journey_state.pointer]
     set_current_line(@completion_journey_state.pre + completed + @completion_journey_state.post, @completion_journey_state.pre.bytesize + completed.bytesize)
     true
+  end
+
+  private def retrieve_completion_journey_state
+    preposing, target, postposing = retrieve_completion_block
+    list = call_completion_proc
+    return unless list.is_a?(Array)
+
+    candidates = list.select{ |item| item.start_with?(target) }
+    return if candidates.empty?
+
+    pre = preposing.split("\n", -1).last || ''
+    post = postposing.split("\n", -1).first || ''
+    CompletionJourneyState.new(
+      @line_index, pre, target, post, [target] + candidates, 0
+    )
   end
 
   private def run_for_operators(key, method_symbol, &block)
@@ -1153,15 +1152,24 @@ class Reline::LineEditor
     else
       normal_char(key)
     end
+
     unless completion_occurs
       @completion_state = CompletionState::NORMAL
       @completion_journey_state = nil
     end
+
     if @in_pasting
       clear_dialogs
-    else
-      return old_lines != @buffer_of_lines
+      return
     end
+
+    modified = old_lines != @buffer_of_lines
+    if !completion_occurs && modified && !@config.disable_completion && @config.autocompletion
+      # Auto complete starts only when edited
+      process_insert(force: true)
+      @completion_journey_state = retrieve_completion_journey_state
+    end
+    modified
   end
 
   def scroll_into_view

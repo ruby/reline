@@ -222,21 +222,13 @@ module Reline
       return unless config.autocompletion
 
       journey_data = completion_journey_data
-      if just_cursor_moving and journey_data.nil?
-        # Auto complete starts only when edited
-        return
-      end
-      if journey_data
-        result = journey_data.list.drop(1)
-        pointer = journey_data.pointer - 1
-        target = journey_data.list[journey_data.pointer]
-      else
-        pre, target, post = retrieve_completion_block(true)
-        return if target.nil? || target.empty?
+      return unless journey_data
 
-        result = call_completion_proc_with_checking_args(pre, target, post)
-        return if result and result.size == 1 and result[0] == target
-      end
+      target = journey_data.list[journey_data.pointer]
+      result = journey_data.list.drop(1)
+      pointer = journey_data.pointer - 1
+      return if target.empty? || (result == [target] && pointer < 0)
+
       target_width = Reline::Unicode.calculate_width(target)
       x = cursor_pos.x - target_width
       if x < 0
