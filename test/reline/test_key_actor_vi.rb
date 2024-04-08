@@ -693,14 +693,14 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
   end
 
   def test_vi_delete_meta_with_arg
-    input_keys("aaa bbb ccc\C-[02w")
-    assert_line_around_cursor('aaa bbb ', 'ccc')
+    input_keys("aaa bbb ccc ddd\C-[03w")
+    assert_line_around_cursor('aaa bbb ccc ', 'ddd')
     input_keys('2dl')
-    assert_line_around_cursor('aaa bbb ', 'c')
+    assert_line_around_cursor('aaa bbb ccc ', 'd')
     input_keys('d2h')
-    assert_line_around_cursor('aaa bb', 'c')
+    assert_line_around_cursor('aaa bbb cc', 'd')
     input_keys('2d3h')
-    assert_line_around_cursor('aaa', 'c')
+    assert_line_around_cursor('aaa ', 'd')
     input_keys('dd')
     assert_line_around_cursor('', '')
   end
@@ -731,10 +731,10 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_line_around_cursor('aaa bbb ', 'ccc')
     # dc dy should cancel delete_meta
     # cd cy should cancel change_meta
-    # yd yc yy should cancel yank_meta
+    # yd yc should cancel yank_meta
     # p should not paste yanked text because yank_meta is canceled
-    input_keys('dchdyhcdhcyhydhychyyhp')
-    assert_line_around_cursor('a', 'aa bbb ccc')
+    input_keys('dchdyhcdhcyhydhPychP')
+    assert_line_around_cursor('aa', 'a bbb ccc')
   end
 
   def test_cancel_waiting_with_symbol_key

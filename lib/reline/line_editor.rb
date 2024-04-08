@@ -938,7 +938,7 @@ class Reline::LineEditor
     if @vi_waiting_operator
       if VI_MOTIONS.include?(method_symbol)
         old_byte_pointer = @byte_pointer
-        @vi_arg ||= @vi_waiting_operator_arg
+        @vi_arg = (@vi_arg || 1) * @vi_waiting_operator_arg
         block.(true)
         unless @waiting_proc
           byte_pointer_diff = @byte_pointer - old_byte_pointer
@@ -2324,6 +2324,7 @@ class Reline::LineEditor
     if @vi_waiting_operator
       set_current_line('', 0) if @vi_waiting_operator == :vi_change_meta_confirm && arg.nil?
       @vi_waiting_operator = nil
+      @vi_waiting_operator_arg = nil
     else
       @drop_terminate_spaces = true
       @vi_waiting_operator = :vi_change_meta_confirm
@@ -2341,6 +2342,7 @@ class Reline::LineEditor
     if @vi_waiting_operator
       set_current_line('', 0) if @vi_waiting_operator == :vi_delete_meta_confirm && arg.nil?
       @vi_waiting_operator = nil
+      @vi_waiting_operator_arg = nil
     else
       @vi_waiting_operator = :vi_delete_meta_confirm
       @vi_waiting_operator_arg = arg || 1
@@ -2360,6 +2362,7 @@ class Reline::LineEditor
   private def vi_yank(key, arg: 1)
     if @vi_waiting_operator
       @vi_waiting_operator = nil
+      @vi_waiting_operator_arg = nil
     else
       @vi_waiting_operator = :vi_yank_confirm
       @vi_waiting_operator_arg = arg
