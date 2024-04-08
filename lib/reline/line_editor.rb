@@ -2359,13 +2359,14 @@ class Reline::LineEditor
     set_current_line(line || '', @byte_pointer + (byte_pointer_diff < 0 ? byte_pointer_diff : 0))
   end
 
-  private def vi_yank(key, arg: 1)
+  private def vi_yank(key, arg: nil)
     if @vi_waiting_operator
+      copy_for_vi(current_line) if @vi_waiting_operator == :vi_yank_confirm && arg.nil?
       @vi_waiting_operator = nil
       @vi_waiting_operator_arg = nil
     else
       @vi_waiting_operator = :vi_yank_confirm
-      @vi_waiting_operator_arg = arg
+      @vi_waiting_operator_arg = arg || 1
     end
   end
 

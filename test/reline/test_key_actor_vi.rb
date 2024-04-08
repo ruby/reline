@@ -760,12 +760,16 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
   end
 
   def test_vi_yank
-    input_keys("foo bar\C-[0")
-    assert_line_around_cursor('', 'foo bar')
+    input_keys("foo bar\C-[2h")
+    assert_line_around_cursor('foo ', 'bar')
     input_keys('y3l')
-    assert_line_around_cursor('', 'foo bar')
+    assert_line_around_cursor('foo ', 'bar')
     input_keys('P')
-    assert_line_around_cursor('fo', 'ofoo bar')
+    assert_line_around_cursor('foo ba', 'rbar')
+    input_keys('3h3yhP')
+    assert_line_around_cursor('foofo', 'o barbar')
+    input_keys('yyP')
+    assert_line_around_cursor('foofofoofoo barba', 'ro barbar')
   end
 
   def test_vi_end_word_with_operator
