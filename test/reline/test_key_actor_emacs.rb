@@ -1265,10 +1265,10 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
 
   def test_incremental_search_history_cancel_by_symbol_key
     # ed_prev_char should move cursor left and cancel incremental search
-    input_keys("abc\C-rdef")
+    input_keys("abc\C-r")
     input_key_by_symbol(:ed_prev_char)
-    input_keys("g")
-    assert_line_around_cursor('abg', 'c')
+    input_keys('d')
+    assert_line_around_cursor('abd', 'c')
   end
 
   # Unicode emoji test
