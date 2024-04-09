@@ -1538,6 +1538,7 @@ class Reline::LineEditor
     @byte_pointer = 0
   end
   alias_method :beginning_of_line, :ed_move_to_beg
+  alias_method :vi_zero, :ed_move_to_beg
 
   private def ed_move_to_end(key)
     @byte_pointer = 0
@@ -2321,10 +2322,6 @@ class Reline::LineEditor
       end
     end
     copy_for_vi(deleted)
-  end
-
-  private def vi_zero(key)
-    @byte_pointer = 0
   end
 
   private def vi_change_meta(key, arg: nil)
