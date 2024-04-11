@@ -725,15 +725,27 @@ class Reline::KeyActor::ViInsert::Test < Reline::TestCase
     assert_line_around_cursor('foo  hog', 'e  baz')
   end
 
+  def test_vi_waiting_operator_with_waiting_proc
+    input_keys("foo foo foo foo foo\C-[0")
+    input_keys('2d3fo')
+    assert_line_around_cursor('', ' foo foo')
+    input_keys('fo')
+    assert_line_around_cursor(' f', 'oo foo')
+  end
 
   def test_vi_waiting_operator_cancel
     input_keys("aaa bbb ccc\C-[02w")
     assert_line_around_cursor('aaa bbb ', 'ccc')
     # dc dy should cancel delete_meta
+    input_keys('dch')
+    input_keys('dyh')
     # cd cy should cancel change_meta
+    input_keys('cdh')
+    input_keys('cyh')
     # yd yc should cancel yank_meta
-    # p should not paste yanked text because yank_meta is canceled
-    input_keys('dchdyhcdhcyhydhPychP')
+    # P should not paste yanked text because yank_meta is canceled
+    input_keys('ydhP')
+    input_keys('ychP')
     assert_line_around_cursor('aa', 'a bbb ccc')
   end
 
