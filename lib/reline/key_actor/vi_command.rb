@@ -75,7 +75,7 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     #  36 $
     :ed_move_to_end,
     #  37 %
-    :vi_match,
+    :ed_unassigned,
     #  38 &
     :ed_unassigned,
     #  39 '
@@ -89,11 +89,11 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     #  43 +
     :ed_next_history,
     #  44 ,
-    :vi_repeat_prev_char,
+    :ed_unassigned,
     #  45 -
     :ed_prev_history,
     #  46 .
-    :vi_redo,
+    :ed_unassigned,
     #  47 /
     :vi_search_prev,
     #  48 0
@@ -117,9 +117,9 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     #  57 9
     :ed_argument_digit,
     #  58 :
-    :ed_command,
+    :ed_unassigned,
     #  59 ;
-    :vi_repeat_next_char,
+    :ed_unassigned,
     #  60 <
     :ed_unassigned,
     #  61 =
@@ -157,21 +157,21 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     #  77 M
     :ed_unassigned,
     #  78 N
-    :vi_repeat_search_prev,
+    :ed_unassigned,
     #  79 O
-    :ed_sequence_lead_in,
+    :ed_unassigned,
     #  80 P
     :vi_paste_prev,
     #  81 Q
     :ed_unassigned,
     #  82 R
-    :vi_replace_mode,
+    :ed_unassigned,
     #  83 S
-    :vi_substitute_line,
+    :ed_unassigned,
     #  84 T
     :vi_to_prev_char,
     #  85 U
-    :vi_undo_line,
+    :ed_unassigned,
     #  86 V
     :ed_unassigned,
     #  87 W
@@ -179,11 +179,11 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     #  88 X
     :ed_delete_prev_char,
     #  89 Y
-    :vi_yank_end,
+    :ed_unassigned,
     #  90 Z
     :ed_unassigned,
     #  91 [
-    :ed_sequence_lead_in,
+    :ed_unassigned,
     #  92 \
     :ed_unassigned,
     #  93 ]
@@ -191,7 +191,7 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     #  94 ^
     :vi_first_print,
     #  95 _
-    :vi_history_word,
+    :ed_unassigned,
     #  96 `
     :ed_unassigned,
     #  97 a
@@ -221,7 +221,7 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     # 109 m
     :ed_unassigned,
     # 110 n
-    :vi_repeat_search_next,
+    :ed_unassigned,
     # 111 o
     :ed_unassigned,
     # 112 p
@@ -231,11 +231,11 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     # 114 r
     :vi_replace_char,
     # 115 s
-    :vi_substitute_char,
+    :ed_unassigned,
     # 116 t
     :vi_to_next_char,
     # 117 u
-    :vi_undo,
+    :ed_unassigned,
     # 118 v
     :vi_histedit,
     # 119 w
@@ -253,7 +253,7 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     # 125 }
     :ed_unassigned,
     # 126 ~
-    :vi_change_case,
+    :ed_unassigned,
     # 127 ^?
     :em_delete_prev_char,
     # 128 M-^@
@@ -415,7 +415,7 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     # 206 M-N
     :ed_unassigned,
     # 207 M-O
-    :ed_sequence_lead_in,
+    :ed_unassigned,
     # 208 M-P
     :ed_unassigned,
     # 209 M-Q
@@ -439,7 +439,7 @@ class Reline::KeyActor::ViCommand < Reline::KeyActor::Base
     # 218 M-Z
     :ed_unassigned,
     # 219 M-[
-    :ed_sequence_lead_in,
+    :ed_unassigned,
     # 220 M-\
     :ed_unassigned,
     # 221 M-]

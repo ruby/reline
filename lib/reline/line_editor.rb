@@ -33,8 +33,6 @@ class Reline::LineEditor
     vi_next_big_word
     vi_prev_big_word
     vi_end_big_word
-    vi_repeat_next_char
-    vi_repeat_prev_char
   }
 
   module CompletionState
