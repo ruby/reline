@@ -321,7 +321,7 @@ class Reline::KeyActor::Emacs < Reline::KeyActor::Base
     # 159 M-^_
     :em_copy_prev_word,
     # 160 M-SPACE
-    :ed_unassigned,
+    :em_set_mark,
     # 161 M-!
     :ed_unassigned,
     # 162 M-"
@@ -435,7 +435,7 @@ class Reline::KeyActor::Emacs < Reline::KeyActor::Base
     # 216 M-X
     :ed_command,
     # 217 M-Y
-    :ed_unassigned,
+    :em_yank_pop,
     # 218 M-Z
     :ed_unassigned,
     # 219 M-[
