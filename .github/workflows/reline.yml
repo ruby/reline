@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -30,11 +30,11 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
       - name: Install dependencies
-        run:  bundle install
+        run: bundle install
       - name: rake test
         env:
           TERM: xterm-256color
-        run:  bundle exec rake test
+        run: bundle exec rake test
       - name: rake test (frozen string literal)
         env:
           TERM: xterm-256color
@@ -47,8 +47,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - { ruby: head,  os: ubuntu-latest  }
-          - { ruby: head,  os: macos-latest   }
+          - { ruby: head, os: ubuntu-latest }
+          - { ruby: head, os: macos-latest }
           - { ruby: mingw, os: windows-latest }
           - { ruby: mswin, os: windows-latest }
     timeout-minutes: 30
@@ -59,11 +59,11 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
       - name: Install dependencies
-        run:  bundle install
+        run: bundle install
       - name: Download test readline
-        run:  ruby download-test_readline.rb
+        run: ruby download-test_readline.rb
       - name: rake test
-        run:  bundle exec rake test
+        run: bundle exec rake test
       - name: rake ci-test
         env:
           TEST_READLINE_OR_RELINE: Reline
@@ -78,7 +78,7 @@ jobs:
     strategy:
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
-        os: [ ubuntu-latest ]
+        os: [ubuntu-latest]
         exclude:
           - ruby: 2.6
     timeout-minutes: 30
@@ -98,13 +98,11 @@ jobs:
           make
           sudo make install
       - name: Install dependencies
-        run:  bundle install
+        run: bundle install
       - name: Install reline
-        run:  |
-          rake build
-          rake install
+        run: rake install
       - name: Download ruby/irb
-        run:  |
+        run: |
           git clone https://github.com/ruby/irb
       - name: Run irb test
         working-directory: ./irb
@@ -128,7 +126,7 @@ jobs:
     strategy:
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
-        os: [ ubuntu-latest ]
+        os: [ubuntu-latest]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -140,6 +138,6 @@ jobs:
         run: |
           sudo apt-get install -y libvterm-dev
       - name: Install dependencies
-        run:  WITH_VTERM=1 bundle install
+        run: WITH_VTERM=1 bundle install
       - name: rake test_yamatanooroti
-        run:  WITH_VTERM=1 bundle exec rake test_yamatanooroti
+        run: WITH_VTERM=1 bundle exec rake test_yamatanooroti
