@@ -366,7 +366,7 @@ class Reline::LineEditor
     @scroll_partial_screen
   end
 
-  def wrapped_prompt_lines
+  def wrapped_prompt_and_input_lines
     with_cache(__method__, @buffer_of_lines.size, modified_lines, prompt_list, screen_width) do |n, lines, prompts, width, prev_cache_key, cached_value|
       prev_n, prev_lines, prev_prompts, prev_width = prev_cache_key
       cached_wraps = {}
@@ -427,7 +427,7 @@ class Reline::LineEditor
     prompt_width = calculate_width(prompt_list[@line_index], true)
     line_before_cursor = whole_lines[@line_index].byteslice(0, @byte_pointer)
     wrapped_line_before_cursor = split_by_width(' ' * prompt_width + line_before_cursor, screen_width).first.compact
-    wrapped_cursor_y = wrapped_prompt_lines[0...@line_index].sum(&:size) + wrapped_line_before_cursor.size - 1
+    wrapped_cursor_y = wrapped_prompt_and_input_lines[0...@line_index].sum(&:size) + wrapped_line_before_cursor.size - 1
     wrapped_cursor_x = calculate_width(wrapped_line_before_cursor.last)
     [wrapped_cursor_x, wrapped_cursor_y]
   end
@@ -491,7 +491,7 @@ class Reline::LineEditor
     wrapped_cursor_x, wrapped_cursor_y = wrapped_cursor_position
 
     rendered_lines = @rendered_screen.lines
-    new_lines = wrapped_prompt_lines.flatten(1)[screen_scroll_top, screen_height].map do |prompt, line|
+    new_lines = wrapped_prompt_and_input_lines.flatten(1)[screen_scroll_top, screen_height].map do |prompt, line|
       prompt_width = Reline::Unicode.calculate_width(prompt, true)
       [[0, prompt_width, prompt], [prompt_width, Reline::Unicode.calculate_width(line, true), line]]
     end
