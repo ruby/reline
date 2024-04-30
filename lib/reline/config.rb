@@ -30,17 +30,20 @@ class Reline::Config
 
   def initialize
     @additional_key_bindings = {} # from inputrc
-    @additional_key_bindings[:emacs] = {}
-    @additional_key_bindings[:vi_insert] = {}
-    @additional_key_bindings[:vi_command] = {}
-    @oneshot_key_bindings = {}
+    @additional_key_bindings[:emacs] = Reline::KeyActor::Base.new
+    @additional_key_bindings[:vi_insert] = Reline::KeyActor::Base.new
+    @additional_key_bindings[:vi_command] = Reline::KeyActor::Base.new
+    @oneshot_key_bindings = Reline::KeyActor::Base.new
     @editing_mode_label = :emacs
     @keymap_label = :emacs
     @keymap_prefix = []
     @key_actors = {}
-    @key_actors[:emacs] = Reline::KeyActor::Emacs.new
-    @key_actors[:vi_insert] = Reline::KeyActor::ViInsert.new
-    @key_actors[:vi_command] = Reline::KeyActor::ViCommand.new
+    @key_actors[:emacs] = Reline::KeyActor::Base.new
+    @key_actors[:vi_insert] = Reline::KeyActor::Base.new
+    @key_actors[:vi_command] = Reline::KeyActor::Base.new
+    @key_actors[:emacs].add_mappings(Reline::KeyActor::EMACS_MAPPING)
+    @key_actors[:vi_insert].add_mappings(Reline::KeyActor::VI_INSERT_MAPPING)
+    @key_actors[:vi_command].add_mappings(Reline::KeyActor::VI_COMMAND_MAPPING)
     @vi_cmd_mode_string = '(cmd)'
     @vi_ins_mode_string = '(ins)'
     @emacs_mode_string = '@'
@@ -62,7 +65,7 @@ class Reline::Config
   end
 
   def editing_mode
-    @key_actors[@editing_mode_label]
+    @editing_mode_label
   end
 
   def editing_mode=(val)
@@ -71,10 +74,6 @@ class Reline::Config
 
   def editing_mode_is?(*val)
     val.any?(@editing_mode_label)
-  end
-
-  def keymap
-    @key_actors[@keymap_label]
   end
 
   def loaded?
@@ -133,14 +132,14 @@ class Reline::Config
 
   def key_bindings
     # The key bindings for each editing mode will be overwritten by the user-defined ones.
-    kb = @key_actors[@editing_mode_label].default_key_bindings.dup
-    kb.merge!(@additional_key_bindings[@editing_mode_label])
-    kb.merge!(@oneshot_key_bindings)
-    kb
+    Reline::KeyActor::Composite.new([@oneshot_key_bindings, @additional_key_bindings[@editing_mode_label], @key_actors[@editing_mode_label]])
   end
 
   def add_oneshot_key_binding(keystroke, target)
-    @oneshot_key_bindings[keystroke] = target
+    # Old IRB sets invalid keystroke [Reline::Key]. We should ignore it.
+    return unless keystroke.all? { |c| c.is_a?(Integer) }
+
+    @oneshot_key_bindings.add(keystroke, target)
   end
 
   def reset_oneshot_key_bindings
@@ -148,11 +147,11 @@ class Reline::Config
   end
 
   def add_default_key_binding_by_keymap(keymap, keystroke, target)
-    @key_actors[keymap].default_key_bindings[keystroke] = target
+    @key_actors[keymap].add(keystroke, target)
   end
 
   def add_default_key_binding(keystroke, target)
-    @key_actors[@keymap_label].default_key_bindings[keystroke] = target
+    @key_actors[@keymap_label].add(keystroke, target)
   end
 
   def read_lines(lines, file = nil)
@@ -192,7 +191,7 @@ class Reline::Config
         func_name = func_name.split.first
         keystroke, func = bind_key(key, func_name)
         next unless keystroke
-        @additional_key_bindings[@keymap_label][@keymap_prefix + keystroke] = func
+        @additional_key_bindings[@keymap_label].add(@keymap_prefix + keystroke, func)
       end
     end
     unless if_stack.empty?

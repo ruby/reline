@@ -261,7 +261,6 @@ class Reline::LineEditor
     @line_index = 0
     @cache.clear
     @line_backup_in_history = nil
-    @multibyte_buffer = String.new(encoding: 'ASCII-8BIT')
   end
 
   def multiline_on
@@ -683,10 +682,8 @@ class Reline::LineEditor
           @trap_key.each do |t|
             @config.add_oneshot_key_binding(t, @name)
           end
-        elsif @trap_key.is_a?(Array)
+        else
           @config.add_oneshot_key_binding(@trap_key, @name)
-        elsif @trap_key.is_a?(Integer) or @trap_key.is_a?(Reline::Key)
-          @config.add_oneshot_key_binding([@trap_key], @name)
         end
       end
       dialog_render_info
@@ -1002,8 +999,10 @@ class Reline::LineEditor
     @drop_terminate_spaces = false
   end
 
-  private def process_key(key, method_symbol)
-    if key.is_a?(Symbol)
+  private def process_key(key_struct)
+    key = key_struct.char
+    method_symbol = key_struct.method_symbol
+    if key_struct.bytes[0] == 27
       cleanup_waiting
     elsif @waiting_proc
       old_byte_pointer = @byte_pointer
@@ -1061,37 +1060,10 @@ class Reline::LineEditor
         end
       end
       @kill_ring.process
-    else
-      ed_insert(key) unless @config.editing_mode_is?(:vi_command)
     end
   end
 
-  private def normal_char(key)
-    @multibyte_buffer << key.combined_char
-    if @multibyte_buffer.size > 1
-      if @multibyte_buffer.dup.force_encoding(@encoding).valid_encoding?
-        process_key(@multibyte_buffer.dup.force_encoding(@encoding), nil)
-        @multibyte_buffer.clear
-      else
-        # invalid
-        return
-      end
-    else # single byte
-      return if key.char >= 128 # maybe, first byte of multi byte
-      method_symbol = @config.editing_mode.get_method(key.combined_char)
-      if key.with_meta and method_symbol == :ed_unassigned
-        if @config.editing_mode_is?(:vi_command, :vi_insert)
-          # split ESC + key in vi mode
-          method_symbol = @config.editing_mode.get_method("\e".ord)
-          process_key("\e".ord, method_symbol)
-          method_symbol = @config.editing_mode.get_method(key.char)
-          process_key(key.char, method_symbol)
-        end
-      else
-        process_key(key.combined_char, method_symbol)
-      end
-      @multibyte_buffer.clear
-    end
+  private def vi_cursor_adjust
     if @config.editing_mode_is?(:vi_command) and @byte_pointer > 0 and @byte_pointer == current_line.bytesize
       byte_size = Reline::Unicode.get_prev_mbchar_size(@buffer_of_lines[@line_index], @byte_pointer)
       @byte_pointer -= byte_size
@@ -1112,7 +1084,7 @@ class Reline::LineEditor
     save_old_buffer
     @config.reset_oneshot_key_bindings
     @dialogs.each do |dialog|
-      if key.char.instance_of?(Symbol) and key.char == dialog.name
+      if dialog.name && key.method_symbol == dialog.name
         return
       end
     end
@@ -1126,12 +1098,8 @@ class Reline::LineEditor
     end
     @first_char = false
     @completion_occurs = false
-
-    if key.char.is_a?(Symbol)
-      process_key(key.char, key.char)
-    else
-      normal_char(key)
-    end
+    process_key(key)
+    vi_cursor_adjust
     unless @completion_occurs
       @completion_state = CompletionState::NORMAL
       @completion_journey_state = nil

@@ -2,53 +2,18 @@ require_relative 'helper'
 require "reline"
 
 class Reline::TestKey < Reline::TestCase
-  def setup
-    Reline.test_mode
-  end
-
-  def teardown
-    Reline.test_reset
-  end
-
-  def test_match_key
-    assert(Reline::Key.new(1, 2, false).match?(Reline::Key.new(1, 2, false)))
-    assert(Reline::Key.new(1, 2, false).match?(Reline::Key.new(nil, 2, false)))
-    assert(Reline::Key.new(1, 2, false).match?(Reline::Key.new(1, 2, nil)))
-
-    assert(Reline::Key.new(nil, 2, false).match?(Reline::Key.new(nil, 2, false)))
-    assert(Reline::Key.new(1, nil, false).match?(Reline::Key.new(1, nil, false)))
-    assert(Reline::Key.new(1, 2, nil).match?(Reline::Key.new(1, 2, nil)))
-
-    assert(Reline::Key.new(nil, 2, false).match?(Reline::Key.new(nil, 2, false)))
-    assert(Reline::Key.new(1, nil, false).match?(Reline::Key.new(1, nil, false)))
-    assert(Reline::Key.new(1, 2, nil).match?(Reline::Key.new(1, 2, nil)))
-
-    assert(!Reline::Key.new(1, 2, false).match?(Reline::Key.new(3, 1, false)))
-    assert(!Reline::Key.new(1, 2, false).match?(Reline::Key.new(1, 3, false)))
-    assert(!Reline::Key.new(1, 2, false).match?(Reline::Key.new(1, 3, true)))
-  end
-
-  def test_match_integer
-    assert(Reline::Key.new(1, 2, false).match?(2))
-    assert(Reline::Key.new(nil, 2, false).match?(2))
-    assert(Reline::Key.new(1, nil, false).match?(1))
-
-    assert(!Reline::Key.new(1, 2, false).match?(1))
-    assert(!Reline::Key.new(1, nil, false).match?(2))
-    assert(!Reline::Key.new(nil, nil, false).match?(1))
-  end
-
   def test_match_symbol
-    assert(Reline::Key.new(:key1, :key2, false).match?(:key2))
-    assert(Reline::Key.new(:key1, nil, false).match?(:key1))
+    bytes = "\e[dummy_bytes".bytes
+    assert(Reline::Key.new('a', :key2, bytes).match?(:key2))
+    assert(Reline::Key.new(12, :key1, bytes).match?(:key1))
+    assert(Reline::Key.new(12, :key3, bytes).match?(:key3))
 
-    assert(!Reline::Key.new(:key1, :key2, false).match?(:key1))
-    assert(!Reline::Key.new(:key1, nil, false).match?(:key2))
-    assert(!Reline::Key.new(nil, nil, false).match?(:key1))
+    refute(Reline::Key.new('a', :key2, bytes).match?(:key1))
+    refute(Reline::Key.new(12, :key1, bytes).match?(:key2))
+    refute(Reline::Key.new(nil, :key3, bytes).match?(:key4))
   end
 
-  def test_match_other
-    assert(!Reline::Key.new(:key1, 2, false).match?("key1"))
-    assert(!Reline::Key.new(nil, nil, false).match?(nil))
+  def test_match_symbol_wrongly_used_in_irb
+    refute(Reline::Key.new(nil, 0xE4, true).match?(:foo))
   end
 end

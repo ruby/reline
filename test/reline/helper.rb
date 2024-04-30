@@ -99,32 +99,23 @@ class Reline::TestCase < Test::Unit::TestCase
   end
 
   def input_key_by_symbol(input)
-    @line_editor.input_key(Reline::Key.new(input, input, false))
+    @line_editor.input_key(Reline::Key.new(27, input, "\e[dummy_bytes".bytes))
   end
 
   def input_keys(input, convert = true)
     input = convert_str(input) if convert
     input.chars.each do |c|
-      if c.bytesize == 1
-        eighth_bit = 0b10000000
-        byte = c.bytes.first
-        if byte.allbits?(eighth_bit)
-          @line_editor.input_key(Reline::Key.new(byte ^ eighth_bit, byte, true))
-        else
-          @line_editor.input_key(Reline::Key.new(byte, byte, false))
-        end
-      else
-        c.bytes.each do |b|
-          @line_editor.input_key(Reline::Key.new(b, b, false))
-        end
+      unless c.valid_encoding?
+        # TODO: we should not use "\M-?" in this test.
+        # For example, "\M-C\M-1" is confusing with "\u{e1}". Use "\eC\e1" instead.
+        c = "\e" + (c.bytes.first & 0x7f).chr
       end
-    end
-  end
-
-  def input_raw_keys(input, convert = true)
-    input = convert_str(input) if convert
-    input.bytes.each do |b|
-      @line_editor.input_key(Reline::Key.new(b, b, false))
+      func = @config.key_bindings.get(c.bytes)
+      if func
+        @line_editor.input_key(Reline::Key.new(c.bytes.last, func, c.bytes))
+      else
+        @line_editor.input_key(Reline::Key.new(c, :ed_insert, c.bytes))
+      end
     end
   end
 
@@ -161,7 +152,7 @@ class Reline::TestCase < Test::Unit::TestCase
   def assert_key_binding(input, method_symbol, editing_modes = [:emacs, :vi_insert, :vi_command])
     editing_modes.each do |editing_mode|
       @config.editing_mode = editing_mode
-      assert_equal(method_symbol, @config.editing_mode.default_key_bindings[input.bytes])
+      assert_equal(method_symbol, @config.key_bindings.get(input.bytes))
     end
   end
 end

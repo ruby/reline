@@ -17,19 +17,9 @@ module Reline
 
   class ConfigEncodingConversionError < StandardError; end
 
-  Key = Struct.new(:char, :combined_char, :with_meta) do
-    def match?(other)
-      case other
-      when Reline::Key
-        (other.char.nil? or char.nil? or char == other.char) and
-        (other.combined_char.nil? or combined_char.nil? or combined_char == other.combined_char) and
-        (other.with_meta.nil? or with_meta.nil? or with_meta == other.with_meta)
-      when Integer, Symbol
-        (combined_char and combined_char == other) or
-        (combined_char.nil? and char and char == other)
-      else
-        false
-      end
+  Key = Struct.new(:char, :method_symbol, :bytes) do
+    def match?(sym)
+      method_symbol == sym
     end
     alias_method :==, :match?
   end
@@ -349,24 +339,22 @@ module Reline
       begin
         line_editor.set_signal_handlers
         loop do
-          read_io(config.keyseq_timeout) { |inputs|
-            line_editor.set_pasting_state(io_gate.in_pasting?)
-            inputs.each do |key|
-              if key.char == :bracketed_paste_start
-                text = io_gate.read_bracketed_paste
-                line_editor.insert_pasted_text(text)
-                line_editor.scroll_into_view
-              else
-                line_editor.update(key)
-              end
-            end
+          wait_occurs = false
+          key = read_io(config.keyseq_timeout) {
+            line_editor.set_pasting_state(false)
+            wait_occurs = true
+            line_editor.rerender
           }
+          line_editor.set_pasting_state(!wait_occurs && io_gate.in_pasting?)
+          if key.method_symbol == :bracketed_paste_start
+            line_editor.insert_pasted_text(io_gate.read_bracketed_paste)
+            line_editor.scroll_into_view
+          else
+            line_editor.update(key)
+          end
           if line_editor.finished?
             line_editor.render_finished
             break
-          else
-            line_editor.set_pasting_state(io_gate.in_pasting?)
-            line_editor.rerender
           end
         end
         io_gate.move_cursor_column(0)
@@ -378,92 +366,41 @@ module Reline
       end
     end
 
-    # GNU Readline waits for "keyseq-timeout" milliseconds to see if the ESC
-    # is followed by a character, and times out and treats it as a standalone
-    # ESC if the second character does not arrive. If the second character
-    # comes before timed out, it is treated as a modifier key with the
-    # meta-property of meta-key, so that it can be distinguished from
-    # multibyte characters with the 8th bit turned on.
-    #
-    # GNU Readline will wait for the 2nd character with "keyseq-timeout"
-    # milli-seconds but wait forever after 3rd characters.
+    # GNU Readline waits for "keyseq-timeout" milliseconds when the input is ambiguous whether it is matching or matched.
+    # For example, ESC can be a standalone ESC or part of a sequence that starts with ESC.
+    # GNU Readline also waits for any other amibugous keybindings defined in inputrc.
     private def read_io(keyseq_timeout, &block)
       buffer = []
+      prev_status = :matching
       loop do
-        c = io_gate.getc(Float::INFINITY)
-        if c == -1
-          result = :unmatched
+        timeout = prev_status == :matching_matched ? keyseq_timeout.fdiv(1000) : Float::INFINITY
+        block.call unless io_gate.in_pasting?
+        c = io_gate.getc(timeout)
+        if c == -1 || c.nil?
+          if prev_status != :matching_matched
+            # Input closed
+            return Reline::Key.new(nil, nil, [])
+          end
+          status = :matched
         else
           buffer << c
-          result = key_stroke.match_status(buffer)
+          status = key_stroke.match_status(buffer)
         end
-        case result
-        when :matched
-          expanded = key_stroke.expand(buffer).map{ |expanded_c|
-            Reline::Key.new(expanded_c, expanded_c, false)
-          }
-          block.(expanded)
-          break
-        when :matching
-          if buffer.size == 1
-            case read_2nd_character_of_key_sequence(keyseq_timeout, buffer, c, block)
-            when :break then break
-            when :next  then next
-            end
+        if status == :matched || (prev_status != :unmatched && status == :unmatched)
+          expanded, bytes, rest = key_stroke.expand(buffer)
+          if expanded.is_a?(Array)
+            rest = expanded + rest
           end
-        when :unmatched
-          if buffer.size == 1 and c == "\e".ord
-            read_escaped_key(keyseq_timeout, c, block)
-          else
-            expanded = buffer.map{ |expanded_c|
-              Reline::Key.new(expanded_c, expanded_c, false)
-            }
-            block.(expanded)
+          rest.reverse_each { |c| io_gate.ungetc(c) }
+          buffer = []
+          case expanded
+          when Symbol
+            return Reline::Key.new(bytes.last, expanded, bytes)
+          when String
+            return Reline::Key.new(expanded, :ed_insert, bytes)
           end
-          break
         end
-      end
-    end
-
-    private def read_2nd_character_of_key_sequence(keyseq_timeout, buffer, c, block)
-      succ_c = io_gate.getc(keyseq_timeout.fdiv(1000))
-      if succ_c
-        case key_stroke.match_status(buffer.dup.push(succ_c))
-        when :unmatched
-          if c == "\e".ord
-            block.([Reline::Key.new(succ_c, succ_c | 0b10000000, true)])
-          else
-            block.([Reline::Key.new(c, c, false), Reline::Key.new(succ_c, succ_c, false)])
-          end
-          return :break
-        when :matching
-          io_gate.ungetc(succ_c)
-          return :next
-        when :matched
-          buffer << succ_c
-          expanded = key_stroke.expand(buffer).map{ |expanded_c|
-            Reline::Key.new(expanded_c, expanded_c, false)
-          }
-          block.(expanded)
-          return :break
-        end
-      else
-        block.([Reline::Key.new(c, c, false)])
-        return :break
-      end
-    end
-
-    private def read_escaped_key(keyseq_timeout, c, block)
-      escaped_c = io_gate.getc(keyseq_timeout.fdiv(1000))
-
-      if escaped_c.nil?
-        block.([Reline::Key.new(c, c, false)])
-      elsif escaped_c >= 128 # maybe, first byte of multi byte
-        block.([Reline::Key.new(c, c, false), Reline::Key.new(escaped_c, escaped_c, false)])
-      elsif escaped_c == "\e".ord # escape twice
-        block.([Reline::Key.new(c, c, false), Reline::Key.new(c, c, false)])
-      else
-        block.([Reline::Key.new(escaped_c, escaped_c | 0b10000000, true)])
+        prev_status = status
       end
     end
 
@@ -547,7 +484,7 @@ module Reline
   def self.core
     @core ||= Core.new { |core|
       core.config = Reline::Config.new
-      core.key_stroke = Reline::KeyStroke.new(core.config)
+      core.key_stroke = Reline::KeyStroke.new(core.config, core.encoding)
       core.line_editor = Reline::LineEditor.new(core.config, core.encoding)
 
       core.basic_word_break_characters = " \t\n`><=;|&{("
