@@ -948,7 +948,8 @@ class Reline::LineEditor
         unless @waiting_proc
           byte_pointer_diff = @byte_pointer - old_byte_pointer
           @byte_pointer = old_byte_pointer
-          send(@vi_waiting_operator, byte_pointer_diff)
+          method_obj = method(@vi_waiting_operator)
+          wrap_method_call(@vi_waiting_operator, method_obj, byte_pointer_diff)
           cleanup_waiting
         end
       else
@@ -1009,7 +1010,8 @@ class Reline::LineEditor
       if @vi_waiting_operator
         byte_pointer_diff = @byte_pointer - old_byte_pointer
         @byte_pointer = old_byte_pointer
-        send(@vi_waiting_operator, byte_pointer_diff)
+        method_obj = method(@vi_waiting_operator)
+        wrap_method_call(@vi_waiting_operator, method_obj, byte_pointer_diff)
         cleanup_waiting
       end
       @kill_ring.process
