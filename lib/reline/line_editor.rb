@@ -4,7 +4,6 @@ require 'reline/unicode'
 require 'tempfile'
 
 class Reline::LineEditor
-  # TODO: undo
   # TODO: Use "private alias_method" idiom after drop Ruby 2.5.
   attr_reader :byte_pointer
   attr_accessor :confirm_multiline_termination_proc
@@ -33,6 +32,31 @@ class Reline::LineEditor
     vi_next_big_word
     vi_prev_big_word
     vi_end_big_word
+  }
+
+  DELETE_COMMANDS = %i{
+    backward_delete_char
+    backward_kill_word
+    delete_char
+    ed_delete_next_char
+    ed_delete_prev_char
+    ed_delete_prev_word
+    ed_kill_line
+    em_delete
+    em_delete_next_word
+    em_delete_prev_char
+    em_kill_line
+    em_kill_region
+    kill_line
+    kill_whole_line
+    kill_word
+    unix_line_discard
+    unix_word_rubout
+    vi_change_to_eol
+    vi_delete_meta
+    vi_delete_meta_confirm
+    vi_delete_prev_char
+    vi_kill_line_prev
   }
 
   module CompletionState
@@ -251,6 +275,8 @@ class Reline::LineEditor
     @resized = false
     @cache = {}
     @rendered_screen = RenderedScreen.new(base_y: 0, lines: [], cursor_y: 0)
+    @past_lines = [["", 0, 0]]
+    @using_delete_command = false
     reset_line
   end
 
@@ -974,6 +1000,9 @@ class Reline::LineEditor
   end
 
   def wrap_method_call(method_symbol, method_obj, key, with_operator = false)
+    if DELETE_COMMANDS.include?(method_symbol)
+      @using_delete_command = true
+    end
     if @config.editing_mode_is?(:emacs, :vi_insert) and @vi_waiting_operator.nil?
       not_insertion = method_symbol != :ed_insert
       process_insert(force: not_insertion)
@@ -1108,6 +1137,7 @@ class Reline::LineEditor
   end
 
   def input_key(key)
+    save_old_buffer
     @config.reset_oneshot_key_bindings
     @dialogs.each do |dialog|
       if key.char.instance_of?(Symbol) and key.char == dialog.name
@@ -1122,7 +1152,6 @@ class Reline::LineEditor
       finish
       return
     end
-    old_lines = @buffer_of_lines.dup
     @first_char = false
     @completion_occurs = false
 
@@ -1136,18 +1165,45 @@ class Reline::LineEditor
       @completion_journey_state = nil
     end
 
+    save_past_lines
+
     if @in_pasting
       clear_dialogs
       return
     end
 
-    modified = old_lines != @buffer_of_lines
+    modified = @old_buffer_of_lines != @buffer_of_lines
     if !@completion_occurs && modified && !@config.disable_completion && @config.autocompletion
       # Auto complete starts only when edited
       process_insert(force: true)
       @completion_journey_state = retrieve_completion_journey_state
     end
     modified
+  end
+
+  def save_old_buffer
+    @old_buffer_of_lines = @buffer_of_lines.dup
+    @old_byte_pointer = @byte_pointer.dup
+    @old_line_index = @line_index.dup
+  end
+
+  MAX_PAST_LINES = 100
+  def save_past_lines
+    if @old_buffer_of_lines != @buffer_of_lines
+      if !@using_delete_command && @buffer_of_lines == @past_lines.last.first
+        # When deleting, @buffer_of_lines and @past_lines.last.first become the same.
+        # If it is the same as the previous state, consider it undone and do not add to past_lines.
+        @past_lines.pop
+      else
+        # Save the state before the changes.
+        @past_lines.push([@old_buffer_of_lines, @old_byte_pointer, @old_line_index])
+      end
+    end
+    @using_delete_command = false
+
+    if @past_lines.size > MAX_PAST_LINES
+      @past_lines.shift
+    end
   end
 
   def scroll_into_view
@@ -1218,6 +1274,18 @@ class Reline::LineEditor
   def set_current_line(line, byte_pointer = nil)
     cursor = current_byte_pointer_cursor
     @buffer_of_lines[@line_index] = line
+    if byte_pointer
+      @byte_pointer = byte_pointer
+    else
+      calculate_nearest_cursor(cursor)
+    end
+    process_auto_indent
+  end
+
+  def set_current_lines(lines, byte_pointer = nil, line_index = 0)
+    cursor = current_byte_pointer_cursor
+    @buffer_of_lines = lines
+    @line_index = line_index
     if byte_pointer
       @byte_pointer = byte_pointer
     else
@@ -1915,6 +1983,7 @@ class Reline::LineEditor
 
   private def em_delete_or_list(key)
     if current_line.empty? or @byte_pointer < current_line.bytesize
+      @using_delete_command = true
       em_delete(key)
     elsif !@config.autocompletion # show completed list
       result = call_completion_proc
@@ -2488,5 +2557,12 @@ class Reline::LineEditor
 
   private def vi_editing_mode(key)
     @config.editing_mode = :vi_insert
+  end
+
+  private def undo(_key)
+    return if @past_lines.empty?
+
+    target_lines, target_cursor_x, target_cursor_y = @past_lines.last
+    set_current_lines(target_lines, target_cursor_x, target_cursor_y)
   end
 end
