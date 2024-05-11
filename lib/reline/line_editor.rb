@@ -275,7 +275,7 @@ class Reline::LineEditor
     @resized = false
     @cache = {}
     @rendered_screen = RenderedScreen.new(base_y: 0, lines: [], cursor_y: 0)
-    @past_lines = [["", 0, 0]]
+    @past_lines = []
     @using_delete_command = false
     reset_line
   end
@@ -1190,7 +1190,7 @@ class Reline::LineEditor
   MAX_PAST_LINES = 100
   def save_past_lines
     if @old_buffer_of_lines != @buffer_of_lines
-      if !@using_delete_command && @buffer_of_lines == @past_lines.last.first
+      if !@past_lines.empty? && !@using_delete_command && @buffer_of_lines == @past_lines.last.first
         # When deleting, @buffer_of_lines and @past_lines.last.first become the same.
         # If it is the same as the previous state, consider it undone and do not add to past_lines.
         @past_lines.pop

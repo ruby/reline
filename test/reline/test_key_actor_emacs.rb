@@ -1439,6 +1439,8 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
   end
 
   def test_undo
+    input_keys("\C-_", false)
+    assert_line_around_cursor('', '')
     input_keys("aあb\C-h\C-h\C-h", false)
     assert_line_around_cursor('', '')
     input_keys("\C-_", false)
