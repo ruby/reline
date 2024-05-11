@@ -353,11 +353,9 @@ module Reline
             line_editor.set_pasting_state(io_gate.in_pasting?)
             inputs.each do |key|
               if key.char == :bracketed_paste_start
-                line_editor.save_old_buffer
                 text = io_gate.read_bracketed_paste
                 line_editor.insert_pasted_text(text)
                 line_editor.scroll_into_view
-                line_editor.save_past_lines
               else
                 line_editor.update(key)
               end

@@ -1376,6 +1376,7 @@ class Reline::LineEditor
   end
 
   def insert_pasted_text(text)
+    save_old_buffer
     pre = @buffer_of_lines[@line_index].byteslice(0, @byte_pointer)
     post = @buffer_of_lines[@line_index].byteslice(@byte_pointer..)
     lines = (pre + text.gsub(/\r\n?/, "\n") + post).split("\n", -1)
@@ -1383,6 +1384,7 @@ class Reline::LineEditor
     @buffer_of_lines[@line_index, 1] = lines
     @line_index += lines.size - 1
     @byte_pointer = @buffer_of_lines[@line_index].bytesize - post.bytesize
+    save_past_lines
   end
 
   def insert_text(text)
