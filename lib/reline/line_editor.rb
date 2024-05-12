@@ -34,31 +34,6 @@ class Reline::LineEditor
     vi_end_big_word
   }
 
-  DELETE_COMMANDS = %i{
-    backward_delete_char
-    backward_kill_word
-    delete_char
-    ed_delete_next_char
-    ed_delete_prev_char
-    ed_delete_prev_word
-    ed_kill_line
-    em_delete
-    em_delete_next_word
-    em_delete_prev_char
-    em_kill_line
-    em_kill_region
-    kill_line
-    kill_whole_line
-    kill_word
-    unix_line_discard
-    unix_word_rubout
-    vi_change_to_eol
-    vi_delete_meta
-    vi_delete_meta_confirm
-    vi_delete_prev_char
-    vi_kill_line_prev
-  }
-
   module CompletionState
     NORMAL = :normal
     COMPLETION = :completion
@@ -276,7 +251,7 @@ class Reline::LineEditor
     @cache = {}
     @rendered_screen = RenderedScreen.new(base_y: 0, lines: [], cursor_y: 0)
     @past_lines = []
-    @using_delete_command = false
+    @undoing = false
     reset_line
   end
 
@@ -1000,9 +975,6 @@ class Reline::LineEditor
   end
 
   def wrap_method_call(method_symbol, method_obj, key, with_operator = false)
-    if DELETE_COMMANDS.include?(method_symbol)
-      @using_delete_command = true
-    end
     if @config.editing_mode_is?(:emacs, :vi_insert) and @vi_waiting_operator.nil?
       not_insertion = method_symbol != :ed_insert
       process_insert(force: not_insertion)
@@ -1190,16 +1162,14 @@ class Reline::LineEditor
   MAX_PAST_LINES = 100
   def save_past_lines
     if @old_buffer_of_lines != @buffer_of_lines
-      if !@past_lines.empty? && !@using_delete_command && @buffer_of_lines == @past_lines.last.first
-        # When deleting, @buffer_of_lines and @past_lines.last.first become the same.
-        # If it is the same as the previous state, consider it undone and do not add to past_lines.
+      if !@past_lines.empty? && @undoing
         @past_lines.pop
       else
         # Save the state before the changes.
         @past_lines.push([@old_buffer_of_lines, @old_byte_pointer, @old_line_index])
       end
     end
-    @using_delete_command = false
+    @undoing = false
 
     if @past_lines.size > MAX_PAST_LINES
       @past_lines.shift
@@ -1985,7 +1955,6 @@ class Reline::LineEditor
 
   private def em_delete_or_list(key)
     if current_line.empty? or @byte_pointer < current_line.bytesize
-      @using_delete_command = true
       em_delete(key)
     elsif !@config.autocompletion # show completed list
       result = call_completion_proc
@@ -2564,6 +2533,7 @@ class Reline::LineEditor
   private def undo(_key)
     return if @past_lines.empty?
 
+    @undoing = true
     target_lines, target_cursor_x, target_cursor_y = @past_lines.last
     set_current_lines(target_lines, target_cursor_x, target_cursor_y)
   end
