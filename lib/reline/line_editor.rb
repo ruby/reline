@@ -1137,7 +1137,8 @@ class Reline::LineEditor
       @completion_journey_state = nil
     end
 
-    save_past_lines
+    push_past_lines unless @undoing
+    @undoing = false
 
     if @in_pasting
       clear_dialogs
@@ -1159,18 +1160,15 @@ class Reline::LineEditor
     @old_line_index = @line_index.dup
   end
 
-  MAX_PAST_LINES = 100
-  def save_past_lines
+  def push_past_lines
     if @old_buffer_of_lines != @buffer_of_lines
-      if !@past_lines.empty? && @undoing
-        @past_lines.pop
-      else
-        # Save the state before the changes.
-        @past_lines.push([@old_buffer_of_lines, @old_byte_pointer, @old_line_index])
-      end
+      @past_lines.push([@old_buffer_of_lines, @old_byte_pointer, @old_line_index])
     end
-    @undoing = false
+    trim_past_lines
+  end
 
+  MAX_PAST_LINES = 100
+  def trim_past_lines
     if @past_lines.size > MAX_PAST_LINES
       @past_lines.shift
     end
@@ -1354,7 +1352,7 @@ class Reline::LineEditor
     @buffer_of_lines[@line_index, 1] = lines
     @line_index += lines.size - 1
     @byte_pointer = @buffer_of_lines[@line_index].bytesize - post.bytesize
-    save_past_lines
+    push_past_lines
   end
 
   def insert_text(text)
@@ -2534,7 +2532,10 @@ class Reline::LineEditor
     return if @past_lines.empty?
 
     @undoing = true
+
     target_lines, target_cursor_x, target_cursor_y = @past_lines.last
     set_current_lines(target_lines, target_cursor_x, target_cursor_y)
+
+    @past_lines.pop
   end
 end

@@ -1496,4 +1496,13 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_line_index(1)
     assert_line_around_cursor('2', '')
   end
+
+  def test_undo_with_many_times
+    str = "a" + "b" * 100
+    input_keys(str, false)
+    100.times { input_keys("\C-_", false) }
+    assert_line_around_cursor('a', '')
+    input_keys("\C-_", false)
+    assert_line_around_cursor('a', '')
+  end
 end
