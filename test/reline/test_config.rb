@@ -278,7 +278,8 @@ class Reline::Config::Test < Reline::TestCase
   def test_if_with_mode
     @config.read_lines(<<~LINES.lines)
       $if mode=emacs
-        "\C-e": history-search-backward # comment
+        # comment
+        "\C-e": history-search-backward
       $else
         "\C-f": history-search-forward
       $endif
@@ -292,7 +293,8 @@ class Reline::Config::Test < Reline::TestCase
   def test_else
     @config.read_lines(<<~LINES.lines)
       $if mode=vi
-        "\C-e": history-search-backward # comment
+        # comment
+        "\C-e": history-search-backward
       $else
         "\C-f": history-search-forward
       $endif
@@ -308,7 +310,8 @@ class Reline::Config::Test < Reline::TestCase
       $if mode=vim
         "\C-e": history-search-backward
       $else
-        "\C-f": history-search-forward # comment
+        # comment
+        "\C-f": history-search-forward
       $endif
     LINES
 
@@ -406,7 +409,8 @@ class Reline::Config::Test < Reline::TestCase
       "ef": "EF"
       set keymap emacs-meta
       "gh": "GH"
-      set editing-mode emacs # keymap changes to be emacs
+      # keymap changes to be emacs
+      set editing-mode emacs
     LINES
 
     expected = {
@@ -543,4 +547,3 @@ class Reline::Config::Test < Reline::TestCase
     ENV['HOME'] = home_backup
   end
 end
-
