@@ -15,7 +15,7 @@ Reline is compatible with the API of Ruby's stdlib 'readline', GNU Readline and 
 
 It's compatible with the readline standard library.
 
-See [the document of readline stdlib](https://ruby-doc.org/stdlib/libdoc/readline/rdoc/Readline.html) or [bin/example](https://github.com/ruby/reline/blob/master/bin/example).
+See [the document of readline stdlib](https://ruby-doc.org/stdlib/exts/readline/Readline.html) or [bin/example](https://github.com/ruby/reline/blob/master/bin/example).
 
 ### Multi-line editing mode
 
