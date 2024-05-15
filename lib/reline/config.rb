@@ -182,7 +182,7 @@ class Reline::Config
       next if if_stack.any? { |_no, skip| skip }
 
       case line
-      when /^set +([^ ]+) +([^ ]+)/i
+      when /^set +([^ ]+) +(.+)/i
         var, value = $1.downcase, $2
         bind_variable(var, value)
         next

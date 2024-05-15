@@ -388,7 +388,8 @@ class Reline::Config::Test < Reline::TestCase
       "cd": "CD"
       set keymap emacs
       "ef": "EF"
-      set editing-mode vi # keymap changes to be vi-insert
+      # keymap changes to be vi-insert
+      set editing-mode vi
     LINES
 
     expected = { 'cd'.bytes => 'CD'.bytes }
