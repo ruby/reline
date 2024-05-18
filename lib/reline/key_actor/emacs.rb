@@ -55,7 +55,7 @@ class Reline::KeyActor::Emacs < Reline::KeyActor::Base
     #  26 ^Z
     :ed_ignore,
     #  27 ^[
-    :ed_unassigned,
+    :redo,
     #  28 ^\
     :ed_ignore,
     #  29 ^]
