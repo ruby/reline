@@ -1509,32 +1509,32 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
   def test_redo
     input_keys("aあb", false)
     assert_line_around_cursor('aあb', '')
-    input_keys("\C-[", false)
+    input_keys("\C-g", false)
     assert_line_around_cursor('aあb', '')
     input_keys("\C-_", false)
     assert_line_around_cursor('aあ', '')
     input_keys("\C-_", false)
     assert_line_around_cursor('a', '')
-    input_keys("\C-[", false)
+    input_keys("\C-g", false)
     assert_line_around_cursor('aあ', '')
-    input_keys("\C-[", false)
+    input_keys("\C-g", false)
     assert_line_around_cursor('aあb', '')
     input_keys("\C-_", false)
     assert_line_around_cursor('aあ', '')
     input_keys("c", false)
     assert_line_around_cursor('aあc', '')
-    input_keys("\C-[", false)
+    input_keys("\C-g", false)
     assert_line_around_cursor('aあc', '')
   end
 
   def test_redo_with_cursor_position
     input_keys("abc\C-b\C-h", false)
     assert_line_around_cursor('a', 'c')
-    input_keys("\C-[", false)
+    input_keys("\C-g", false)
     assert_line_around_cursor('a', 'c')
     input_keys("\C-_", false)
     assert_line_around_cursor('ab', 'c')
-    input_keys("\C-[", false)
+    input_keys("\C-g", false)
     assert_line_around_cursor('a', 'c')
   end
 
@@ -1556,12 +1556,12 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_line_index(1)
     assert_line_around_cursor('2', '')
 
-    input_keys("\C-[", false)
+    input_keys("\C-g", false)
     assert_whole_lines(["1", "2", ""])
     assert_line_index(2)
     assert_line_around_cursor('', '')
 
-    input_keys("\C-[", false)
+    input_keys("\C-g", false)
     assert_whole_lines(["1", "2", "3"])
     assert_line_index(2)
     assert_line_around_cursor('3', '')
@@ -1586,12 +1586,12 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_line_index(1)
     assert_line_around_cursor('2', '')
 
-    input_keys("\C-[", false)
+    input_keys("\C-g", false)
     assert_whole_lines(["1", "", "3"])
     assert_line_index(1)
     assert_line_around_cursor('', '')
 
-    input_keys("\C-[", false)
+    input_keys("\C-g", false)
     assert_whole_lines(["1", "3"])
     assert_line_index(1)
     assert_line_around_cursor('3', '')
@@ -1604,9 +1604,9 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     assert_line_around_cursor('a', '')
     input_keys("\C-_", false)
     assert_line_around_cursor('a', '')
-    100.times { input_keys("\C-[", false) }
+    100.times { input_keys("\C-g", false) }
     assert_line_around_cursor(str, '')
-    input_keys("\C-[", false)
+    input_keys("\C-g", false)
     assert_line_around_cursor(str, '')
   end
 end

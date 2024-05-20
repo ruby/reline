@@ -15,7 +15,7 @@ class Reline::KeyActor::Emacs < Reline::KeyActor::Base
     #   6 ^F
     :ed_next_char,
     #   7 ^G
-    :ed_unassigned,
+    :redo,
     #   8 ^H
     :em_delete_prev_char,
     #   9 ^I
@@ -55,7 +55,7 @@ class Reline::KeyActor::Emacs < Reline::KeyActor::Base
     #  26 ^Z
     :ed_ignore,
     #  27 ^[
-    :redo,
+    :ed_unassigned,
     #  28 ^\
     :ed_ignore,
     #  29 ^]
