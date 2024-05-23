@@ -252,7 +252,6 @@ class Reline::LineEditor
     @rendered_screen = RenderedScreen.new(base_y: 0, lines: [], cursor_y: 0)
     @past_lines = []
     @undoing = false
-    @next_lines = []
     reset_line
   end
 
@@ -1138,10 +1137,7 @@ class Reline::LineEditor
       @completion_journey_state = nil
     end
 
-    unless @undoing
-      push_past_lines
-      @next_lines = []
-    end
+    push_past_lines unless @undoing
     @undoing = false
 
     if @in_pasting
@@ -1175,18 +1171,6 @@ class Reline::LineEditor
   def trim_past_lines
     if @past_lines.size > MAX_PAST_LINES
       @past_lines.shift
-    end
-  end
-
-  def push_next_lines
-    @next_lines.push([@buffer_of_lines, @byte_pointer, @line_index])
-    trim_next_lines
-  end
-
-  MAX_NEXT_LINES = 100
-  def trim_next_lines
-    if @next_lines.size > MAX_NEXT_LINES
-      @next_lines.shift
     end
   end
 
@@ -2545,27 +2529,13 @@ class Reline::LineEditor
   end
 
   private def undo(_key)
-    @undoing = true
-
     return if @past_lines.empty?
 
-    push_next_lines
+    @undoing = true
 
     target_lines, target_cursor_x, target_cursor_y = @past_lines.last
     set_current_lines(target_lines, target_cursor_x, target_cursor_y)
 
     @past_lines.pop
-  end
-
-  private def redo(_key)
-    @undoing = true
-
-    return if @next_lines.empty?
-
-    @past_lines.push([@buffer_of_lines, @byte_pointer, @line_index])
-    target_lines, target_cursor_x, target_cursor_y = @next_lines.last
-    set_current_lines(target_lines, target_cursor_x, target_cursor_y)
-
-    @next_lines.pop
   end
 end
