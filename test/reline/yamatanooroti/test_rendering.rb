@@ -575,7 +575,7 @@ begin
       write("abc")
       write("\e[200~def hoge\r\t3\rend\e[201~")
       write("\C-_")
-      write("\C-g")
+      write("\M-\C-_")
       close
       assert_screen(<<~EOC)
         Multiline REPL.
