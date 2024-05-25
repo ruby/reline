@@ -388,8 +388,7 @@ class Reline::Config::Test < Reline::TestCase
       "cd": "CD"
       set keymap emacs
       "ef": "EF"
-      # keymap changes to be vi-insert
-      set editing-mode vi
+      set editing-mode vi # keymap changes to be vi-insert
     LINES
 
     expected = { 'cd'.bytes => 'CD'.bytes }
@@ -458,6 +457,16 @@ class Reline::Config::Test < Reline::TestCase
     assert_equal expected, @config.inputrc_path
   ensure
     ENV['INPUTRC'] = inputrc_backup
+  end
+
+  def test_inputrc_raw_value
+    @config.read_lines(<<~'LINES'.lines)
+      set editing-mode vi
+      set vi-ins-mode-string aaa
+      set vi-cmd-mode-string bbb ccc # comment
+    LINES
+    assert_equal 'aaa', @config.vi_ins_mode_string
+    assert_equal 'bbb ccc', @config.vi_cmd_mode_string
   end
 
   def test_inputrc_with_utf8
@@ -543,4 +552,3 @@ class Reline::Config::Test < Reline::TestCase
     ENV['HOME'] = home_backup
   end
 end
-

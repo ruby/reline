@@ -173,7 +173,7 @@ class Reline::Config
 
       no += 1
 
-      line = line.chomp.lstrip
+      line = line.gsub(/#.*$/, '').chomp.strip
       if line.start_with?('$')
         handle_directive(line[1..-1], file, no, if_stack)
         next
@@ -183,8 +183,8 @@ class Reline::Config
 
       case line
       when /^set +([^ ]+) +(.+)/i
-        var, value = $1.downcase, $2
-        bind_variable(var, value)
+        var, value, raw_value = $1.downcase, $2.partition(' ').first, $2
+        bind_variable(var, value, raw_value)
         next
       when /\s*("#{KEYSEQ_PATTERN}+")\s*:\s*(.*)\s*$/o
         key, func_name = $1, $2
@@ -234,7 +234,7 @@ class Reline::Config
     end
   end
 
-  def bind_variable(name, value)
+  def bind_variable(name, value, raw_value)
     case name
     when 'history-size'
       begin
@@ -259,7 +259,7 @@ class Reline::Config
     when 'completion-query-items'
       @completion_query_items = value.to_i
     when 'isearch-terminators'
-      @isearch_terminators = retrieve_string(value)
+      @isearch_terminators = retrieve_string(raw_value)
     when 'editing-mode'
       case value
       when 'emacs'
@@ -301,11 +301,11 @@ class Reline::Config
         @show_mode_in_prompt = false
       end
     when 'vi-cmd-mode-string'
-      @vi_cmd_mode_string = retrieve_string(value)
+      @vi_cmd_mode_string = retrieve_string(raw_value)
     when 'vi-ins-mode-string'
-      @vi_ins_mode_string = retrieve_string(value)
+      @vi_ins_mode_string = retrieve_string(raw_value)
     when 'emacs-mode-string'
-      @emacs_mode_string = retrieve_string(value)
+      @emacs_mode_string = retrieve_string(raw_value)
     when *VARIABLE_NAMES then
       variable_name = :"@#{name.tr(?-, ?_)}"
       instance_variable_set(variable_name, value.nil? || value == '1' || value == 'on')
