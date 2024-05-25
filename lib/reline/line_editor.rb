@@ -1166,7 +1166,7 @@ class Reline::LineEditor
 
   def push_past_lines
     if @old_buffer_of_lines == @buffer_of_lines
-      @past_lines[-1] = [@buffer_of_lines.dup, @byte_pointer, @line_index]
+      @past_lines[@position] = [@buffer_of_lines.dup, @byte_pointer, @line_index]
     else
       @position += 1
       @past_lines.push([@buffer_of_lines.dup, @byte_pointer, @line_index])
