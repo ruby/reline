@@ -1498,7 +1498,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
   end
 
   def test_undo_with_many_times
-    str = "a" + "b" * 100
+    str = "a" + "b" * 99
     input_keys(str, false)
     100.times { input_keys("\C-_", false) }
     assert_line_around_cursor('a', '')
@@ -1598,7 +1598,7 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
   end
 
   def test_redo_with_many_times
-    str = "a" + "b" * 99 + "c"
+    str = "a" + "b" * 98 + "c"
     input_keys(str, false)
     100.times { input_keys("\C-_", false) }
     assert_line_around_cursor('a', '')
