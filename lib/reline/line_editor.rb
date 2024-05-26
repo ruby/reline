@@ -1138,10 +1138,7 @@ class Reline::LineEditor
       @completion_journey_state = nil
     end
 
-    unless @undoing
-      @past_lines = @past_lines[0..@position]
-      push_past_lines
-    end
+    push_past_lines unless @undoing
     @undoing = false
 
     if @in_pasting
@@ -1168,6 +1165,7 @@ class Reline::LineEditor
     if @old_buffer_of_lines == @buffer_of_lines
       @past_lines[@position] = [@buffer_of_lines.dup, @byte_pointer, @line_index]
     else
+      @past_lines = @past_lines[0..@position]
       @position += 1
       @past_lines.push([@buffer_of_lines.dup, @byte_pointer, @line_index])
     end
