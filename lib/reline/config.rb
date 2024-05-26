@@ -173,7 +173,7 @@ class Reline::Config
 
       no += 1
 
-      line = line.gsub(/#.*$/, '').chomp.strip
+      line = line.chomp.lstrip
       if line.start_with?('$')
         handle_directive(line[1..-1], file, no, if_stack)
         next
@@ -183,6 +183,7 @@ class Reline::Config
 
       case line
       when /^set +([^ ]+) +(.+)/i
+        # value ignores everything after a space, raw_value does not.
         var, value, raw_value = $1.downcase, $2.partition(' ').first, $2
         bind_variable(var, value, raw_value)
         next
