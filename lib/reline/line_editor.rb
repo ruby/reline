@@ -250,7 +250,7 @@ class Reline::LineEditor
     @resized = false
     @cache = {}
     @rendered_screen = RenderedScreen.new(base_y: 0, lines: [], cursor_y: 0)
-    @past_lines = [[[""], 0, 0]]
+    @input_lines = [[[""], 0, 0]]
     @position = 0
     @undoing = false
     reset_line
@@ -1138,7 +1138,7 @@ class Reline::LineEditor
       @completion_journey_state = nil
     end
 
-    push_past_lines unless @undoing
+    push_input_lines unless @undoing
     @undoing = false
 
     if @in_pasting
@@ -1161,21 +1161,21 @@ class Reline::LineEditor
     @old_line_index = @line_index.dup
   end
 
-  def push_past_lines
+  def push_input_lines
     if @old_buffer_of_lines == @buffer_of_lines
-      @past_lines[@position] = [@buffer_of_lines.dup, @byte_pointer, @line_index]
+      @input_lines[@position] = [@buffer_of_lines.dup, @byte_pointer, @line_index]
     else
-      @past_lines = @past_lines[0..@position]
+      @input_lines = @input_lines[0..@position]
       @position += 1
-      @past_lines.push([@buffer_of_lines.dup, @byte_pointer, @line_index])
+      @input_lines.push([@buffer_of_lines.dup, @byte_pointer, @line_index])
     end
-    trim_past_lines
+    trim_input_lines
   end
 
-  MAX_PAST_LINES = 100
-  def trim_past_lines
-    if @past_lines.size > MAX_PAST_LINES
-      @past_lines.shift
+  MAX_INPUT_LINES = 100
+  def trim_input_lines
+    if @input_lines.size > MAX_INPUT_LINES
+      @input_lines.shift
       @position -= 1
     end
   end
@@ -1358,7 +1358,7 @@ class Reline::LineEditor
     @buffer_of_lines[@line_index, 1] = lines
     @line_index += lines.size - 1
     @byte_pointer = @buffer_of_lines[@line_index].bytesize - post.bytesize
-    push_past_lines
+    push_input_lines
   end
 
   def insert_text(text)
@@ -2540,17 +2540,17 @@ class Reline::LineEditor
     return if @position <= 0
 
     @position -= 1
-    target_lines, target_cursor_x, target_cursor_y = @past_lines[@position]
+    target_lines, target_cursor_x, target_cursor_y = @input_lines[@position]
     set_current_lines(target_lines.dup, target_cursor_x, target_cursor_y)
   end
 
   private def redo(_key)
     @undoing = true
 
-    return if @position >= @past_lines.size - 1
+    return if @position >= @input_lines.size - 1
 
     @position += 1
-    target_lines, target_cursor_x, target_cursor_y = @past_lines[@position]
+    target_lines, target_cursor_x, target_cursor_y = @input_lines[@position]
     set_current_lines(target_lines.dup, target_cursor_x, target_cursor_y)
   end
 end
