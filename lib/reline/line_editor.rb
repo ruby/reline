@@ -1157,8 +1157,6 @@ class Reline::LineEditor
 
   def save_old_buffer
     @old_buffer_of_lines = @buffer_of_lines.dup
-    @old_byte_pointer = @byte_pointer.dup
-    @old_line_index = @line_index.dup
   end
 
   def push_input_lines
