@@ -251,7 +251,7 @@ class Reline::LineEditor
     @cache = {}
     @rendered_screen = RenderedScreen.new(base_y: 0, lines: [], cursor_y: 0)
     @input_lines = [[[""], 0, 0]]
-    @position = 0
+    @input_lines_position = 0
     @undoing = false
     reset_line
   end
@@ -1163,10 +1163,10 @@ class Reline::LineEditor
 
   def push_input_lines
     if @old_buffer_of_lines == @buffer_of_lines
-      @input_lines[@position] = [@buffer_of_lines.dup, @byte_pointer, @line_index]
+      @input_lines[@input_lines_position] = [@buffer_of_lines.dup, @byte_pointer, @line_index]
     else
-      @input_lines = @input_lines[0..@position]
-      @position += 1
+      @input_lines = @input_lines[0..@input_lines_position]
+      @input_lines_position += 1
       @input_lines.push([@buffer_of_lines.dup, @byte_pointer, @line_index])
     end
     trim_input_lines
@@ -1176,7 +1176,7 @@ class Reline::LineEditor
   def trim_input_lines
     if @input_lines.size > MAX_INPUT_LINES
       @input_lines.shift
-      @position -= 1
+      @input_lines_position -= 1
     end
   end
 
@@ -2537,20 +2537,20 @@ class Reline::LineEditor
   private def undo(_key)
     @undoing = true
 
-    return if @position <= 0
+    return if @input_lines_position <= 0
 
-    @position -= 1
-    target_lines, target_cursor_x, target_cursor_y = @input_lines[@position]
+    @input_lines_position -= 1
+    target_lines, target_cursor_x, target_cursor_y = @input_lines[@input_lines_position]
     set_current_lines(target_lines.dup, target_cursor_x, target_cursor_y)
   end
 
   private def redo(_key)
     @undoing = true
 
-    return if @position >= @input_lines.size - 1
+    return if @input_lines_position >= @input_lines.size - 1
 
-    @position += 1
-    target_lines, target_cursor_x, target_cursor_y = @input_lines[@position]
+    @input_lines_position += 1
+    target_lines, target_cursor_x, target_cursor_y = @input_lines[@input_lines_position]
     set_current_lines(target_lines.dup, target_cursor_x, target_cursor_y)
   end
 end
