@@ -8,9 +8,13 @@ class Reline::KeyStroke
   end
 
   def match_status(input)
-    if key_mapping.matching?(input)
+    matching = key_mapping.matching?(input)
+    matched = key_mapping.get(input)
+    if matching && matched
+      :matching_matched
+    elsif matching
       :matching
-    elsif key_mapping.get(input)
+    elsif matched
       :matched
     elsif input[0] == ESC_BYTE
       match_unknown_escape_sequence(input, vi_mode: @config.editing_mode_is?(:vi_insert, :vi_command))
@@ -25,7 +29,8 @@ class Reline::KeyStroke
     matched_bytes = nil
     (1..input.size).each do |i|
       bytes = input.take(i)
-      matched_bytes = bytes if match_status(bytes) != :unmatched
+      status = match_status(bytes)
+      matched_bytes = bytes if status == :matched || status == :matching_matched
     end
     return [[], []] unless matched_bytes
 
@@ -56,7 +61,11 @@ class Reline::KeyStroke
 
     case input[idx]
     when nil
-      return :matching
+      if idx == 1 # `ESC`
+        return :matching_matched
+      else # `ESC ESC`
+        return :matching
+      end
     when 91 # == '['.ord
       # CSI sequence `ESC [ ... char`
       idx += 1
