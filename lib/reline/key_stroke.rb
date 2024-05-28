@@ -10,6 +10,11 @@ class Reline::KeyStroke
   def match_status(input)
     matching = key_mapping.matching?(input)
     matched = key_mapping.get(input)
+
+    # FIXME: Workaround for single byte. remove this after MAPPING is merged into KeyActor.
+    matched ||= input.size == 1
+    matching ||= input == [ESC_BYTE]
+
     if matching && matched
       :matching_matched
     elsif matching
