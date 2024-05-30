@@ -1293,15 +1293,17 @@ class Reline::KeyActor::Emacs::Test < Reline::TestCase
     ])
     # The ed_search_prev_history and ed_search_next_history doesn't have default binding
     @line_editor.__send__(:ed_search_prev_history, "\C-p".ord)
-    assert_line_around_cursor('', '12345')
+    assert_line_around_cursor('12345', '')
     @line_editor.__send__(:ed_search_prev_history, "\C-p".ord)
-    assert_line_around_cursor('', '12aaa')
+    assert_line_around_cursor('12345', '')
+    3.times { input_key_by_symbol(:ed_prev_char) }
     @line_editor.__send__(:ed_search_prev_history, "\C-p".ord)
-    assert_line_around_cursor('', '12356')
+    assert_line_around_cursor('12', 'aaa')
     @line_editor.__send__(:ed_search_next_history, "\C-n".ord)
-    assert_line_around_cursor('', '12aaa')
+    assert_line_around_cursor('12', '345')
     @line_editor.__send__(:ed_search_next_history, "\C-n".ord)
-    assert_line_around_cursor('', '12345')
+    assert_line_around_cursor('12', '345')
+    2.times { input_key_by_symbol(:ed_prev_char) }
     @line_editor.__send__(:ed_search_next_history, "\C-n".ord)
     assert_line_around_cursor('', '')
   end

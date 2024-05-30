@@ -1784,7 +1784,7 @@ class Reline::LineEditor
     h_pointer, line_index = search_history(substr, history_range)
     return if h_pointer.nil? and not substr.empty?
 
-    move_history(h_pointer, line: line_index || :start, cursor: @byte_pointer)
+    move_history(h_pointer, line: line_index || :start, cursor: substr.empty? ? :end : @byte_pointer)
     arg -= 1
     ed_search_next_history(key, arg: arg) if arg > 0
   end
