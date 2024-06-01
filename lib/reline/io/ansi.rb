@@ -37,7 +37,6 @@ class Reline::ANSI < Reline::IO
     @input = STDIN
     @output = STDOUT
     @buf = []
-    @in_bracketed_paste_mode = false
     @old_winch_handler = nil
   end
 
