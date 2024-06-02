@@ -27,17 +27,19 @@ class Reline::KeyStroke
       bytes = input.take(i)
       matched_bytes = bytes if match_status(bytes) != :unmatched
     end
-    return unless matched_bytes
+    return [[], []] unless matched_bytes
 
     func = key_mapping.get(matched_bytes)
     if func.is_a?(Array)
       keys = func.map { |c| Reline::Key.new(c, c, false) }
     elsif func
       keys = [Reline::Key.new(func, func, false)]
-    elsif input.size == 1
-      keys = [Reline::Key.new(input.first, input.first, false)]
-    elsif input.size == 2 && input[0] == ESC_BYTE
-      keys = [Reline::Key.new(input[1], input[1] | 0b10000000, true)]
+    elsif matched_bytes.size == 1
+      keys = [Reline::Key.new(matched_bytes.first, matched_bytes.first, false)]
+    elsif matched_bytes.size == 2 && matched_bytes[0] == ESC_BYTE
+      keys = [Reline::Key.new(matched_bytes[1], matched_bytes[1] | 0b10000000, true)]
+    else
+      keys = []
     end
 
     [keys, input.drop(matched_bytes.size)]

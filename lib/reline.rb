@@ -407,7 +407,7 @@ module Reline
           else
             expanded, rest_bytes = key_stroke.expand(buffer)
             rest_bytes.reverse_each { |c| io_gate.ungetc(c) }
-            block.(expanded) if expanded
+            block.(expanded)
           end
           break
         end

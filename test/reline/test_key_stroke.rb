@@ -70,10 +70,10 @@ class Reline::KeyStroke::Test < Reline::TestCase
     assert_equal(['123'.bytes.map { |c| Reline::Key.new(c, c, false) }, 'de'.bytes], stroke.expand('abcde'.bytes))
     assert_equal(['456'.bytes.map { |c| Reline::Key.new(c, c, false) }, 'de'.bytes], stroke.expand('abde'.bytes))
     # CSI sequence
-    assert_equal([nil, 'bc'.bytes], stroke.expand("\e[1;2;3;4;5abc".bytes))
-    assert_equal([nil, 'BC'.bytes], stroke.expand("\e\e[ABC".bytes))
+    assert_equal([[], 'bc'.bytes], stroke.expand("\e[1;2;3;4;5abc".bytes))
+    assert_equal([[], 'BC'.bytes], stroke.expand("\e\e[ABC".bytes))
     # SS3 sequence
-    assert_equal([nil, 'QR'.bytes], stroke.expand("\eOPQR".bytes))
+    assert_equal([[], 'QR'.bytes], stroke.expand("\eOPQR".bytes))
   end
 
   def test_oneshot_key_bindings
