@@ -38,7 +38,7 @@ class Reline::Config
     @editing_mode_label = :emacs
     @keymap_label = :emacs
     @keymap_prefix = []
-    @key_actors = {
+    @default_key_bindings = {
       emacs: Reline::KeyActor::Base.new(Reline::KeyActor::EMACS_MAPPING),
       vi_insert: Reline::KeyActor::Base.new(Reline::KeyActor::VI_INSERT_MAPPING),
       vi_command: Reline::KeyActor::Base.new(Reline::KeyActor::VI_COMMAND_MAPPING)
@@ -64,7 +64,7 @@ class Reline::Config
   end
 
   def editing_mode
-    @key_actors[@editing_mode_label]
+    @default_key_bindings[@editing_mode_label]
   end
 
   def editing_mode=(val)
@@ -76,7 +76,7 @@ class Reline::Config
   end
 
   def keymap
-    @key_actors[@keymap_label]
+    @default_key_bindings[@keymap_label]
   end
 
   def loaded?
@@ -135,7 +135,7 @@ class Reline::Config
 
   def key_bindings
     # The key bindings for each editing mode will be overwritten by the user-defined ones.
-    Reline::KeyActor::Composite.new([@oneshot_key_bindings, @additional_key_bindings[@editing_mode_label], @key_actors[@editing_mode_label]])
+    Reline::KeyActor::Composite.new([@oneshot_key_bindings, @additional_key_bindings[@editing_mode_label], @default_key_bindings[@editing_mode_label]])
   end
 
   def add_oneshot_key_binding(keystroke, target)
@@ -150,11 +150,11 @@ class Reline::Config
   end
 
   def add_default_key_binding_by_keymap(keymap, keystroke, target)
-    @key_actors[keymap].add(keystroke, target)
+    @default_key_bindings[keymap].add(keystroke, target)
   end
 
   def add_default_key_binding(keystroke, target)
-    @key_actors[@keymap_label].add(keystroke, target)
+    @default_key_bindings[@keymap_label].add(keystroke, target)
   end
 
   def read_lines(lines, file = nil)
