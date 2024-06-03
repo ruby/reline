@@ -375,26 +375,26 @@ module Reline
     # `ESC char` or part of CSI sequence (matching).
     private def read_io(keyseq_timeout, &block)
       buffer = []
-      status = :matching
+      status = KeyStroke::MATCHING
       loop do
-        timeout = status == :matching_matched ? keyseq_timeout.fdiv(1000) : Float::INFINITY
+        timeout = status == KeyStroke::MATCHING_MATCHED ? keyseq_timeout.fdiv(1000) : Float::INFINITY
         c = io_gate.getc(timeout)
         if c.nil? || c == -1
-          if status == :matching_matched
-            status = :matched
+          if status == KeyStroke::MATCHING_MATCHED
+            status = KeyStroke::MATCHED
           elsif buffer.empty?
             # io_gate is closed and reached EOF
             block.call([Key.new(nil, nil, false)])
             return
           else
-            status = :unmatched
+            status = KeyStroke::UNMATCHED
           end
         else
           buffer << c
           status = key_stroke.match_status(buffer)
         end
 
-        if status == :matched || status == :unmatched
+        if status == KeyStroke::MATCHED || status == KeyStroke::UNMATCHED
           expanded, rest_bytes = key_stroke.expand(buffer)
           rest_bytes.reverse_each { |c| io_gate.ungetc(c) }
           block.call(expanded)

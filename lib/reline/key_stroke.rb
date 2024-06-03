@@ -7,11 +7,15 @@ class Reline::KeyStroke
     @config = config
   end
 
-  # Returns the matching status (:matched | :matching | :matching_matched | :unmatched) of the input.
-  # If input matches to a key sequence, return :matched.
-  # If input matches to a part of a key sequence, return :matching.
-  # If input matches to a key sequence and the key sequence is a prefix of another key sequence, return :matching_matched.
-  # If input does not match to any key sequence, return :unmatched.
+  # Input exactly matches to a key sequence
+  MATCHING = :matching
+  # Input partially matches to a key sequence
+  MATCHED = :matched
+  # Input matches to a key sequence and the key sequence is a prefix of another key sequence
+  MATCHING_MATCHED = :matching_matched
+  # Input does not match to any key sequence
+  UNMATCHED = :unmatched
+
   def match_status(input)
     matching = key_mapping.matching?(input)
     matched = key_mapping.get(input)
@@ -21,17 +25,17 @@ class Reline::KeyStroke
     matching ||= input == [ESC_BYTE]
 
     if matching && matched
-      :matching_matched
+      MATCHING_MATCHED
     elsif matching
-      :matching
+      MATCHING
     elsif matched
-      :matched
+      MATCHED
     elsif input[0] == ESC_BYTE
       match_unknown_escape_sequence(input, vi_mode: @config.editing_mode_is?(:vi_insert, :vi_command))
     elsif input.size == 1
-      :matched
+      MATCHED
     else
-      :unmatched
+      UNMATCHED
     end
   end
 
@@ -40,7 +44,7 @@ class Reline::KeyStroke
     (1..input.size).each do |i|
       bytes = input.take(i)
       status = match_status(bytes)
-      matched_bytes = bytes if status == :matched || status == :matching_matched
+      matched_bytes = bytes if status == MATCHED || status == MATCHING_MATCHED
     end
     return [[], []] unless matched_bytes
 
@@ -65,16 +69,16 @@ class Reline::KeyStroke
   # returns match status of CSI/SS3 sequence and matched length
   def match_unknown_escape_sequence(input, vi_mode: false)
     idx = 0
-    return :unmatched unless input[idx] == ESC_BYTE
+    return UNMATCHED unless input[idx] == ESC_BYTE
     idx += 1
     idx += 1 if input[idx] == ESC_BYTE
 
     case input[idx]
     when nil
       if idx == 1 # `ESC`
-        return :matching_matched
+        return MATCHING_MATCHED
       else # `ESC ESC`
-        return :matching
+        return MATCHING
       end
     when 91 # == '['.ord
       # CSI sequence `ESC [ ... char`
@@ -86,9 +90,9 @@ class Reline::KeyStroke
       idx += 1
     else
       # `ESC char` or `ESC ESC char`
-      return :unmatched if vi_mode
+      return UNMATCHED if vi_mode
     end
-    input[idx + 1] ? :unmatched : input[idx] ? :matched : :matching
+    input[idx + 1] ? UNMATCHED : input[idx] ? MATCHED : MATCHING
   end
 
   def key_mapping
