@@ -7,6 +7,11 @@ class Reline::KeyStroke
     @config = config
   end
 
+  # Returns the matching status (:matched | :matching | :matching_matched | :unmatched) of the input.
+  # If input matches to a key sequence, return :matched.
+  # If input matches to a part of a key sequence, return :matching.
+  # If input matches to a key sequence and the key sequence is a prefix of another key sequence, return :matching_matched.
+  # If input does not match to any key sequence, return :unmatched.
   def match_status(input)
     matching = key_mapping.matching?(input)
     matched = key_mapping.get(input)

@@ -383,6 +383,7 @@ module Reline
           if status == :matching_matched
             status = :matched
           elsif buffer.empty?
+            # io_gate is closed and reached EOF
             block.call([Key.new(nil, nil, false)])
             return
           else
