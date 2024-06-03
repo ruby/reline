@@ -45,8 +45,7 @@ class Reline::LineEditor
   RenderedScreen = Struct.new(:base_y, :lines, :cursor_y, keyword_init: true)
 
   CompletionJourneyState = Struct.new(:line_index, :pre, :target, :post, :list, :pointer)
-  ActionState = Struct.new(:state_type, :state_value)
-  NullActionState = ActionState.new(nil, nil)
+  NullActionState = [nil, nil].freeze
 
   class MenuInfo
     attr_reader :list
@@ -255,6 +254,8 @@ class Reline::LineEditor
     @input_lines = [[[""], 0, 0]]
     @input_lines_position = 0
     @undoing = false
+    @prev_action_state = NullActionState
+    @next_action_state = NullActionState
     reset_line
   end
 
@@ -1768,7 +1769,7 @@ class Reline::LineEditor
   end
 
   private def ed_search_prev_history(key, arg: 1)
-    substr = @prev_action_state == ActionState.new(:search_history, :empty) ? '' : current_line.byteslice(0, @byte_pointer)
+    substr = prev_action_state_value(:search_history) == :empty ? '' : current_line.byteslice(0, @byte_pointer)
     return if @history_pointer == 0
     return if @history_pointer.nil? && substr.empty? && !current_line.empty?
 
@@ -1777,13 +1778,13 @@ class Reline::LineEditor
     return unless h_pointer
     move_history(h_pointer, line: line_index || :start, cursor: substr.empty? ? :end : @byte_pointer)
     arg -= 1
-    @next_action_state = substr.empty? ? ActionState.new(:search_history, :empty) : NullActionState
+    set_next_action_state(:search_history, :empty) if substr.empty?
     ed_search_prev_history(key, arg: arg) if arg > 0
   end
   alias_method :history_search_backward, :ed_search_prev_history
 
   private def ed_search_next_history(key, arg: 1)
-    substr = @prev_action_state == ActionState.new(:search_history, :empty) ? '' : current_line.byteslice(0, @byte_pointer)
+    substr = prev_action_state_value(:search_history) == :empty ? '' : current_line.byteslice(0, @byte_pointer)
     return if @history_pointer.nil?
 
     history_range = @history_pointer + 1...Reline::HISTORY.size
@@ -1792,7 +1793,7 @@ class Reline::LineEditor
 
     move_history(h_pointer, line: line_index || :start, cursor: substr.empty? ? :end : @byte_pointer)
     arg -= 1
-    @next_action_state = substr.empty? ? ActionState.new(:search_history, :empty) : NullActionState
+    set_next_action_state(:search_history, :empty) if substr.empty?
     ed_search_next_history(key, arg: arg) if arg > 0
   end
   alias_method :history_search_forward, :ed_search_next_history
@@ -2557,5 +2558,13 @@ class Reline::LineEditor
     @input_lines_position += 1
     target_lines, target_cursor_x, target_cursor_y = @input_lines[@input_lines_position]
     set_current_lines(target_lines.dup, target_cursor_x, target_cursor_y)
+  end
+
+  private def prev_action_state_value(type)
+    @prev_action_state[0] == type ? @prev_action_state[1] : nil
+  end
+
+  private def set_next_action_state(type, value)
+    @next_action_state = [type, value]
   end
 end
