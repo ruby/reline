@@ -154,7 +154,7 @@ class Reline::Config
   end
 
   def add_default_key_binding(keystroke, target)
-    @default_key_bindings[@keymap_label].add(keystroke, target)
+    add_default_key_binding_by_keymap(@keymap_label, keystroke, target)
   end
 
   def read_lines(lines, file = nil)
