@@ -92,7 +92,15 @@ class Reline::KeyStroke
       # `ESC char` or `ESC ESC char`
       return UNMATCHED if vi_mode
     end
-    input[idx + 1] ? UNMATCHED : input[idx] ? MATCHED : MATCHING
+
+    case input.size
+    when idx
+      MATCHING
+    when idx + 1
+      MATCHED
+    else
+      UNMATCHED
+    end
   end
 
   def key_mapping
