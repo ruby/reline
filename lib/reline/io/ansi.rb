@@ -75,7 +75,10 @@ class Reline::ANSI < Reline::IO
 
   def set_default_key_bindings_ansi_cursor(config)
     ANSI_CURSOR_KEY_BINDINGS.each do |char, (default_func, modifiers)|
-      bindings = [["\e[#{char}", default_func]] # CSI + char
+      bindings = [
+        ["\e[#{char}", default_func], # CSI + char
+        ["\eO#{char}", default_func] # SS3 + char, application cursor key mode
+      ]
       if modifiers[:ctrl]
         # CSI + ctrl_key_modifier + char
         bindings << ["\e[1;5#{char}", modifiers[:ctrl]]
@@ -129,17 +132,6 @@ class Reline::ANSI < Reline::IO
       # urxvt / exoterm
       [27, 91, 55, 126] => :ed_move_to_beg, # Home
       [27, 91, 56, 126] => :ed_move_to_end, # End
-
-      # GNOME
-      [27, 79, 72] => :ed_move_to_beg,      # Home
-      [27, 79, 70] => :ed_move_to_end,      # End
-      # Del is 0x08
-      # Arrow keys are the same of KDE
-
-      [27, 79, 65] => :ed_prev_history,     # ↑
-      [27, 79, 66] => :ed_next_history,     # ↓
-      [27, 79, 67] => :ed_next_char,        # →
-      [27, 79, 68] => :ed_prev_char,        # ←
     }.each_pair do |key, func|
       config.add_default_key_binding_by_keymap(:emacs, key, func)
       config.add_default_key_binding_by_keymap(:vi_insert, key, func)
