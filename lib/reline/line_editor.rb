@@ -391,8 +391,8 @@ class Reline::LineEditor
         if (cached = cached_wraps[[prompt, line]])
           next cached
         end
-        *wrapped_prompts, code_line_prompt = split_by_width(prompt, width).first.compact
-        wrapped_lines = split_by_width(line, width, offset: calculate_width(code_line_prompt, true)).first.compact
+        *wrapped_prompts, code_line_prompt = split_by_width(prompt, width).first
+        wrapped_lines = split_by_width(line, width, offset: calculate_width(code_line_prompt, true)).first
         wrapped_prompts.map { |p| [p, ''] } + [[code_line_prompt, wrapped_lines.first]] + wrapped_lines.drop(1).map { |c| ['', c] }
       end
     end
@@ -440,7 +440,7 @@ class Reline::LineEditor
   def wrapped_cursor_position
     prompt_width = calculate_width(prompt_list[@line_index], true)
     line_before_cursor = whole_lines[@line_index].byteslice(0, @byte_pointer)
-    wrapped_line_before_cursor = split_by_width(' ' * prompt_width + line_before_cursor, screen_width).first.compact
+    wrapped_line_before_cursor = split_by_width(' ' * prompt_width + line_before_cursor, screen_width).first
     wrapped_cursor_y = wrapped_prompt_and_input_lines[0...@line_index].sum(&:size) + wrapped_line_before_cursor.size - 1
     wrapped_cursor_x = calculate_width(wrapped_line_before_cursor.last)
     [wrapped_cursor_x, wrapped_cursor_y]

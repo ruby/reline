@@ -151,7 +151,6 @@ class Reline::Unicode
           mbchar_width = get_mbchar_width(gc)
           if (width += mbchar_width) > max_width
             width = mbchar_width
-            lines << nil
             lines << seq.dup
             height += 1
           end
@@ -161,7 +160,6 @@ class Reline::Unicode
     end
     # The cursor moves to next line in first
     if width == max_width
-      lines << nil
       lines << String.new(encoding: encoding)
       height += 1
     end
