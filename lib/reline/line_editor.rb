@@ -1582,7 +1582,7 @@ class Reline::LineEditor
   alias_method :backward_char, :ed_prev_char
 
   private def vi_first_print(key)
-    @byte_pointer, = Reline::Unicode.vi_first_print(current_line)
+    @byte_pointer = Reline::Unicode.vi_first_print(current_line)
   end
 
   private def ed_move_to_beg(key)
@@ -1961,7 +1961,7 @@ class Reline::LineEditor
 
   private def em_next_word(key)
     if current_line.bytesize > @byte_pointer
-      byte_size, _ = Reline::Unicode.em_forward_word(current_line, @byte_pointer)
+      byte_size = Reline::Unicode.em_forward_word(current_line, @byte_pointer)
       @byte_pointer += byte_size
     end
   end
@@ -1969,7 +1969,7 @@ class Reline::LineEditor
 
   private def ed_prev_word(key)
     if @byte_pointer > 0
-      byte_size, _ = Reline::Unicode.em_backward_word(current_line, @byte_pointer)
+      byte_size = Reline::Unicode.em_backward_word(current_line, @byte_pointer)
       @byte_pointer -= byte_size
     end
   end
@@ -1977,7 +1977,7 @@ class Reline::LineEditor
 
   private def em_delete_next_word(key)
     if current_line.bytesize > @byte_pointer
-      byte_size, _ = Reline::Unicode.em_forward_word(current_line, @byte_pointer)
+      byte_size = Reline::Unicode.em_forward_word(current_line, @byte_pointer)
       line, word = byteslice!(current_line, @byte_pointer, byte_size)
       set_current_line(line)
       @kill_ring.append(word)
@@ -1987,7 +1987,7 @@ class Reline::LineEditor
 
   private def ed_delete_prev_word(key)
     if @byte_pointer > 0
-      byte_size, _ = Reline::Unicode.em_backward_word(current_line, @byte_pointer)
+      byte_size = Reline::Unicode.em_backward_word(current_line, @byte_pointer)
       line, word = byteslice!(current_line, @byte_pointer - byte_size, byte_size)
       set_current_line(line, @byte_pointer - byte_size)
       @kill_ring.append(word, true)
@@ -2027,7 +2027,7 @@ class Reline::LineEditor
 
   private def em_capitol_case(key)
     if current_line.bytesize > @byte_pointer
-      byte_size, _, new_str = Reline::Unicode.em_forward_word_with_capitalization(current_line, @byte_pointer)
+      byte_size, new_str = Reline::Unicode.em_forward_word_with_capitalization(current_line, @byte_pointer)
       before = current_line.byteslice(0, @byte_pointer)
       after = current_line.byteslice((@byte_pointer + byte_size)..-1)
       set_current_line(before + new_str + after, @byte_pointer + new_str.bytesize)
@@ -2037,7 +2037,7 @@ class Reline::LineEditor
 
   private def em_lower_case(key)
     if current_line.bytesize > @byte_pointer
-      byte_size, = Reline::Unicode.em_forward_word(current_line, @byte_pointer)
+      byte_size = Reline::Unicode.em_forward_word(current_line, @byte_pointer)
       part = current_line.byteslice(@byte_pointer, byte_size).grapheme_clusters.map { |mbchar|
         mbchar =~ /[A-Z]/ ? mbchar.downcase : mbchar
       }.join
@@ -2050,7 +2050,7 @@ class Reline::LineEditor
 
   private def em_upper_case(key)
     if current_line.bytesize > @byte_pointer
-      byte_size, = Reline::Unicode.em_forward_word(current_line, @byte_pointer)
+      byte_size = Reline::Unicode.em_forward_word(current_line, @byte_pointer)
       part = current_line.byteslice(@byte_pointer, byte_size).grapheme_clusters.map { |mbchar|
         mbchar =~ /[a-z]/ ? mbchar.upcase : mbchar
       }.join
@@ -2063,7 +2063,7 @@ class Reline::LineEditor
 
   private def em_kill_region(key)
     if @byte_pointer > 0
-      byte_size, _ = Reline::Unicode.em_big_backward_word(current_line, @byte_pointer)
+      byte_size = Reline::Unicode.em_big_backward_word(current_line, @byte_pointer)
       line, deleted = byteslice!(current_line, @byte_pointer - byte_size, byte_size)
       set_current_line(line, @byte_pointer - byte_size)
       @kill_ring.append(deleted, true)
@@ -2094,7 +2094,7 @@ class Reline::LineEditor
 
   private def vi_next_word(key, arg: 1)
     if current_line.bytesize > @byte_pointer
-      byte_size, _ = Reline::Unicode.vi_forward_word(current_line, @byte_pointer, @drop_terminate_spaces)
+      byte_size = Reline::Unicode.vi_forward_word(current_line, @byte_pointer, @drop_terminate_spaces)
       @byte_pointer += byte_size
     end
     arg -= 1
@@ -2103,7 +2103,7 @@ class Reline::LineEditor
 
   private def vi_prev_word(key, arg: 1)
     if @byte_pointer > 0
-      byte_size, _ = Reline::Unicode.vi_backward_word(current_line, @byte_pointer)
+      byte_size = Reline::Unicode.vi_backward_word(current_line, @byte_pointer)
       @byte_pointer -= byte_size
     end
     arg -= 1
@@ -2112,7 +2112,7 @@ class Reline::LineEditor
 
   private def vi_end_word(key, arg: 1, inclusive: false)
     if current_line.bytesize > @byte_pointer
-      byte_size, _ = Reline::Unicode.vi_forward_end_word(current_line, @byte_pointer)
+      byte_size = Reline::Unicode.vi_forward_end_word(current_line, @byte_pointer)
       @byte_pointer += byte_size
     end
     arg -= 1
@@ -2127,7 +2127,7 @@ class Reline::LineEditor
 
   private def vi_next_big_word(key, arg: 1)
     if current_line.bytesize > @byte_pointer
-      byte_size, _ = Reline::Unicode.vi_big_forward_word(current_line, @byte_pointer)
+      byte_size = Reline::Unicode.vi_big_forward_word(current_line, @byte_pointer)
       @byte_pointer += byte_size
     end
     arg -= 1
@@ -2136,7 +2136,7 @@ class Reline::LineEditor
 
   private def vi_prev_big_word(key, arg: 1)
     if @byte_pointer > 0
-      byte_size, _ = Reline::Unicode.vi_big_backward_word(current_line, @byte_pointer)
+      byte_size = Reline::Unicode.vi_big_backward_word(current_line, @byte_pointer)
       @byte_pointer -= byte_size
     end
     arg -= 1
@@ -2145,7 +2145,7 @@ class Reline::LineEditor
 
   private def vi_end_big_word(key, arg: 1, inclusive: false)
     if current_line.bytesize > @byte_pointer
-      byte_size, _ = Reline::Unicode.vi_big_forward_end_word(current_line, @byte_pointer)
+      byte_size = Reline::Unicode.vi_big_forward_end_word(current_line, @byte_pointer)
       @byte_pointer += byte_size
     end
     arg -= 1

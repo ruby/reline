@@ -259,27 +259,23 @@ class Reline::Unicode
   end
 
   def self.em_forward_word(line, byte_pointer)
-    width = 0
     byte_size = 0
     while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
       break if mbchar.encode(Encoding::UTF_8) =~ /\p{Word}/
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
     while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
       break if mbchar.encode(Encoding::UTF_8) =~ /\P{Word}/
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    [byte_size, width]
+    byte_size
   end
 
   def self.em_forward_word_with_capitalization(line, byte_pointer)
-    width = 0
     byte_size = 0
     new_str = String.new
     while line.bytesize > (byte_pointer + byte_size)
@@ -287,7 +283,6 @@ class Reline::Unicode
       mbchar = line.byteslice(byte_pointer + byte_size, size)
       break if mbchar.encode(Encoding::UTF_8) =~ /\p{Word}/
       new_str += mbchar
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
     first = true
@@ -301,50 +296,43 @@ class Reline::Unicode
       else
         new_str += mbchar.downcase
       end
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    [byte_size, width, new_str]
+    [byte_size, new_str]
   end
 
   def self.em_backward_word(line, byte_pointer)
-    width = 0
     byte_size = 0
     while 0 < (byte_pointer - byte_size)
       size = get_prev_mbchar_size(line, byte_pointer - byte_size)
       mbchar = line.byteslice(byte_pointer - byte_size - size, size)
       break if mbchar.encode(Encoding::UTF_8) =~ /\p{Word}/
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
     while 0 < (byte_pointer - byte_size)
       size = get_prev_mbchar_size(line, byte_pointer - byte_size)
       mbchar = line.byteslice(byte_pointer - byte_size - size, size)
       break if mbchar.encode(Encoding::UTF_8) =~ /\P{Word}/
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    [byte_size, width]
+    byte_size
   end
 
   def self.em_big_backward_word(line, byte_pointer)
-    width = 0
     byte_size = 0
     while 0 < (byte_pointer - byte_size)
       size = get_prev_mbchar_size(line, byte_pointer - byte_size)
       mbchar = line.byteslice(byte_pointer - byte_size - size, size)
       break if mbchar =~ /\S/
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
     while 0 < (byte_pointer - byte_size)
       size = get_prev_mbchar_size(line, byte_pointer - byte_size)
       mbchar = line.byteslice(byte_pointer - byte_size - size, size)
       break if mbchar =~ /\s/
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    [byte_size, width]
+    byte_size
   end
 
   def self.ed_transpose_words(line, byte_pointer)
@@ -449,73 +437,61 @@ class Reline::Unicode
   end
 
   def self.vi_big_forward_word(line, byte_pointer)
-    width = 0
     byte_size = 0
     while (line.bytesize - 1) > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
       break if mbchar =~ /\s/
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
     while (line.bytesize - 1) > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
       break if mbchar =~ /\S/
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    [byte_size, width]
+    byte_size
   end
 
   def self.vi_big_forward_end_word(line, byte_pointer)
     if (line.bytesize - 1) > byte_pointer
       size = get_next_mbchar_size(line, byte_pointer)
-      mbchar = line.byteslice(byte_pointer, size)
-      width = get_mbchar_width(mbchar)
       byte_size = size
     else
-      return [0, 0]
+      return 0
     end
     while (line.bytesize - 1) > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
       break if mbchar =~ /\S/
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    prev_width = width
     prev_byte_size = byte_size
     while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
       break if mbchar =~ /\s/
-      prev_width = width
       prev_byte_size = byte_size
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    [prev_byte_size, prev_width]
+    prev_byte_size
   end
 
   def self.vi_big_backward_word(line, byte_pointer)
-    width = 0
     byte_size = 0
     while 0 < (byte_pointer - byte_size)
       size = get_prev_mbchar_size(line, byte_pointer - byte_size)
       mbchar = line.byteslice(byte_pointer - byte_size - size, size)
       break if mbchar =~ /\S/
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
     while 0 < (byte_pointer - byte_size)
       size = get_prev_mbchar_size(line, byte_pointer - byte_size)
       mbchar = line.byteslice(byte_pointer - byte_size - size, size)
       break if mbchar =~ /\s/
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    [byte_size, width]
+    byte_size
   end
 
   def self.vi_forward_word(line, byte_pointer, drop_terminate_spaces = false)
@@ -529,10 +505,9 @@ class Reline::Unicode
       else
         started_by = :non_word_printable
       end
-      width = get_mbchar_width(mbchar)
       byte_size = size
     else
-      return [0, 0]
+      return 0
     end
     while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
@@ -545,18 +520,16 @@ class Reline::Unicode
       when :non_word_printable
         break if mbchar =~ /\w|\s/
       end
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    return [byte_size, width] if drop_terminate_spaces
+    return byte_size if drop_terminate_spaces
     while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
       mbchar = line.byteslice(byte_pointer + byte_size, size)
       break if mbchar =~ /\S/
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    [byte_size, width]
+    byte_size
   end
 
   def self.vi_forward_end_word(line, byte_pointer)
@@ -570,10 +543,9 @@ class Reline::Unicode
       else
         started_by = :non_word_printable
       end
-      width = get_mbchar_width(mbchar)
       byte_size = size
     else
-      return [0, 0]
+      return 0
     end
     if (line.bytesize - 1) > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
@@ -585,13 +557,11 @@ class Reline::Unicode
       else
         second = :non_word_printable
       end
-      second_width = get_mbchar_width(mbchar)
       second_byte_size = size
     else
-      return [byte_size, width]
+      return byte_size
     end
     if second == :space
-      width += second_width
       byte_size += second_byte_size
       while (line.bytesize - 1) > (byte_pointer + byte_size)
         size = get_next_mbchar_size(line, byte_pointer + byte_size)
@@ -604,7 +574,6 @@ class Reline::Unicode
           end
           break
         end
-        width += get_mbchar_width(mbchar)
         byte_size += size
       end
     else
@@ -612,12 +581,10 @@ class Reline::Unicode
       when [:word, :non_word_printable], [:non_word_printable, :word]
         started_by = second
       else
-        width += second_width
         byte_size += second_byte_size
         started_by = second
       end
     end
-    prev_width = width
     prev_byte_size = byte_size
     while line.bytesize > (byte_pointer + byte_size)
       size = get_next_mbchar_size(line, byte_pointer + byte_size)
@@ -628,16 +595,13 @@ class Reline::Unicode
       when :non_word_printable
         break if mbchar =~ /[\w\s]/
       end
-      prev_width = width
       prev_byte_size = byte_size
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    [prev_byte_size, prev_width]
+    prev_byte_size
   end
 
   def self.vi_backward_word(line, byte_pointer)
-    width = 0
     byte_size = 0
     while 0 < (byte_pointer - byte_size)
       size = get_prev_mbchar_size(line, byte_pointer - byte_size)
@@ -650,7 +614,6 @@ class Reline::Unicode
         end
         break
       end
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
     while 0 < (byte_pointer - byte_size)
@@ -662,14 +625,12 @@ class Reline::Unicode
       when :non_word_printable
         break if mbchar =~ /[\w\s]/
       end
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    [byte_size, width]
+    byte_size
   end
 
   def self.vi_first_print(line)
-    width = 0
     byte_size = 0
     while (line.bytesize - 1) > byte_size
       size = get_next_mbchar_size(line, byte_size)
@@ -677,9 +638,8 @@ class Reline::Unicode
       if mbchar =~ /\S/
         break
       end
-      width += get_mbchar_width(mbchar)
       byte_size += size
     end
-    [byte_size, width]
+    byte_size
   end
 end
