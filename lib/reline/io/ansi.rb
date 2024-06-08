@@ -122,13 +122,6 @@ class Reline::ANSI < Reline::IO
       [27, 91, 52, 126] => :ed_move_to_end, # End
       [27, 91, 51, 126] => :key_delete,     # Del
 
-      # KDE
-      # Del is 0x08
-      [27, 71, 65] => :ed_prev_history,     # ↑
-      [27, 71, 66] => :ed_next_history,     # ↓
-      [27, 71, 67] => :ed_next_char,        # →
-      [27, 71, 68] => :ed_prev_char,        # ←
-
       # urxvt / exoterm
       [27, 91, 55, 126] => :ed_move_to_beg, # Home
       [27, 91, 56, 126] => :ed_move_to_end, # End
