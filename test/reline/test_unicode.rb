@@ -89,4 +89,114 @@ class Reline::Unicode::Test < Reline::TestCase
     assert_equal ["\e[31mc\1ABC\2d\e[0mef", 2, 4], Reline::Unicode.take_mbchar_range("\e[31mabc\1ABC\2d\e[0mefghi", 2, 4)
     assert_equal ["\e[41m \e[42mい\e[43m ", 1, 4], Reline::Unicode.take_mbchar_range("\e[41mあ\e[42mい\e[43mう", 1, 4, padding: true)
   end
+
+  def test_em_forward_word
+    assert_equal(12, Reline::Unicode.em_forward_word('abc---fooあbar-baz', 3))
+    assert_equal(3, Reline::Unicode.em_forward_word('abcfoo', 3))
+    assert_equal(3, Reline::Unicode.em_forward_word('abc---', 3))
+    assert_equal(0, Reline::Unicode.em_forward_word('abc', 3))
+  end
+
+  def test_em_forward_word_with_capitalization
+    assert_equal([12, '---Fooあbar'], Reline::Unicode.em_forward_word_with_capitalization('abc---foOあBar-baz', 3))
+    assert_equal([3, 'Foo'], Reline::Unicode.em_forward_word_with_capitalization('abcfOo', 3))
+    assert_equal([3, '---'], Reline::Unicode.em_forward_word_with_capitalization('abc---', 3))
+    assert_equal([0, ''], Reline::Unicode.em_forward_word_with_capitalization('abc', 3))
+    assert_equal([6, 'Ii̇i̇'], Reline::Unicode.em_forward_word_with_capitalization('ıİİ', 0))
+  end
+
+  def test_em_backward_word
+    assert_equal(12, Reline::Unicode.em_backward_word('abc foo-barあbaz--- xyz', 20))
+    assert_equal(2, Reline::Unicode.em_backward_word('  ', 2))
+    assert_equal(2, Reline::Unicode.em_backward_word('ab', 2))
+    assert_equal(0, Reline::Unicode.em_backward_word('ab', 0))
+  end
+
+  def test_em_big_backward_word
+    assert_equal(16, Reline::Unicode.em_big_backward_word('abc foo-barあbaz--- xyz', 20))
+    assert_equal(2, Reline::Unicode.em_big_backward_word('  ', 2))
+    assert_equal(2, Reline::Unicode.em_big_backward_word('ab', 2))
+    assert_equal(0, Reline::Unicode.em_big_backward_word('ab', 0))
+  end
+
+  def test_ed_transpose_words
+    # any value that does not trigger transpose
+    assert_equal([0, 0, 0, 2], Reline::Unicode.ed_transpose_words('aa bb cc  ', 1))
+
+    assert_equal([0, 2, 3, 5], Reline::Unicode.ed_transpose_words('aa bb cc  ', 2))
+    assert_equal([0, 2, 3, 5], Reline::Unicode.ed_transpose_words('aa bb cc  ', 4))
+    assert_equal([3, 5, 6, 8], Reline::Unicode.ed_transpose_words('aa bb cc  ', 5))
+    assert_equal([3, 5, 6, 8], Reline::Unicode.ed_transpose_words('aa bb cc  ', 7))
+    assert_equal([3, 5, 6, 10], Reline::Unicode.ed_transpose_words('aa bb cc  ', 8))
+    assert_equal([3, 5, 6, 10], Reline::Unicode.ed_transpose_words('aa bb cc  ', 9))
+    word1 = 'fooあ'
+    word2 = 'barあbaz'
+    left = 'aaa  -'
+    middle = '- -'
+    right = '-  bbb'
+    expected = [left.bytesize, (left + word1).bytesize, (left + word1 + middle).bytesize, (left + word1 + middle + word2).bytesize]
+    assert_equal(expected, Reline::Unicode.ed_transpose_words(left + word1 + middle + word2 + right, left.bytesize + word1.bytesize))
+    assert_equal(expected, Reline::Unicode.ed_transpose_words(left + word1 + middle + word2 + right, left.bytesize + word1.bytesize + middle.bytesize))
+    assert_equal(expected, Reline::Unicode.ed_transpose_words(left + word1 + middle + word2 + right, left.bytesize + word1.bytesize + middle.bytesize + word2.bytesize - 1))
+  end
+
+  def test_vi_big_forward_word
+    assert_equal(18, Reline::Unicode.vi_big_forward_word('abc---fooあbar-baz  xyz', 3))
+    assert_equal(8, Reline::Unicode.vi_big_forward_word('abcfooあ  --', 3))
+    assert_equal(6, Reline::Unicode.vi_big_forward_word('abcfooあ', 3))
+    assert_equal(2, Reline::Unicode.vi_big_forward_word('abc-  ', 3)) # maybe inconsistent
+    assert_equal(0, Reline::Unicode.vi_big_forward_word('abc', 3))
+  end
+
+  def test_vi_big_forward_end_word
+    assert_equal(4, Reline::Unicode.vi_big_forward_end_word('a  bb c', 0))
+    assert_equal(4, Reline::Unicode.vi_big_forward_end_word('-  bb c', 0))
+    assert_equal(1, Reline::Unicode.vi_big_forward_end_word('-a b', 0))
+    assert_equal(1, Reline::Unicode.vi_big_forward_end_word('a- b', 0))
+    assert_equal(1, Reline::Unicode.vi_big_forward_end_word('aa b', 0))
+    assert_equal(3, Reline::Unicode.vi_big_forward_end_word('  aa b', 0))
+    assert_equal(15, Reline::Unicode.vi_big_forward_end_word('abc---fooあbar-baz  xyz', 3))
+    assert_equal(3, Reline::Unicode.vi_big_forward_end_word('abcfooあ  --', 3))
+    assert_equal(3, Reline::Unicode.vi_big_forward_end_word('abcfooあ', 3))
+    assert_equal(2, Reline::Unicode.vi_big_forward_end_word('abc-  ', 3))
+    assert_equal(0, Reline::Unicode.vi_big_forward_end_word('abc', 3))
+  end
+
+  def test_vi_big_backward_word
+    assert_equal(16, Reline::Unicode.vi_big_backward_word('abc foo-barあbaz--- xyz', 20))
+    assert_equal(2, Reline::Unicode.vi_big_backward_word('  ', 2))
+    assert_equal(2, Reline::Unicode.vi_big_backward_word('ab', 2))
+    assert_equal(0, Reline::Unicode.vi_big_backward_word('ab', 0))
+  end
+
+  def test_vi_forward_word
+    assert_equal(3, Reline::Unicode.vi_forward_word('abc---fooあbar-baz', 3))
+    assert_equal(3, Reline::Unicode.vi_forward_word('abc---fooあbar-baz', 6)) # maybe bug
+    assert_equal(3, Reline::Unicode.vi_forward_word('abcfooあ', 3)) # maybe bug
+    assert_equal(3, Reline::Unicode.vi_forward_word('abc---', 3))
+    assert_equal(0, Reline::Unicode.vi_forward_word('abc', 3))
+  end
+
+  def test_vi_forward_end_word
+    assert_equal(2, Reline::Unicode.vi_forward_end_word('abc---fooあbar-baz', 3))
+    assert_equal(2, Reline::Unicode.vi_forward_end_word('abc---fooあbar-baz', 6)) # maybe bug
+    assert_equal(2, Reline::Unicode.vi_forward_end_word('abcfooあ', 3)) # maybe bug
+    assert_equal(2, Reline::Unicode.vi_forward_end_word('abc---', 3))
+    assert_equal(0, Reline::Unicode.vi_forward_end_word('abc', 3))
+  end
+
+  def test_vi_backward_word
+    assert_equal(3, Reline::Unicode.vi_backward_word('abc foo-barあbaz--- xyz', 20))
+    assert_equal(3, Reline::Unicode.vi_backward_word('abc foo-barあbaz--- xyz', 17)) # maybe bug
+    assert_equal(2, Reline::Unicode.vi_backward_word('  ', 2))
+    assert_equal(2, Reline::Unicode.vi_backward_word('ab', 2))
+    assert_equal(0, Reline::Unicode.vi_backward_word('ab', 0))
+  end
+
+  def test_vi_first_print
+    assert_equal(3, Reline::Unicode.vi_first_print('   abcdefg'))
+    assert_equal(2, Reline::Unicode.vi_first_print('   ')) # maybe inconsistent
+    assert_equal(0, Reline::Unicode.vi_first_print('abc'))
+    assert_equal(0, Reline::Unicode.vi_first_print(''))
+  end
 end
