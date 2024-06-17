@@ -263,29 +263,29 @@ class Reline::Unicode
 
   def self.em_forward_word(line, byte_pointer)
     gcs = line.byteslice(byte_pointer..).grapheme_clusters
-    nonwords = gcs.take_while { |c| c.encode(Encoding::UTF_8).match?(/\P{Word}/) }
-    words = gcs.drop(nonwords.size).take_while { |c| c.encode(Encoding::UTF_8).match?(/\p{Word}/) }
+    nonwords = gcs.take_while { |c| !word_character?(c) }
+    words = gcs.drop(nonwords.size).take_while { |c| word_character?(c) }
     nonwords.sum(&:bytesize) + words.sum(&:bytesize)
   end
 
   def self.em_forward_word_with_capitalization(line, byte_pointer)
     gcs = line.byteslice(byte_pointer..).grapheme_clusters
-    nonwords = gcs.take_while { |c| c.encode(Encoding::UTF_8).match?(/\P{Word}/) }
-    words = gcs.drop(nonwords.size).take_while { |c| c.encode(Encoding::UTF_8).match?(/\p{Word}/) }
+    nonwords = gcs.take_while { |c| !word_character?(c) }
+    words = gcs.drop(nonwords.size).take_while { |c| word_character?(c) }
     [nonwords.sum(&:bytesize) + words.sum(&:bytesize), nonwords.join + words.join.capitalize]
   end
 
   def self.em_backward_word(line, byte_pointer)
     gcs = line.byteslice(0, byte_pointer).grapheme_clusters.reverse
-    nonwords = gcs.take_while { |c| c.encode(Encoding::UTF_8).match?(/\P{Word}/) }
-    words = gcs.drop(nonwords.size).take_while { |c| c.encode(Encoding::UTF_8).match?(/\p{Word}/) }
+    nonwords = gcs.take_while { |c| !word_character?(c) }
+    words = gcs.drop(nonwords.size).take_while { |c| word_character?(c) }
     nonwords.sum(&:bytesize) + words.sum(&:bytesize)
   end
 
   def self.em_big_backward_word(line, byte_pointer)
     gcs = line.byteslice(0, byte_pointer).grapheme_clusters.reverse
-    spaces = gcs.take_while { |c| c.match?(/\s/) }
-    nonspaces = gcs.drop(spaces.size).take_while { |c| c.match?(/\S/) }
+    spaces = gcs.take_while { |c| space_character?(c) }
+    nonspaces = gcs.drop(spaces.size).take_while { |c| !space_character?(c) }
     spaces.sum(&:bytesize) + nonspaces.sum(&:bytesize)
   end
 
@@ -293,20 +293,19 @@ class Reline::Unicode
     gcs = line.byteslice(0, byte_pointer).grapheme_clusters
     pos = gcs.size
     gcs += line.byteslice(byte_pointer..).grapheme_clusters
-    gcs.map! { |c| c.encode(Encoding::UTF_8) }
-    pos += 1 while pos < gcs.size && gcs[pos].match?(/\P{Word}/)
+    pos += 1 while pos < gcs.size && !word_character?(gcs[pos])
     if pos == gcs.size # 'aaa  bbb [cursor] '
-      pos -= 1 while pos > 0 && gcs[pos - 1].match?(/\P{Word}/)
+      pos -= 1 while pos > 0 && !word_character?(gcs[pos - 1])
       second_word_end = gcs.size
     else # 'aaa  [cursor]bbb'
-      pos += 1 while pos < gcs.size && gcs[pos].match?(/\p{Word}/)
+      pos += 1 while pos < gcs.size && word_character?(gcs[pos])
       second_word_end = pos
     end
-    pos -= 1 while pos > 0 && gcs[pos - 1].match?(/\p{Word}/)
+    pos -= 1 while pos > 0 && word_character?(gcs[pos - 1])
     second_word_start = pos
-    pos -= 1 while pos > 0 && gcs[pos - 1].match?(/\P{Word}/)
+    pos -= 1 while pos > 0 && !word_character?(gcs[pos - 1])
     first_word_end = pos
-    pos -= 1 while pos > 0 && gcs[pos - 1].match?(/\p{Word}/)
+    pos -= 1 while pos > 0 && word_character?(gcs[pos - 1])
     first_word_start = pos
 
     [first_word_start, first_word_end, second_word_start, second_word_end].map do |idx|
@@ -316,16 +315,16 @@ class Reline::Unicode
 
   def self.vi_big_forward_word(line, byte_pointer)
     gcs = line.byteslice(byte_pointer..).grapheme_clusters
-    nonspaces = gcs.take_while { |c| c.match?(/\S/) }
-    spaces = gcs.drop(nonspaces.size).take_while { |c| c.match?(/\s/) }
+    nonspaces = gcs.take_while { |c| !space_character?(c) }
+    spaces = gcs.drop(nonspaces.size).take_while { |c| space_character?(c) }
     nonspaces.sum(&:bytesize) + spaces.sum(&:bytesize)
   end
 
   def self.vi_big_forward_end_word(line, byte_pointer)
     gcs = line.byteslice(byte_pointer..).grapheme_clusters
     first = gcs.shift(1)
-    spaces = gcs.take_while { |c| c.match?(/\s/) }
-    nonspaces = gcs.drop(spaces.size).take_while { |c| c.match?(/\S/) }
+    spaces = gcs.take_while { |c| space_character?(c) }
+    nonspaces = gcs.drop(spaces.size).take_while { |c| !space_character?(c) }
     matched = spaces + nonspaces
     matched.pop
     first.sum(&:bytesize) + matched.sum(&:bytesize)
@@ -333,55 +332,56 @@ class Reline::Unicode
 
   def self.vi_big_backward_word(line, byte_pointer)
     gcs = line.byteslice(0, byte_pointer).grapheme_clusters.reverse
-    spaces = gcs.take_while { |c| c.match?(/\s/) }
-    nonspaces = gcs.drop(spaces.size).take_while { |c| c.match?(/\S/) }
+    spaces = gcs.take_while { |c| space_character?(c) }
+    nonspaces = gcs.drop(spaces.size).take_while { |c| !space_character?(c) }
     spaces.sum(&:bytesize) + nonspaces.sum(&:bytesize)
   end
 
   def self.vi_forward_word(line, byte_pointer, drop_terminate_spaces = false)
-    gcs = line.byteslice(byte_pointer..).grapheme_clusters.map { |c| c.encode(Encoding::UTF_8) }
+    gcs = line.byteslice(byte_pointer..).grapheme_clusters
     return 0 if gcs.empty?
 
-    regexp =
-      case gcs.first
-      when /\p{Word}/
-        /\p{Word}/
-      when /\s/
-        /\s/
+    c = gcs.first
+    matched =
+      if word_character?(c)
+        gcs.take_while { |c| word_character?(c) }
+      elsif space_character?(c)
+        gcs.take_while { |c| space_character?(c) }
       else
-        /[^\p{Word}\s]/
+        gcs.take_while { |c| !word_character?(c) && !space_character?(c) }
       end
-    matched = gcs.take_while { |c| c.match?(regexp) }
+
     return matched.sum(&:bytesize) if drop_terminate_spaces
 
-    spaces = gcs.drop(matched.size).take_while { |c| c.match?(/\s/) }
+    spaces = gcs.drop(matched.size).take_while { |c| space_character?(c) }
     matched.sum(&:bytesize) + spaces.sum(&:bytesize)
   end
 
   def self.vi_forward_end_word(line, byte_pointer)
-    gcs = line.byteslice(byte_pointer..).grapheme_clusters.map { |c| c.encode(Encoding::UTF_8) }
+    gcs = line.byteslice(byte_pointer..).grapheme_clusters
     return 0 if gcs.empty?
     return gcs.first.bytesize if gcs.size == 1
 
     start = gcs.shift
     skips = [start]
-    if start.match?(/\s/) || gcs.first.match?(/\s/)
-      spaces = gcs.take_while { |c| c.match?(/\s/) }
+    if space_character?(start) || space_character?(gcs.first)
+      spaces = gcs.take_while { |c| space_character?(c) }
       skips += spaces
       gcs.shift(spaces.size)
     end
-    regexp = /\p{Word}/.match?(gcs.first) ? /\p{Word}/ : /[^\p{Word}\s]/
-    matched = gcs.take_while { |c| c.match?(regexp) }
+    start_with_word = word_character?(gcs.first)
+    matched = gcs.take_while { |c| start_with_word ? word_character?(c) : !word_character?(c) && !space_character?(c) }
     matched.pop
     skips.sum(&:bytesize) + matched.sum(&:bytesize)
   end
 
   def self.vi_backward_word(line, byte_pointer)
-    gcs = line.byteslice(0, byte_pointer).grapheme_clusters.map { |c| c.encode(Encoding::UTF_8) }.reverse
-    spaces = gcs.take_while { |c| c.match?(/\s/) }
+    gcs = line.byteslice(0, byte_pointer).grapheme_clusters.reverse
+    spaces = gcs.take_while { |c| space_character?(c) }
     gcs.shift(spaces.size)
-    regexp = /\p{Word}/.match?(gcs.first) ? /\p{Word}/ : /[^\p{Word}\s]/
-    spaces.sum(&:bytesize) + gcs.take_while { |c| c.match?(regexp) }.sum(&:bytesize)
+    start_with_word = word_character?(gcs.first)
+    matched = gcs.take_while { |c| start_with_word ? word_character?(c) : !word_character?(c) && !space_character?(c) }
+    spaces.sum(&:bytesize) + matched.sum(&:bytesize)
   end
 
   def self.common_prefix(list, ignore_case: false)
@@ -399,7 +399,17 @@ class Reline::Unicode
 
   def self.vi_first_print(line)
     gcs = line.grapheme_clusters
-    spaces = gcs.take_while { |c| c.match?(/\s/) }
+    spaces = gcs.take_while { |c| space_character?(c) }
     spaces.sum(&:bytesize)
+  end
+
+  def self.word_character?(s)
+    s.encode(Encoding::UTF_8).match?(/\p{Word}/) if s
+  rescue Encoding::UndefinedConversionError
+    false
+  end
+
+  def self.space_character?(s)
+    s.match?(/\s/) if s
   end
 end
