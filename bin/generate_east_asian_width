@@ -5,6 +5,18 @@ if ARGV.empty?
   exit 1
 end
 
+def unicode_width(type, category)
+  return 0 if category == 'Mn' # Nonspacing Mark
+  case type
+  when 'F', 'W' # Fullwidth, Wide
+    2
+  when 'H', 'Na', 'N' # Halfwidth, Narrow, Neutral
+    1
+  when 'A' # Ambiguous
+    -1
+  end
+end
+
 open(ARGV.first, 'rt') do |f|
   if m = f.gets.match(/^# EastAsianWidth-(\d+\.\d+\.\d+)\.txt/)
     unicode_version = m[1]
@@ -13,66 +25,31 @@ open(ARGV.first, 'rt') do |f|
     unicode_version = nil
   end
 
-  list = []
+  widths = []
   f.each_line do |line|
-    next unless m = line.match(/^(\h+)(?:\.\.(\h+))?\s*;\s*(\w+)\s+#.+/)
+    next unless /^(?<first>\h+)(?:\.\.(?<last>\h+))?\s*;\s*(?<type>\w+)\s+# +(?<category>[^ ]+)/ =~ line
 
-    first = m[1].to_i(16)
-    last = m[2]&.to_i(16) || first
-    type = m[3].to_sym
-    if !list.empty? and (list.last[:range].last + 1) == first and list.last[:type] == type
-      list.last[:range] = (list.last[:range].first..last)
-    else
-      # [\u{D800}-\u{DFFF}] cause error.
-      unless ((0xD800..0xDFFF).to_a & (first..last).to_a).empty?
-        unless (first..0xD7FF).to_a.empty?
-          list << {
-            range: (first..0xD7FF),
-            type: type.to_sym
-          }
-        end
-        unless (0xE000..last).to_a.empty?
-          list << {
-            range: (first..0xD7FF),
-            type: type.to_sym
-          }
-        end
-      else
-        list << {
-          range: (first..last),
-          type: type.to_sym
-        }
-      end
-    end
+    range = first.to_i(16)..(last || first).to_i(16)
+    widths.fill(unicode_width(type, category), range)
   end
-  grouped = list.group_by { |item| item[:type] }.map { |item| [item.first, item.last.map { |row| row[:range] }] }.to_h
-  grouped = %i{F H W Na A N}.map { |type| [type, grouped[type]] }
-  puts <<EOH
-class Reline::Unicode::EastAsianWidth
-  # This is based on EastAsianWidth.txt
-  # UNICODE_VERSION = #{unicode_version ? "'#{unicode_version}'" : 'nil'}
 
-EOH
-  puts grouped.map { |item|
-    type, ranges = item
-    output =  "  # %s\n" %
-      case type
-      when :F  then 'Fullwidth'
-      when :H  then 'Halfwidth'
-      when :W  then 'Wide'
-      when :Na then 'Narrow'
-      when :A  then 'Ambiguous'
-      when :N  then 'Neutral'
-      end
-    output += "  TYPE_%s = /^[\#{ %%W(\n" % type.upcase
-    output += ranges.map { |range|
-      if range.first == range.last
-        '    \u{%04X}' % range.first
-      else
-        '    \u{%04X}-\u{%04X}' % [range.first, range.last]
-      end
-    }.join("\n")
-    output += "\n  ).join }]/\n"
-  }.join("\n")
-  puts 'end'
+  # EscapedPairs
+  [*0x00..0x1F, 0x7F].each { |ord| widths[ord] = 2 }
+  # printable ASCII chars
+  (0x20..0x7E).each { |ord| widths[ord] = 1 }
+
+  chunks = widths.each_with_index.chunk { |width, _idx| width || 1 }
+  chunk_last_ords = chunks.map { |width, chunk| [chunk.last.last, width] }
+  chunk_last_ords << [0x7fffffff, 1]
+
+  puts <<~EOH
+    class Reline::Unicode::EastAsianWidth
+      # This is based on EastAsianWidth.txt
+      # UNICODE_VERSION = #{unicode_version ? "'#{unicode_version}'" : 'nil'}
+
+      CHUNK_LAST, CHUNK_WIDTH = [
+    #{chunk_last_ords.map { |ord, width| "    [0x#{ord.to_s(16)}, #{width}]" }.join(",\n")}
+      ].transpose.map(&:freeze)
+    end
+  EOH
 end
