@@ -105,7 +105,7 @@ class Reline::Config::Test < Reline::TestCase
   def test_encoding_is_not_ascii
     @config = Reline::Config.new
 
-    assert_equal nil, @config.convert_meta
+    assert_equal false, @config.convert_meta
   end
 
   def test_invalid_keystroke
