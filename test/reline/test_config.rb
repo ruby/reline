@@ -576,5 +576,9 @@ class Reline::Config::Test < Reline::TestCase
     File.write(inputrc, "set emacs-mode-string ?")
     @config.reload
     assert_equal '?', @config.emacs_mode_string
+
+    File.write(inputrc, "")
+    @config.reload
+    assert_equal '@', @config.emacs_mode_string
   end
 end
