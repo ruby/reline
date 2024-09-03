@@ -179,6 +179,14 @@ class Reline::LineEditor
     @rendered_screen.lines = []
     @rendered_screen.cursor_y = 0
     render_differential
+    case @old_winch_trap
+    when 'DEFAULT', 'SYSTEM_DEFAULT', 'IGNORE'
+      # Do nothing
+    when 'EXIT'
+      exit
+    else
+      @old_winch_trap.call if @old_winch_trap.respond_to?(:call)
+    end
   end
 
   private def handle_interrupted
@@ -191,7 +199,7 @@ class Reline::LineEditor
     Reline::IOGate.move_cursor_column 0
     @rendered_screen.lines = []
     @rendered_screen.cursor_y = 0
-    case @old_trap
+    case @old_int_trap
     when 'DEFAULT', 'SYSTEM_DEFAULT'
       raise Interrupt
     when 'IGNORE'
@@ -199,21 +207,21 @@ class Reline::LineEditor
     when 'EXIT'
       exit
     else
-      @old_trap.call if @old_trap.respond_to?(:call)
+      @old_int_trap.call if @old_int_trap.respond_to?(:call)
     end
   end
 
   def set_signal_handlers
-    Reline::IOGate.set_winch_handler do
+    @old_winch_trap = Reline::IOGate.set_winch_handler do
       @resized = true
     end
-    @old_trap = Signal.trap('INT') do
+    @old_int_trap = Signal.trap('INT') do
       @interrupted = true
     end
   end
 
   def finalize
-    Signal.trap('INT', @old_trap)
+    Signal.trap('INT', @old_int_trap)
   end
 
   def eof?
