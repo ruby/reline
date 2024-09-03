@@ -346,7 +346,7 @@ module Reline
             inputs.each do |key|
               if key.char == :bracketed_paste_start
                 text = io_gate.read_bracketed_paste
-                line_editor.insert_pasted_text(text)
+                line_editor.insert_multiline_text(text)
                 line_editor.scroll_into_view
               else
                 line_editor.update(key)
@@ -461,7 +461,7 @@ module Reline
   def_single_delegator :line_editor, :byte_pointer=, :point=
 
   def self.insert_text(text)
-    line_editor.insert_pasted_text(text)
+    line_editor.insert_multiline_text(text)
     self
   end
 
