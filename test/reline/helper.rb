@@ -19,12 +19,12 @@ rescue LoadError
 end
 
 module Reline
-  class <<self
+  class << self
     def test_mode(ansi: false)
       @original_iogate = IOGate
 
-      if ENV['RELINE_TEST_ENCODING']
-        encoding = Encoding.find(ENV['RELINE_TEST_ENCODING'])
+      if Reline.const_defined?(:RELINE_TEST_ENCODING) && RELINE_TEST_ENCODING.is_a?(Encoding)
+        encoding = RELINE_TEST_ENCODING
       else
         encoding = Encoding::UTF_8
       end
