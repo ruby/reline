@@ -1447,6 +1447,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_halfwidth_kana_width_dakuten
+    omit "This test is for UTF-8 but the locale is #{Reline.core.encoding}" if Reline.core.encoding != Encoding::UTF_8
     input_raw_keys('ｶﾞｷﾞｹﾞｺﾞ')
     assert_line_around_cursor('ｶﾞｷﾞｹﾞｺﾞ', '')
     input_keys("\C-b\C-b", false)
@@ -1479,31 +1480,31 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   def test_undo
     input_keys("\C-_", false)
     assert_line_around_cursor('', '')
-    input_keys("aあb\C-h\C-h\C-h", false)
-    assert_line_around_cursor('', '')
+    input_keys("aあb\C-h\C-h\C-h".encode(@encoding), false)
+    assert_line_around_cursor(''.encode(@encoding), '')
     input_keys("\C-_", false)
-    assert_line_around_cursor('a', '')
+    assert_line_around_cursor('a'.encode(@encoding), '')
     input_keys("\C-_", false)
-    assert_line_around_cursor('aあ', '')
+    assert_line_around_cursor('aあ'.encode(@encoding), '')
     input_keys("\C-_", false)
-    assert_line_around_cursor('aあb', '')
+    assert_line_around_cursor('aあb'.encode(@encoding), '')
     input_keys("\C-_", false)
-    assert_line_around_cursor('aあ', '')
+    assert_line_around_cursor('aあ'.encode(@encoding), '')
     input_keys("\C-_", false)
-    assert_line_around_cursor('a', '')
+    assert_line_around_cursor('a'.encode(@encoding), '')
     input_keys("\C-_", false)
-    assert_line_around_cursor('', '')
+    assert_line_around_cursor(''.encode(@encoding), '')
   end
 
   def test_undo_with_cursor_position
-    input_keys("abc\C-b\C-h", false)
-    assert_line_around_cursor('a', 'c')
-    input_keys("\C-_", false)
-    assert_line_around_cursor('ab', 'c')
-    input_keys("あいう\C-b\C-h", false)
-    assert_line_around_cursor('abあ', 'うc')
-    input_keys("\C-_", false)
-    assert_line_around_cursor('abあい', 'うc')
+    input_keys("abc\C-b\C-h".encode(@encoding), false)
+    assert_line_around_cursor('a'.encode(@encoding), 'c'.encode(@encoding))
+    input_keys("\C-_".encode(@encoding), false)
+    assert_line_around_cursor('ab'.encode(@encoding), 'c'.encode(@encoding))
+    input_keys("あいう\C-b\C-h".encode(@encoding), false)
+    assert_line_around_cursor('abあ'.encode(@encoding), 'うc'.encode(@encoding))
+    input_keys("\C-_".encode(@encoding), false)
+    assert_line_around_cursor('abあい'.encode(@encoding), 'うc'.encode(@encoding))
   end
 
   def test_undo_with_multiline
@@ -1545,24 +1546,24 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_redo
-    input_keys("aあb", false)
-    assert_line_around_cursor('aあb', '')
+    input_keys("aあb".encode(@encoding), false)
+    assert_line_around_cursor('aあb'.encode(@encoding), '')
     input_keys("\M-\C-_", false)
-    assert_line_around_cursor('aあb', '')
+    assert_line_around_cursor('aあb'.encode(@encoding), '')
     input_keys("\C-_", false)
-    assert_line_around_cursor('aあ', '')
+    assert_line_around_cursor('aあ'.encode(@encoding), '')
     input_keys("\C-_", false)
-    assert_line_around_cursor('a', '')
+    assert_line_around_cursor('a'.encode(@encoding), '')
     input_keys("\M-\C-_", false)
-    assert_line_around_cursor('aあ', '')
+    assert_line_around_cursor('aあ'.encode(@encoding), '')
     input_keys("\M-\C-_", false)
-    assert_line_around_cursor('aあb', '')
+    assert_line_around_cursor('aあb'.encode(@encoding), '')
     input_keys("\C-_", false)
-    assert_line_around_cursor('aあ', '')
+    assert_line_around_cursor('aあ'.encode(@encoding), '')
     input_keys("c", false)
-    assert_line_around_cursor('aあc', '')
+    assert_line_around_cursor('aあc'.encode(@encoding), '')
     input_keys("\M-\C-_", false)
-    assert_line_around_cursor('aあc', '')
+    assert_line_around_cursor('aあc'.encode(@encoding), '')
   end
 
   def test_redo_with_cursor_position
