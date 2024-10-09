@@ -121,7 +121,13 @@ class Reline::Unicode
     end
   end
 
-  def self.split_by_width(str, max_width, encoding = str.encoding, offset: 0)
+  # This method is used by IRB
+  def self.split_by_width(str, max_width)
+    lines = split_line_by_width(str, max_width)
+    [lines, lines.size]
+  end
+
+  def self.split_line_by_width(str, max_width, encoding = str.encoding, offset: 0)
     lines = [String.new(encoding: encoding)]
     width = offset
     rest = str.encode(Encoding::UTF_8)

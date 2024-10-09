@@ -300,8 +300,8 @@ class Reline::LineEditor
     end
   end
 
-  private def split_by_width(str, max_width, offset: 0)
-    Reline::Unicode.split_by_width(str, max_width, encoding, offset: offset)
+  private def split_line_by_width(str, max_width, offset: 0)
+    Reline::Unicode.split_line_by_width(str, max_width, encoding, offset: offset)
   end
 
   def current_byte_pointer_cursor
@@ -391,8 +391,8 @@ class Reline::LineEditor
         if (cached = cached_wraps[[prompt, line]])
           next cached
         end
-        *wrapped_prompts, code_line_prompt = split_by_width(prompt, width)
-        wrapped_lines = split_by_width(line, width, offset: calculate_width(code_line_prompt, true))
+        *wrapped_prompts, code_line_prompt = split_line_by_width(prompt, width)
+        wrapped_lines = split_line_by_width(line, width, offset: calculate_width(code_line_prompt, true))
         wrapped_prompts.map { |p| [p, ''] } + [[code_line_prompt, wrapped_lines.first]] + wrapped_lines.drop(1).map { |c| ['', c] }
       end
     end
@@ -440,7 +440,7 @@ class Reline::LineEditor
   def wrapped_cursor_position
     prompt_width = calculate_width(prompt_list[@line_index], true)
     line_before_cursor = whole_lines[@line_index].byteslice(0, @byte_pointer)
-    wrapped_line_before_cursor = split_by_width(' ' * prompt_width + line_before_cursor, screen_width)
+    wrapped_line_before_cursor = split_line_by_width(' ' * prompt_width + line_before_cursor, screen_width)
     wrapped_cursor_y = wrapped_prompt_and_input_lines[0...@line_index].sum(&:size) + wrapped_line_before_cursor.size - 1
     wrapped_cursor_x = calculate_width(wrapped_line_before_cursor.last)
     [wrapped_cursor_x, wrapped_cursor_y]
@@ -465,7 +465,7 @@ class Reline::LineEditor
     render_differential([], 0, 0)
     lines = @buffer_of_lines.size.times.map do |i|
       line = Reline::Unicode.strip_non_printing_start_end(prompt_list[i]) + modified_lines[i]
-      wrapped_lines = split_by_width(line, screen_width)
+      wrapped_lines = split_line_by_width(line, screen_width)
       wrapped_lines.last.empty? ? "#{line} " : line
     end
     @output.puts lines.map { |l| "#{l}\r\n" }.join
