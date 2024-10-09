@@ -30,17 +30,17 @@ class Reline::Unicode::Test < Reline::TestCase
   end
 
   def test_split_by_width
-    assert_equal [['abc', 'de'], 2], Reline::Unicode.split_by_width('abcde', 3)
-    assert_equal [['abc', 'def', ''], 3], Reline::Unicode.split_by_width('abcdef', 3)
-    assert_equal [['ab', 'あd', 'ef'], 3], Reline::Unicode.split_by_width('abあdef', 3)
-    assert_equal [['ab[zero]c', 'def', ''], 3], Reline::Unicode.split_by_width("ab\1[zero]\2cdef", 3)
-    assert_equal [["\e[31mabc", "\e[31md\e[42mef", "\e[31m\e[42mg"], 3], Reline::Unicode.split_by_width("\e[31mabcd\e[42mefg", 3)
-    assert_equal [["ab\e]0;1\ac", "\e]0;1\ad"], 2], Reline::Unicode.split_by_width("ab\e]0;1\acd", 3)
+    assert_equal ['abc', 'de'], Reline::Unicode.split_by_width('abcde', 3)
+    assert_equal ['abc', 'def', ''], Reline::Unicode.split_by_width('abcdef', 3)
+    assert_equal ['ab', 'あd', 'ef'], Reline::Unicode.split_by_width('abあdef', 3)
+    assert_equal ['ab[zero]c', 'def', ''], Reline::Unicode.split_by_width("ab\1[zero]\2cdef", 3)
+    assert_equal ["\e[31mabc", "\e[31md\e[42mef", "\e[31m\e[42mg"], Reline::Unicode.split_by_width("\e[31mabcd\e[42mefg", 3)
+    assert_equal ["ab\e]0;1\ac", "\e]0;1\ad"], Reline::Unicode.split_by_width("ab\e]0;1\acd", 3)
   end
 
   def test_split_by_width_csi_reset_sgr_optimization
-    assert_equal [["\e[1ma\e[mb\e[2mc", "\e[2md\e[0me\e[3mf", "\e[3mg"], 3], Reline::Unicode.split_by_width("\e[1ma\e[mb\e[2mcd\e[0me\e[3mfg", 3)
-    assert_equal [["\e[1ma\e[mzero\e[0m\e[2mb", "\e[1m\e[2mc"], 2], Reline::Unicode.split_by_width("\e[1ma\1\e[mzero\e[0m\2\e[2mbc", 2)
+    assert_equal ["\e[1ma\e[mb\e[2mc", "\e[2md\e[0me\e[3mf", "\e[3mg"], Reline::Unicode.split_by_width("\e[1ma\e[mb\e[2mcd\e[0me\e[3mfg", 3)
+    assert_equal ["\e[1ma\e[mzero\e[0m\e[2mb", "\e[1m\e[2mc"], Reline::Unicode.split_by_width("\e[1ma\1\e[mzero\e[0m\2\e[2mbc", 2)
   end
 
   def test_take_range
@@ -56,9 +56,9 @@ class Reline::Unicode::Test < Reline::TestCase
   def test_nonprinting_start_end
     # \1 and \2 should be removed
     assert_equal 'ab[zero]cd', Reline::Unicode.take_range("ab\1[zero]\2cdef", 0, 4)
-    assert_equal [['ab[zero]cd', 'ef'], 2], Reline::Unicode.split_by_width("ab\1[zero]\2cdef", 4)
+    assert_equal ['ab[zero]cd', 'ef'], Reline::Unicode.split_by_width("ab\1[zero]\2cdef", 4)
     # CSI between \1 and \2 does not need to be applied to the sebsequent line
-    assert_equal [["\e[31mab\e[32mcd", "\e[31mef"], 2], Reline::Unicode.split_by_width("\e[31mab\1\e[32m\2cdef", 4)
+    assert_equal ["\e[31mab\e[32mcd", "\e[31mef"], Reline::Unicode.split_by_width("\e[31mab\1\e[32m\2cdef", 4)
   end
 
   def test_strip_non_printing_start_end

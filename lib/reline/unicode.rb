@@ -123,7 +123,6 @@ class Reline::Unicode
 
   def self.split_by_width(str, max_width, encoding = str.encoding, offset: 0)
     lines = [String.new(encoding: encoding)]
-    height = 1
     width = offset
     rest = str.encode(Encoding::UTF_8)
     in_zero_width = false
@@ -152,7 +151,6 @@ class Reline::Unicode
           if (width += mbchar_width) > max_width
             width = mbchar_width
             lines << seq.dup
-            height += 1
           end
         end
         lines.last << gc
@@ -161,9 +159,8 @@ class Reline::Unicode
     # The cursor moves to next line in first
     if width == max_width
       lines << String.new(encoding: encoding)
-      height += 1
     end
-    [lines, height]
+    lines
   end
 
   def self.strip_non_printing_start_end(prompt)
