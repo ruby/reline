@@ -1065,7 +1065,7 @@ begin
 
     def test_simple_dialog_with_scroll_screen
       iterate_over_face_configs do |config_name, config_file|
-        start_terminal(5, 50, %W{ruby -I#{@pwd}/lib -r#{config_file.path} #{@pwd}/test/reline/yamatanooroti/multiline_repl --dialog simple}, startup_message: 'Multiline REPL.')
+        start_terminal(5, 50, %W{ruby -I#{@pwd}/lib -r#{config_file.path} #{@pwd}/test/reline/yamatanooroti/multiline_repl --dialog simple}, startup_message: /prompt>/)
         write("if 1\n  2\n  3\n  4\n  5\n  6")
         write("\C-p\C-n\C-p\C-p\C-p#")
         close
