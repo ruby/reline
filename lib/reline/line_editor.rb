@@ -838,7 +838,9 @@ class Reline::LineEditor
       end
       result
     }
-    [target, preposing, completed, postposing]
+
+    continuable = list.count > 1
+    [target, preposing, completed, postposing, continuable]
   end
 
   private def perform_completion(list, just_show_list)
@@ -866,7 +868,7 @@ class Reline::LineEditor
       @completion_state = CompletionState::PERFECT_MATCH
     end
     return if result.nil?
-    target, preposing, completed, postposing = result
+    target, preposing, completed, postposing, continuable = result
     return if completed.nil?
     if target <= completed and (@completion_state == CompletionState::COMPLETION)
       if list.include?(completed)
@@ -881,9 +883,10 @@ class Reline::LineEditor
         @completion_state = CompletionState::MENU
         perform_completion(list, true) if @config.show_all_if_ambiguous
       end
-      if not just_show_list and target < completed
-        @buffer_of_lines[@line_index] = (preposing + completed + completion_append_character.to_s + postposing).split("\n")[@line_index] || String.new(encoding: @encoding)
-        line_to_pointer = (preposing + completed + completion_append_character.to_s).split("\n")[@line_index] || String.new(encoding: @encoding)
+      unless just_show_list
+        _completion_append_character = continuable ? '' : completion_append_character.to_s
+        @buffer_of_lines[@line_index] = (preposing + completed + _completion_append_character + postposing).split("\n")[@line_index] || String.new(encoding: @encoding)
+        line_to_pointer = (preposing + completed + _completion_append_character).split("\n")[@line_index] || String.new(encoding: @encoding)
         @byte_pointer = line_to_pointer.bytesize
       end
     end
