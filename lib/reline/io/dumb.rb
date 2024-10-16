@@ -7,7 +7,7 @@ class Reline::Dumb < Reline::IO
     @input = STDIN
     @buf = []
     @pasting = false
-    @encoding = encoding
+    @encoding = encoding || @input.external_encoding
     @screen_size = [24, 80]
   end
 
