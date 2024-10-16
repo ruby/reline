@@ -115,7 +115,7 @@ class Reline::Windows < Reline::IO
       def call(*args)
         import = @proto.split("")
         args.each_with_index do |x, i|
-          args[i], = [x == 0 ? nil : +x].pack("p").unpack(POINTER_TYPE) if import[i] == "S"
+          args[i], = [x == 0 ? nil : x&.+@].pack("p").unpack(POINTER_TYPE) if import[i] == "S"
           args[i], = [x].pack("I").unpack("i") if import[i] == "I"
         end
         ret, = @func.call(*args)
