@@ -25,8 +25,8 @@ begin
         config_file = Tempfile.create(%w{face_config- .rb})
         config_file.write face_config
         block.call(config_name, config_file)
-        config_file.close
       ensure
+        config_file.close
         File.delete(config_file)
       end
     end
@@ -1816,6 +1816,7 @@ begin
       close
     ensure
       File.delete(rubyfile.path) if rubyfile
+      pidfile.close if pidfile
       File.delete(pidfile.path) if pidfile
     end
 
