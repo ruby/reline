@@ -1796,6 +1796,7 @@ begin
     end
 
     def test_stop_continue
+      omit if Reline.core.io_gate.win?
       pidfile = Tempfile.create('pidfile')
       rubyfile = Tempfile.create('rubyfile')
       rubyfile.write <<~RUBY
