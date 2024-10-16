@@ -350,9 +350,12 @@ class Reline::Windows < Reline::IO
 
   def get_screen_size
     unless csbi = get_console_screen_buffer_info
-      return [1, 1]
+      return [24, 80]
     end
-    csbi[0, 4].unpack('SS').reverse
+    top = csbi[12, 2].unpack1('S')
+    bottom = csbi[16, 2].unpack1('S')
+    width = csbi[0, 2].unpack1('S')
+    [bottom - top + 1, width]
   end
 
   def cursor_pos
