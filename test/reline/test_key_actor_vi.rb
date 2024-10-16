@@ -9,7 +9,7 @@ class Reline::ViInsertTest < Reline::TestCase
       set editing-mode vi
     LINES
     @encoding = Reline.core.encoding
-    @line_editor = Reline::LineEditor.new(@config, @encoding)
+    @line_editor = Reline::LineEditor.new(@config)
     @line_editor.reset(@prompt, encoding: @encoding)
   end
 

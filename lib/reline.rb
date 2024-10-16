@@ -487,7 +487,7 @@ module Reline
     @core ||= Core.new { |core|
       core.config = Reline::Config.new
       core.key_stroke = Reline::KeyStroke.new(core.config)
-      core.line_editor = Reline::LineEditor.new(core.config, core.encoding)
+      core.line_editor = Reline::LineEditor.new(core.config)
 
       core.basic_word_break_characters = " \t\n`><=;|&{("
       core.completer_word_break_characters = " \t\n`><=;|&{("
