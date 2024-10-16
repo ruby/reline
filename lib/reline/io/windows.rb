@@ -402,31 +402,12 @@ class Reline::Windows < Reline::IO
     call_with_console_handle(@FillConsoleOutputAttribute, attributes, get_screen_size.last - cursor_pos.x, cursor, written)
   end
 
-  def scroll_down(val)
-    return if val < 0
-    return unless csbi = get_console_screen_buffer_info
-    buffer_width, buffer_lines, x, y, attributes, window_left, window_top, window_bottom = csbi.unpack('ssssSssx2s')
-    screen_height = window_bottom - window_top + 1
-    val = screen_height if val > screen_height
-
-    if @legacy_console || window_left != 0
-      # unless ENABLE_VIRTUAL_TERMINAL,
-      # if srWindow.Left != 0 then it's conhost.exe hosted console
-      # and puts "\n" causes horizontal scroll. its glitch.
-      # FYI irb write from culumn 1, so this gives no gain.
-      scroll_rectangle = [0, val, buffer_width, buffer_lines - val].pack('s4')
-      destination_origin = 0 # y * 65536 + x
-      fill = [' '.ord, attributes].pack('SS')
-      call_with_console_handle(@ScrollConsoleScreenBuffer, scroll_rectangle, nil, destination_origin, fill)
-    else
-      origin_x = x + 1
-      origin_y = y - window_top + 1
-      @output.write [
-        (origin_y != screen_height) ? "\e[#{screen_height};H" : nil,
-        "\n" * val,
-        (origin_y != screen_height or !x.zero?) ? "\e[#{origin_y};#{origin_x}H" : nil
-      ].join
-    end
+  # This only works when the cursor is at the bottom of the scroll range
+  # For more details, see https://github.com/ruby/reline/pull/577#issuecomment-1646679623
+  def scroll_down(x)
+    return if x.zero?
+    # We use `\n` instead of CSI + S because CSI + S would cause https://github.com/ruby/reline/issues/576
+    @output.write "\n" * x
   end
 
   def clear_screen
