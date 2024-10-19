@@ -157,6 +157,7 @@ class Reline::Windows < Reline::IO
   STD_OUTPUT_HANDLE = -11
   FILE_TYPE_PIPE = 0x0003
   FILE_NAME_INFO = 2
+  ENABLE_WRAP_AT_EOL_OUTPUT = 2
   ENABLE_VIRTUAL_TERMINAL_PROCESSING = 4
 
   # Calling Win32API with console handle is reported to fail after executing some external command.
@@ -454,6 +455,28 @@ class Reline::Windows < Reline::IO
 
   def deprep(otio)
     # do nothing
+  end
+
+  def disable_auto_linewrap(setting = true, &block)
+    mode = getconsolemode
+    if 0 == (mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+      if block
+        begin
+          setconsolemode(mode & ~ENABLE_WRAP_AT_EOL_OUTPUT)
+          block.call
+        ensure
+          setconsolemode(mode | ENABLE_WRAP_AT_EOL_OUTPUT)
+        end
+      else
+        if setting
+          setconsolemode(mode & ~ENABLE_WRAP_AT_EOL_OUTPUT)
+        else
+          setconsolemode(mode | ENABLE_WRAP_AT_EOL_OUTPUT)
+        end
+      end
+    else
+      block.call if block
+    end
   end
 
   class KeyEventRecord
