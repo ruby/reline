@@ -872,7 +872,6 @@ class Reline::LineEditor
     if target <= completed and (@completion_state == CompletionState::COMPLETION)
       append_character = ''
       if candidates.include?(completed)
-        # puts "canditates: #{candidates}"
         if candidates.one?
           append_character = completion_append_character.to_s
           @completion_state = CompletionState::PERFECT_MATCH
