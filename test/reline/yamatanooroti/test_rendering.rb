@@ -1256,11 +1256,9 @@ begin
         start_terminal(20, 5, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --dialog fullwidth,scrollkey,scrollbar}, startup_message: 'Multiline REPL.', codepage: 932)
         omit "codepage 932 not supported" if !codepage_success?
       end
+      write("\C-l")
       6.times{ write('j') }
       assert_screen(<<~'EOC')
-        Multi
-        line
-        REPL.
         >
         オー
         グ言▄
