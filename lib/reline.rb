@@ -308,7 +308,7 @@ module Reline
       otio = io_gate.prep
 
       may_req_ambiguous_char_width
-      line_editor.reset(prompt, encoding: encoding)
+      line_editor.reset(prompt)
       if multiline
         line_editor.multiline_on
         if block_given?

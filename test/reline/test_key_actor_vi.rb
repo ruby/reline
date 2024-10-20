@@ -10,7 +10,7 @@ class Reline::ViInsertTest < Reline::TestCase
     LINES
     @encoding = Reline.core.encoding
     @line_editor = Reline::LineEditor.new(@config)
-    @line_editor.reset(@prompt, encoding: @encoding)
+    @line_editor.reset(@prompt)
   end
 
   def editing_mode_label
