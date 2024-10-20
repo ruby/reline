@@ -140,7 +140,7 @@ class Reline::LineEditor
     end
   end
 
-  def reset(prompt = '', encoding:)
+  def reset(prompt = '')
     @screen_size = Reline::IOGate.get_screen_size
     reset_variables(prompt)
     @rendered_screen.base_y = Reline::IOGate.cursor_pos.y
