@@ -10,7 +10,7 @@ jobs:
   ruby-versions:
     uses: ruby/actions/.github/workflows/ruby_versions.yml@master
     with:
-      engine: cruby
+      engine: cruby-truffleruby
       min_version: 2.6
 
   reline:
@@ -19,9 +19,16 @@ jobs:
       reline ${{ matrix.os }} ${{ matrix.ruby }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         os: [ubuntu-latest, macos-latest, windows-latest]
+        exclude:
+          - { ruby: truffleruby, os: windows-latest }
+          - { ruby: truffleruby-head, os: windows-latest }
+          # https://github.com/ruby/reline/pull/768#issuecomment-2420586587
+          - { ruby: truffleruby-head, os: ubuntu-latest }
+          - { ruby: truffleruby-head, os: macos-latest }
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -45,6 +52,7 @@ jobs:
       readline ${{ matrix.ruby }}  ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - { ruby: head, os: ubuntu-latest }
@@ -76,6 +84,7 @@ jobs:
       irb ${{ matrix.ruby }}  ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         os: [ubuntu-latest]
@@ -117,6 +126,8 @@ jobs:
           gem rdoc --all --ri --no-rdoc
           bundle install
           bundle exec rake test_yamatanooroti
+        # https://github.com/ruby/reline/pull/768#issuecomment-2420588075
+        if: ${{ !startsWith(matrix.ruby, 'truffleruby') }}
 
   vterm-yamatanooroti:
     needs: ruby-versions
@@ -124,6 +135,7 @@ jobs:
       vterm-yamatanooroti ${{ matrix.os }} ${{ matrix.ruby }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         ruby: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         os: [ubuntu-latest]
