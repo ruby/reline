@@ -171,7 +171,7 @@ class Reline::Windows < Reline::IO
   end
 
   private def getconsolemode
-    mode = "\000\000\000\000"
+    mode = +"\0\0\0\0"
     call_with_console_handle(@GetConsoleMode, mode)
     mode.unpack1('L')
   end
