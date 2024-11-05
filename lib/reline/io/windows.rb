@@ -339,38 +339,38 @@ class Reline::Windows < Reline::IO
     # [18,2] dwMaximumWindowSize.X
     # [20,2] dwMaximumWindowSize.Y
     csbi = 0.chr * 22
-    return if call_with_console_handle(@GetConsoleScreenBufferInfo, csbi) == 0
-    csbi
+    if call_with_console_handle(@GetConsoleScreenBufferInfo, csbi) != 0
+      # returns [width, height, x, y, attributes, left, top, right, bottom]
+      csbi.unpack("s9")
+    else
+      return nil
+    end
   end
 
+  ALTERNATIVE_CSBI = [80, 24, 0, 0, 7, 0, 0, 79, 23].freeze
+
   def get_screen_size
-    unless csbi = get_console_screen_buffer_info
-      return [24, 80]
-    end
-    top = csbi[12, 2].unpack1('S')
-    bottom = csbi[16, 2].unpack1('S')
-    width = csbi[0, 2].unpack1('S')
+    width, _, _, _, _, _, top, _, bottom = get_console_screen_buffer_info || ALTERNATIVE_CSBI
     [bottom - top + 1, width]
   end
 
   def cursor_pos
-    unless csbi = get_console_screen_buffer_info
-      return Reline::CursorPos.new(0, 0)
-    end
-    x = csbi[4, 2].unpack1('s')
-    y = csbi[6, 2].unpack1('s')
-    Reline::CursorPos.new(x, y)
+    _, _, x, y, _, _, top, = get_console_screen_buffer_info || ALTERNATIVE_CSBI
+    Reline::CursorPos.new(x, y - top)
   end
 
   def move_cursor_column(val)
-    call_with_console_handle(@SetConsoleCursorPosition, cursor_pos.y * 65536 + val)
+    _, _, _, y, = get_console_screen_buffer_info
+    call_with_console_handle(@SetConsoleCursorPosition, y * 65536 + val) if y
   end
 
   def move_cursor_up(val)
     if val > 0
-      y = cursor_pos.y - val
+      _, _, x, y, _, _, top, = get_console_screen_buffer_info
+      return unless y
+      y = (y - top) - val
       y = 0 if y < 0
-      call_with_console_handle(@SetConsoleCursorPosition, y * 65536 + cursor_pos.x)
+      call_with_console_handle(@SetConsoleCursorPosition, (y + top) * 65536 + x)
     elsif val < 0
       move_cursor_down(-val)
     end
@@ -378,23 +378,23 @@ class Reline::Windows < Reline::IO
 
   def move_cursor_down(val)
     if val > 0
-      return unless csbi = get_console_screen_buffer_info
-      screen_height = get_screen_size.first
-      y = cursor_pos.y + val
-      y = screen_height - 1 if y > (screen_height - 1)
-      call_with_console_handle(@SetConsoleCursorPosition, (cursor_pos.y + val) * 65536 + cursor_pos.x)
+      _, _, x, y, _, _, top, _, bottom = get_console_screen_buffer_info
+      return unless y
+      screen_height = bottom - top
+      y = (y - top) + val
+      y = screen_height if y > screen_height
+      call_with_console_handle(@SetConsoleCursorPosition, (y + top) * 65536 + x)
     elsif val < 0
       move_cursor_up(-val)
     end
   end
 
   def erase_after_cursor
-    return unless csbi = get_console_screen_buffer_info
-    attributes = csbi[8, 2].unpack1('S')
-    cursor = csbi[4, 4].unpack1('L')
+    width, _, x, y, attributes, = get_console_screen_buffer_info
+    return unless x
     written = 0.chr * 4
-    call_with_console_handle(@FillConsoleOutputCharacter, 0x20, get_screen_size.last - cursor_pos.x, cursor, written)
-    call_with_console_handle(@FillConsoleOutputAttribute, attributes, get_screen_size.last - cursor_pos.x, cursor, written)
+    call_with_console_handle(@FillConsoleOutputCharacter, 0x20, width - x, y * 65536 + x, written)
+    call_with_console_handle(@FillConsoleOutputAttribute, attributes, width - x, y * 65536 + x, written)
   end
 
   # This only works when the cursor is at the bottom of the scroll range
@@ -407,10 +407,10 @@ class Reline::Windows < Reline::IO
 
   def clear_screen
     if @legacy_console
-      return unless csbi = get_console_screen_buffer_info
-      buffer_width, _buffer_lines, attributes, window_top, window_bottom = csbi.unpack('ss@8S@12sx2s')
-      fill_length = buffer_width * (window_bottom - window_top + 1)
-      screen_topleft = window_top * 65536
+      width, _, _, _, attributes, _, top, _, bottom = get_console_screen_buffer_info
+      return unless width
+      fill_length = width * (bottom - top + 1)
+      screen_topleft = top * 65536
       written = 0.chr * 4
       call_with_console_handle(@FillConsoleOutputCharacter, 0x20, fill_length, screen_topleft, written)
       call_with_console_handle(@FillConsoleOutputAttribute, attributes, fill_length, screen_topleft, written)
