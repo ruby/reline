@@ -2264,7 +2264,7 @@ class Reline::LineEditor
   end
 
   private def vi_histedit(key)
-    path = Tempfile.open { |fp|
+    path = Tempfile.open(["reline", ".rb"]) { |fp|
       fp.write whole_lines.join("\n")
       fp.path
     }
