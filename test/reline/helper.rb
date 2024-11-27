@@ -23,7 +23,7 @@ module Reline
     def test_mode(ansi: false)
       @original_iogate = IOGate
 
-      if Reline.const_defined?(:RELINE_TEST_ENCODING) && RELINE_TEST_ENCODING.is_a?(Encoding)
+      if defined?(RELINE_TEST_ENCODING)
         encoding = RELINE_TEST_ENCODING
       else
         encoding = Encoding::UTF_8
