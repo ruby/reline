@@ -138,11 +138,24 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
     assert_line_around_cursor("か\u3099", '')
   end
 
+  def test_bracketed_paste_insert
+    input_keys("d\C-aa")
+    input_key_by_symbol(:insert_multiline_text, char: "abc\n\C-abc")
+    assert_line_around_cursor("\C-abc", 'd')
+  end
+
   def test_ed_quoted_insert
-    input_keys("ab\C-v\C-acd")
-    assert_line_around_cursor("ab\C-acd", '')
-    input_keys("\C-q\C-b")
-    assert_line_around_cursor("ab\C-acd\C-b", '')
+    input_keys('ab')
+    input_key_by_symbol(:insert_raw_char, char: "\C-a")
+    assert_line_around_cursor("ab\C-a", '')
+  end
+
+  def test_ed_quoted_insert_with_vi_arg
+    input_keys("a\C-[3")
+    input_key_by_symbol(:insert_raw_char, char: "\C-a")
+    input_keys("b\C-[4")
+    input_key_by_symbol(:insert_raw_char, char: '1')
+    assert_line_around_cursor("a\C-a\C-a\C-ab1111", '')
   end
 
   def test_ed_kill_line
@@ -1474,7 +1487,9 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_ignore_NUL_by_ed_quoted_insert
-    input_keys(%Q{"\C-v\C-@"}, false)
+    input_keys('"')
+    input_key_by_symbol(:insert_raw_char, char: 0.chr)
+    input_keys('"')
     assert_line_around_cursor('""', '')
   end
 
