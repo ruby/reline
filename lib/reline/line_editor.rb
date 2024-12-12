@@ -252,7 +252,7 @@ class Reline::LineEditor
     @rendered_screen = RenderedScreen.new(base_y: 0, lines: [], cursor_y: 0)
     @input_lines = [[[""], 0, 0]]
     @input_lines_position = 0
-    @undoing = false
+    @restoring = false
     @prev_action_state = NullActionState
     @next_action_state = NullActionState
     reset_line
@@ -1070,8 +1070,8 @@ class Reline::LineEditor
       @completion_journey_state = nil
     end
 
-    push_input_lines unless @undoing
-    @undoing = false
+    push_input_lines unless @restoring
+    @restoring = false
 
     if @in_pasting
       clear_dialogs
@@ -2357,7 +2357,7 @@ class Reline::LineEditor
   end
 
   private def move_undo_redo(direction)
-    @undoing = true
+    @restoring = true
     return unless (0..@input_lines.size - 1).cover?(@input_lines_position + direction)
 
     @input_lines_position += direction
