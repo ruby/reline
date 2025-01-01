@@ -38,11 +38,13 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_ed_insert_for_mbchar_by_plural_code_points
+    omit_unless_utf8
     input_keys("か\u3099")
     assert_line_around_cursor("か\u3099", '')
   end
 
   def test_ed_insert_for_plural_mbchar_by_plural_code_points
+    omit_unless_utf8
     input_keys("か\u3099き\u3099")
     assert_line_around_cursor("か\u3099き\u3099", '')
   end
@@ -74,6 +76,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_move_next_and_prev_for_mbchar_by_plural_code_points
+    omit_unless_utf8
     input_keys("か\u3099き\u3099け\u3099")
     assert_line_around_cursor("か\u3099き\u3099け\u3099", '')
     input_keys("\C-b")
@@ -132,6 +135,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_em_delete_prev_char_for_mbchar_by_plural_code_points
+    omit_unless_utf8
     input_keys("か\u3099き\u3099")
     assert_line_around_cursor("か\u3099き\u3099", '')
     input_keys("\C-h")
@@ -254,6 +258,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_em_delete_for_mbchar_by_plural_code_points
+    omit_unless_utf8
     input_keys("か\u3099き\u3099")
     assert_line_around_cursor("か\u3099き\u3099", '')
     input_keys("\C-a")
@@ -336,6 +341,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_em_next_word_for_mbchar_by_plural_code_points
+    omit_unless_utf8
     assert_line_around_cursor("", "")
     input_keys("あいう か\u3099き\u3099く\u3099{さしす}たちつ")
     input_keys("\C-a\eF")
@@ -381,6 +387,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_em_prev_word_for_mbchar_by_plural_code_points
+    omit_unless_utf8
     input_keys("あいう か\u3099き\u3099く\u3099{さしす}たちつ")
     assert_line_around_cursor("あいう か\u3099き\u3099く\u3099{さしす}たちつ", "")
     input_keys("\eB")
@@ -424,6 +431,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_em_delete_next_word_for_mbchar_by_plural_code_points
+    omit_unless_utf8
     input_keys("あいう か\u3099き\u3099く\u3099{さしす}たちつ")
     input_keys("\C-a")
     assert_line_around_cursor('', "あいう か\u3099き\u3099く\u3099{さしす}たちつ")
@@ -464,6 +472,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_ed_delete_prev_word_for_mbchar_by_plural_code_points
+    omit_unless_utf8
     input_keys("あいう か\u3099き\u3099く\u3099{さしす}たちつ")
     assert_line_around_cursor("あいう か\u3099き\u3099く\u3099{さしす}たちつ", '')
     input_keys("\e\C-H")
@@ -505,6 +514,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_ed_transpose_chars_for_mbchar_by_plural_code_points
+    omit_unless_utf8
     input_keys("あか\u3099さ")
     input_keys("\C-a")
     assert_line_around_cursor('', "あか\u3099さ")
@@ -642,6 +652,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_ed_next_and_prev_char_for_mbchar_by_plural_code_points
+    omit_unless_utf8
     input_keys("か\u3099き\u3099く\u3099")
     assert_line_around_cursor("か\u3099き\u3099く\u3099", '')
     input_keys("\C-b")
@@ -1407,7 +1418,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
 
   # Unicode emoji test
   def test_ed_insert_for_include_zwj_emoji
-    omit "This test is for UTF-8 but the locale is #{Reline.core.encoding}" if Reline.core.encoding != Encoding::UTF_8
+    omit_unless_utf8
     # U+1F468 U+200D U+1F469 U+200D U+1F467 U+200D U+1F466 is family: man, woman, girl, boy "👨‍👩‍👧‍👦"
     input_keys("\u{1F468}") # U+1F468 is man "👨"
     assert_line_around_cursor('👨', '')
@@ -1429,7 +1440,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_ed_insert_for_include_valiation_selector
-    omit "This test is for UTF-8 but the locale is #{Reline.core.encoding}" if Reline.core.encoding != Encoding::UTF_8
+    omit_unless_utf8
     # U+0030 U+FE00 is DIGIT ZERO + VARIATION SELECTOR-1 "0︀"
     input_keys("\u0030") # U+0030 is DIGIT ZERO
     assert_line_around_cursor('0', '')
@@ -1513,7 +1524,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_halfwidth_kana_width_dakuten
-    omit "This test is for UTF-8 but the locale is #{Reline.core.encoding}" if Reline.core.encoding != Encoding::UTF_8
+    omit_unless_utf8
     input_keys('ｶﾞｷﾞｹﾞｺﾞ')
     assert_line_around_cursor('ｶﾞｷﾞｹﾞｺﾞ', '')
     input_keys("\C-b\C-b")
@@ -1523,6 +1534,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_input_unknown_char
+    omit_unless_utf8
     input_keys('͸') # U+0378 (unassigned)
     assert_line_around_cursor('͸', '')
   end

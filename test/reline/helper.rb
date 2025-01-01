@@ -87,17 +87,11 @@ end
 
 class Reline::TestCase < Test::Unit::TestCase
   private def convert_str(input)
-    return nil if input.nil?
     input.encode(@line_editor.encoding, Encoding::UTF_8)
-  rescue Encoding::UndefinedConversionError
-    return input unless unicode?(input.encoding)
+  end
 
-    input = input.unicode_normalize(:nfc)
-    begin
-      input.encode(@line_editor.encoding, Encoding::UTF_8)
-    rescue Encoding::UndefinedConversionError
-      input.encode(@line_editor.encoding, Encoding::UTF_8, undef: :replace, replace: '?')
-    end
+  def omit_unless_utf8
+    omit "This test is for UTF-8 but the locale is #{Reline.core.encoding}" if Reline.core.encoding != Encoding::UTF_8
   end
 
   def input_key_by_symbol(method_symbol, char: nil, csi: false)
