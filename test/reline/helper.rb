@@ -86,26 +86,18 @@ module Reline
 end
 
 class Reline::TestCase < Test::Unit::TestCase
-  private def convert_str(input, options = {}, normalized = nil)
+  private def convert_str(input)
     return nil if input.nil?
-    input = input.chars.map { |c|
-      if Reline::Unicode::EscapedChars.include?(c.ord)
-        c
-      else
-        c.encode(@line_editor.encoding, Encoding::UTF_8, **options)
-      end
-    }.join
-  rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
-    if unicode?(input.encoding)
-      input = input.unicode_normalize(:nfc)
-      if normalized
-        options[:undef] = :replace
-        options[:replace] = '?'
-      end
-      normalized = true
-      retry
+    input.encode(@line_editor.encoding, Encoding::UTF_8)
+  rescue Encoding::UndefinedConversionError
+    return input unless unicode?(input.encoding)
+
+    input = input.unicode_normalize(:nfc)
+    begin
+      input.encode(@line_editor.encoding, Encoding::UTF_8)
+    rescue Encoding::UndefinedConversionError
+      input.encode(@line_editor.encoding, Encoding::UTF_8, undef: :replace, replace: '?')
     end
-    input
   end
 
   def input_key_by_symbol(method_symbol, char: nil, csi: false)
@@ -113,17 +105,9 @@ class Reline::TestCase < Test::Unit::TestCase
     @line_editor.input_key(Reline::Key.new(char, method_symbol, false))
   end
 
-  def input_keys(input, convert = true)
-    # Reline does not support convert-meta, but test data includes \M-char. It should be converted to ESC+char.
-    # Note that mixing unicode chars and \M-char is not recommended. "\M-C\M-\C-A" is a single unicode character.
-    input = input.chars.map do |c|
-      c.valid_encoding? ? c : "\e#{(c.bytes[0] & 0x7f).chr}"
-    end.join
-    input_raw_keys(input, convert)
-  end
+  def input_keys(input)
+    input = convert_str(input)
 
-  def input_raw_keys(input, convert = true)
-    input = convert_str(input) if convert
     key_stroke = Reline::KeyStroke.new(@config, @encoding)
     input_bytes = input.bytes
     until input_bytes.empty?

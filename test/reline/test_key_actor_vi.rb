@@ -659,9 +659,9 @@ class Reline::ViInsertTest < Reline::TestCase
     }
     input_keys('Re')
     assert_line_around_cursor('Re', '')
-    input_keys("\C-i", false)
+    input_keys("\C-i")
     assert_line_around_cursor('Readline', '')
-    input_keys("\C-i", false)
+    input_keys("\C-i")
     assert_line_around_cursor('Regexp', '')
     input_key_by_symbol(:completion_journey_up)
     assert_line_around_cursor('Readline', '')
@@ -682,9 +682,9 @@ class Reline::ViInsertTest < Reline::TestCase
     }
     input_keys('Re')
     assert_line_around_cursor('Re', '')
-    input_keys("\C-i", false)
+    input_keys("\C-i")
     assert_line_around_cursor('Readline', '')
-    input_keys("\C-i", false)
+    input_keys("\C-i")
     assert_line_around_cursor('Regexp', '')
     input_key_by_symbol(:menu_complete_backward)
     assert_line_around_cursor('Readline', '')
@@ -924,16 +924,16 @@ class Reline::ViInsertTest < Reline::TestCase
   end
 
   def test_vi_kill_line_prev
-    input_keys("\C-u", false)
+    input_keys("\C-u")
     assert_line_around_cursor('', '')
     input_keys('abc')
     assert_line_around_cursor('abc', '')
-    input_keys("\C-u", false)
+    input_keys("\C-u")
     assert_line_around_cursor('', '')
     input_keys('abc')
-    input_keys("\C-[\C-u", false)
+    input_keys("\C-[\C-u")
     assert_line_around_cursor('', 'c')
-    input_keys("\C-u", false)
+    input_keys("\C-u")
     assert_line_around_cursor('', 'c')
   end
 
