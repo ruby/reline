@@ -155,8 +155,4 @@ class Reline::TestCase < Test::Unit::TestCase
       assert_equal(method_symbol, @config.editing_mode.get(input.bytes))
     end
   end
-
-  private def unicode?(encoding)
-    [Encoding::UTF_8, Encoding::UTF_16BE, Encoding::UTF_16LE, Encoding::UTF_32BE, Encoding::UTF_32LE].include?(encoding)
-  end
 end
