@@ -1684,6 +1684,11 @@ class Reline::LineEditor
     end
   end
 
+  private def ed_force_submit(_key)
+    process_insert(force: true)
+    finish
+  end
+
   private def em_delete_prev_char(key, arg: 1)
     arg.times do
       if @byte_pointer == 0 and @line_index > 0

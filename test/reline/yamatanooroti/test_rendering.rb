@@ -827,6 +827,23 @@ begin
       close
     end
 
+    def test_ed_force_submit_in_the_middle_of_lines
+      write_inputrc <<~LINES
+        "\\C-a": ed_force_submit
+      LINES
+      start_terminal(5, 20, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      write("def hoge\nend")
+      write("\C-p\C-a")
+      assert_screen(<<~EOC)
+        Multiline REPL.
+        prompt> def hoge
+        prompt> end
+        => :hoge
+        prompt>
+      EOC
+      close
+    end
+
     def test_dynamic_prompt_returns_empty
       start_terminal(5, 20, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --dynamic-prompt-returns-empty}, startup_message: 'Multiline REPL.')
       write("def hoge\nend\n")
