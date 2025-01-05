@@ -1673,17 +1673,10 @@ class Reline::LineEditor
           finish
         end
       else
-        if @line_index == (@buffer_of_lines.size - 1)
-          if confirm_multiline_termination
-            finish
-          else
-            key_newline(key)
-          end
-        else
-          # should check confirm_multiline_termination to finish?
-          @line_index = @buffer_of_lines.size - 1
-          @byte_pointer = current_line.bytesize
+        if @line_index == @buffer_of_lines.size - 1 && confirm_multiline_termination
           finish
+        else
+          key_newline(key)
         end
       end
     else
