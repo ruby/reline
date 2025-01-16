@@ -250,8 +250,8 @@ class Reline::LineEditor
     @resized = false
     @cache = {}
     @rendered_screen = RenderedScreen.new(base_y: 0, lines: [], cursor_y: 0)
-    @input_lines = [[[""], 0, 0]]
-    @input_lines_position = 0
+    @undo_redo_history = [[[""], 0, 0]]
+    @undo_redo_index = 0
     @restoring = false
     @prev_action_state = NullActionState
     @next_action_state = NullActionState
@@ -1012,7 +1012,7 @@ class Reline::LineEditor
   end
 
   def input_key(key)
-    save_old_buffer
+    old_buffer_of_lines = @buffer_of_lines.dup
     @config.reset_oneshot_key_bindings
     if key.char.nil?
       process_insert(force: true)
@@ -1037,7 +1037,9 @@ class Reline::LineEditor
       @completion_journey_state = nil
     end
 
-    push_input_lines unless @restoring
+    modified = old_buffer_of_lines != @buffer_of_lines
+
+    push_undo_redo(modified) unless @restoring
     @restoring = false
 
     if @in_pasting
@@ -1045,7 +1047,6 @@ class Reline::LineEditor
       return
     end
 
-    modified = @old_buffer_of_lines != @buffer_of_lines
     if !@completion_occurs && modified && !@config.disable_completion && @config.autocompletion
       # Auto complete starts only when edited
       process_insert(force: true)
@@ -1054,26 +1055,17 @@ class Reline::LineEditor
     modified
   end
 
-  def save_old_buffer
-    @old_buffer_of_lines = @buffer_of_lines.dup
-  end
-
-  def push_input_lines
-    if @old_buffer_of_lines == @buffer_of_lines
-      @input_lines[@input_lines_position] = [@buffer_of_lines.dup, @byte_pointer, @line_index]
+  MAX_UNDO_REDO_HISTORY_SIZE = 100
+  def push_undo_redo(modified)
+    if modified
+      @undo_redo_history = @undo_redo_history[0..@undo_redo_index]
+      @undo_redo_history.push([@buffer_of_lines.dup, @byte_pointer, @line_index])
+      if @undo_redo_history.size > MAX_UNDO_REDO_HISTORY_SIZE
+        @undo_redo_history.shift
+      end
+      @undo_redo_index = @undo_redo_history.size - 1
     else
-      @input_lines = @input_lines[0..@input_lines_position]
-      @input_lines_position += 1
-      @input_lines.push([@buffer_of_lines.dup, @byte_pointer, @line_index])
-    end
-    trim_input_lines
-  end
-
-  MAX_INPUT_LINES = 100
-  def trim_input_lines
-    if @input_lines.size > MAX_INPUT_LINES
-      @input_lines.shift
-      @input_lines_position -= 1
+      @undo_redo_history[@undo_redo_index] = [@buffer_of_lines.dup, @byte_pointer, @line_index]
     end
   end
 
@@ -2331,10 +2323,10 @@ class Reline::LineEditor
 
   private def move_undo_redo(direction)
     @restoring = true
-    return unless (0..@input_lines.size - 1).cover?(@input_lines_position + direction)
+    return unless (0..@undo_redo_history.size - 1).cover?(@undo_redo_index + direction)
 
-    @input_lines_position += direction
-    buffer_of_lines, byte_pointer, line_index = @input_lines[@input_lines_position]
+    @undo_redo_index += direction
+    buffer_of_lines, byte_pointer, line_index = @undo_redo_history[@undo_redo_index]
     @buffer_of_lines = buffer_of_lines.dup
     @line_index = line_index
     @byte_pointer = byte_pointer
