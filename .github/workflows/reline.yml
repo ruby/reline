@@ -91,6 +91,8 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
+          # Added to make Ruby 2.7 correctly require installed default gems, like `pp`.
+          rubygems: latest
       - name: Install libvterm
         run: |
           sudo apt install -y libtool-bin
