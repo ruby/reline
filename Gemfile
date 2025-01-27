@@ -12,3 +12,6 @@ end
 gem 'bundler'
 gem 'rake'
 gem 'test-unit'
+
+# Only used in ci to run readline-ext test using Reline as Readline
+gem 'readline'
