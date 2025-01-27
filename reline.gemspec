@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
   spec.license       = 'Ruby'
 
   spec.files         = Dir.chdir(File.expand_path('..', __FILE__)) do
-    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+    Dir['BSDL', 'COPYING', 'README.md', 'license_of_rb-readline', 'lib/**/*']
   end
   spec.require_paths = ['lib']
   spec.metadata = {
