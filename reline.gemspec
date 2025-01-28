@@ -16,8 +16,13 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'https://github.com/ruby/reline'
   spec.license       = 'Ruby'
 
-  spec.files         = Dir.chdir(File.expand_path('..', __FILE__)) do
-    Dir['BSDL', 'COPYING', 'README.md', 'license_of_rb-readline', 'lib/**/*']
+  spec.files         = [
+    'BSDL',
+    'COPYING',
+    'README.md',
+    'license_of_rb-readline'
+  ] + Dir.chdir(File.expand_path('..', __FILE__)) do
+    Dir.glob("lib/**/*").map {|f| f unless File.directory?(f) }.compact
   end
   spec.require_paths = ['lib']
   spec.metadata = {
