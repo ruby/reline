@@ -442,7 +442,8 @@ class Reline::Test < Reline::TestCase
     ruby_file.write(<<~RUBY)
       require 'reline'
       Thread.new { sleep 2; puts 'timeout'; exit }
-      p [Reline.ambiguous_width, gets.chomp]
+      line = Reline.readline('>')
+      p [Reline.ambiguous_width, line]
     RUBY
     ruby_file.close
     lib = File.expand_path('../../lib', __dir__)
@@ -452,8 +453,8 @@ class Reline::Test < Reline::TestCase
     [1, 2].each do |ambiguous_width|
       PTY.spawn(*cmd) do |r, w, pid|
         loop { break if r.readpartial(1024).include?("\e[6n") }
-        w.puts "hello\e[10;#{ambiguous_width + 1}Rworld"
-        assert_include(r.gets, [ambiguous_width, 'helloworld'].inspect)
+        w.puts "hello\e[10;#{ambiguous_width + 1}Rworld\n"
+        assert_include(r.gets + r.gets, [ambiguous_width, 'helloworld'].inspect)
       ensure
         r.close
         w.close
@@ -464,8 +465,8 @@ class Reline::Test < Reline::TestCase
     # Ambiguous width = 1 when cursor pos timed out
     PTY.spawn(*cmd) do |r, w, pid|
       loop { break if r.readpartial(1024).include?("\e[6n") }
-      w.puts "hello\e[10;2Sworld"
-      assert_include(r.gets, [1, "hello\e[10;2Sworld"].inspect)
+      w.puts "helloworld\n"
+      assert_include(r.gets + r.gets, [1, "helloworld"].inspect)
     ensure
       r.close
       w.close
