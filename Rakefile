@@ -49,6 +49,7 @@ task default: :test
 
 RDoc::Task.new do |rdoc|
   rdoc.title = "Reline Documentation"
-  rdoc.main = "lib/reline.rb"
+  rdoc.main = "Index.md"
   rdoc.rdoc_dir = "_site"
+  rdoc.options.push("lib")
 end
