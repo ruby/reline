@@ -205,9 +205,7 @@ class Reline::ANSI < Reline::IO
           break
         end
       end
-      buf.chars.reverse_each do |ch|
-        stdin.ungetc ch
-      end
+      @buf.concat buf.bytes
     end
     [match[:column].to_i - 1, match[:row].to_i - 1] if match
   end
