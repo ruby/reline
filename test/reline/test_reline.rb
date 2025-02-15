@@ -436,7 +436,7 @@ class Reline::Test < Reline::TestCase
     /mswin|mingw/.match?(RUBY_PLATFORM)
   end
 
-  def test_tty_amibuous_width
+  def test_tty_ambiguous_width
     omit unless defined?(PTY)
     ruby_file = Tempfile.create('rubyfile')
     ruby_file.write(<<~RUBY)
