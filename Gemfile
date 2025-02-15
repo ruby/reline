@@ -10,6 +10,7 @@ if is_unix && ENV['WITH_VTERM']
 end
 
 gem 'bundler'
+gem 'rdoc'
 gem 'rake'
 gem 'test-unit'
 
