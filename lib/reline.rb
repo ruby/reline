@@ -12,10 +12,10 @@ require 'rbconfig'
 
 module Reline
   # NOTE: For making compatible with the rb-readline gem
-  FILENAME_COMPLETION_PROC = nil
-  USERNAME_COMPLETION_PROC = nil
+  FILENAME_COMPLETION_PROC = nil # :nodoc:
+  USERNAME_COMPLETION_PROC = nil # :nodoc:
 
-  class ConfigEncodingConversionError < StandardError; end
+  class ConfigEncodingConversionError < StandardError; end # :nodoc:
 
   # EOF key: { char: nil, method_symbol: nil }
   # Other key: { char: String, method_symbol: Symbol }
@@ -24,8 +24,8 @@ module Reline
     def match?(sym)
       method_symbol && method_symbol == sym
     end
-  end
-  CursorPos = Struct.new(:x, :y)
+  end # :nodoc:
+  CursorPos = Struct.new(:x, :y) # :nodoc:
   DialogRenderInfo = Struct.new(
     :pos,
     :contents,
@@ -35,7 +35,7 @@ module Reline
     :height,
     :scrollbar,
     keyword_init: true
-  )
+  ) # :nodoc:
 
   class Core
     ATTR_READER_NAMES = %i(
@@ -244,8 +244,8 @@ module Reline
         height: [15, preferred_dialog_height].min,
         face: :completion_dialog
       )
-    }
-    Reline::DEFAULT_DIALOG_CONTEXT = Array.new
+    } # :nodoc:
+    Reline::DEFAULT_DIALOG_CONTEXT = Array.new # :nodoc:
 
     def readmultiline(prompt = '', add_hist = false, &confirm_multiline_termination)
       @mutex.synchronize do
@@ -439,6 +439,17 @@ module Reline
   }
   def_single_delegators :core, :input=, :output=
   def_single_delegators :core, :vi_editing_mode, :emacs_editing_mode
+
+  ##
+  # :singleton-method: readmultiline
+  # :call-seq:
+  #   readmultiline(prompt = '', add_hist = false, &confirm_multiline_termination) -> string or nil
+  def_single_delegators :core, :readmultiline
+
+  ##
+  # :singleton-method: readline
+  # :call-seq:
+  #   readline(prompt = '', add_hist = false) -> string or nil
   def_single_delegators :core, :readline
   def_single_delegators :core, :completion_case_fold, :completion_case_fold=
   def_single_delegators :core, :completion_quote_character
@@ -474,11 +485,10 @@ module Reline
   def_single_delegators :core, :dialog_proc
   def_single_delegators :core, :autocompletion, :autocompletion=
 
-  def_single_delegators :core, :readmultiline
   def_instance_delegators self, :readmultiline
   private :readmultiline
 
-  def self.encoding_system_needs
+  def self.encoding_system_needs # :nodoc:
     self.core.encoding
   end
 
@@ -511,7 +521,7 @@ end
 Reline::IOGate = Reline::IO.decide_io_gate
 
 # Deprecated
-Reline::GeneralIO = Reline::Dumb.new
+Reline::GeneralIO = Reline::Dumb.new # :nodoc:
 
 Reline::Face.load_initial_configs
 

@@ -1,5 +1,6 @@
 require 'bundler/gem_tasks'
 require 'rake/testtask'
+require 'rdoc/task'
 
 ENCODING_LIST = {
   test_shift_jis: Encoding::Shift_JIS,
@@ -45,3 +46,10 @@ end
 
 
 task default: :test
+
+RDoc::Task.new do |rdoc|
+  rdoc.title = "Reline Documentation"
+  rdoc.main = "Index.md"
+  rdoc.rdoc_dir = "_site"
+  rdoc.options.push("lib")
+end
