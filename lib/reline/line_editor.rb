@@ -188,7 +188,7 @@ class Reline::LineEditor
     @interrupted = false
     clear_dialogs
     render
-    cursor_to_bottom_offset = @rendered_screen.lines.size - @rendered_screen.cursor_y
+    cursor_to_bottom_offset = [@rendered_screen.lines.size - @rendered_screen.cursor_y, 1].max    
     Reline::IOGate.scroll_down cursor_to_bottom_offset
     Reline::IOGate.move_cursor_column 0
     clear_rendered_screen_cache
