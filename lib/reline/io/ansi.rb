@@ -180,14 +180,14 @@ class Reline::ANSI < Reline::IO
     s = [ENV["LINES"].to_i, ENV["COLUMNS"].to_i]
     return s if s[0] > 0 && s[1] > 0
     [24, 80]
-  rescue Errno::ENOTTY, Errno::ENODEV
+  rescue Errno::ENOTTY, Errno::ENODEV, Errno::EINVAL, Errno::EOPNOTSUPP
     [24, 80]
   end
 
   def set_screen_size(rows, columns)
     @input.winsize = [rows, columns]
     self
-  rescue Errno::ENOTTY, Errno::ENODEV
+  rescue Errno::ENOTTY, Errno::ENODEV, Errno::EINVAL, Errno::EOPNOTSUPP
     self
   end
 
