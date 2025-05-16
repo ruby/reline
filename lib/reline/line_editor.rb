@@ -1654,6 +1654,12 @@ class Reline::LineEditor
   end
   alias_method :next_history, :ed_next_history
 
+  private def end_of_history(key)
+    @history_pointer = Reline::HISTORY.size - 1
+    @line_backup_in_history ||= ''
+    ed_next_history(key)
+  end
+
   private def ed_newline(key)
     process_insert(force: true)
     if @is_multiline
