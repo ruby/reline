@@ -1416,6 +1416,17 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
     assert_line_around_cursor('abcd', '')
   end
 
+  def test_end_of_history
+    Reline::HISTORY.concat(['abc', '123'])
+    input_keys("\C-rab\C-jd")
+    assert_line_around_cursor('d', 'abc')
+    # \M->: clear input, move history to end, keep edited line as previous history
+    input_key_by_symbol(:end_of_history)
+    assert_line_around_cursor('', '')
+    input_keys("\C-p")
+    assert_line_around_cursor('dabc', '')
+  end
+
   # Unicode emoji test
   def test_ed_insert_for_include_zwj_emoji
     omit_unless_utf8
