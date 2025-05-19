@@ -1416,6 +1416,13 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
     assert_line_around_cursor('abcd', '')
   end
 
+  def test_beginning_of_history
+    Reline::HISTORY.concat(['abc', '123'])
+    # \M-<: move history to beginning
+    input_key_by_symbol(:beginning_of_history)
+    assert_line_around_cursor('abc', '')
+  end
+
   def test_end_of_history
     Reline::HISTORY.concat(['abc', '123'])
     input_keys("def\C-p\C-pd")
