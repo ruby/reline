@@ -377,11 +377,11 @@ module Reline::KeyActor
     # 187 M-;
     nil,
     # 188 M-<
-    nil,
+    :beginning_of_history,
     # 189 M-=
     nil,
     # 190 M->
-    nil,
+    :end_of_history,
     # 191 M-?
     nil,
     # 192 M-@
