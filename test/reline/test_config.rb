@@ -613,4 +613,34 @@ class Reline::Config::Test < Reline::TestCase
     @config.reload
     assert_equal '@', @config.emacs_mode_string
   end
+
+  def test_warning_for_invalid_byte_sequence_with_utf8
+    inputrc = "#{@tmpdir}/inputrc"
+    ENV['INPUTRC'] = inputrc
+
+    File.open(inputrc, "w") do |f|
+      f.puts("# This is a comment")
+      f.write("set vi-cmd-mode-string ")
+      f.write([0xFF].pack("C*"))  # Invalid UTF-8 byte sequence
+      f.puts("")
+    end
+
+    def capture_stderr
+      original_stderr = $stderr
+      $stderr = StringIO.new
+      yield
+      $stderr.string
+    ensure
+      $stderr = original_stderr
+    end
+
+    output = capture_stderr do
+      @config.read
+    end
+
+    assert_match(/Warning invalid byte sequence found at line 2 in inputrc file/, output)
+    assert_match(/can't be converted to the locale/, output)
+  rescue Encoding::InvalidByteSequenceError
+    # do nothing
+  end
 end

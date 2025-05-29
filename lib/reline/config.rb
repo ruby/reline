@@ -177,6 +177,13 @@ class Reline::Config
     if_stack = []
 
     lines.each_with_index do |line, no|
+      # Even after encoding conversion, we need to verify the encoding is valid
+      # as some invalid byte sequences might pass through the conversion.
+      unless line.valid_encoding?
+        mes = "Warning invalid byte sequence found at line #{no + 1} in inputrc file#{file ? " (#{file})" : ""}. can't be converted to the locale #{Encoding.default_external}."
+        warn mes
+        next
+      end
       next if line.match(/\A\s*#/)
 
       no += 1
