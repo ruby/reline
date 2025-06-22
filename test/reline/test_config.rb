@@ -614,33 +614,20 @@ class Reline::Config::Test < Reline::TestCase
     assert_equal '@', @config.emacs_mode_string
   end
 
-  def test_warning_for_invalid_byte_sequence_with_utf8
-    inputrc = "#{@tmpdir}/inputrc"
-    ENV['INPUTRC'] = inputrc
+  def test_invalid_byte_sequence_inputrc
+    lines = [
+      "set vi-cmd-mode-string\n",
+      "$if Ruby\n",
+      "  \"\C-a\": \"Ruby\"\n",
+      "$else \"\xFF\"\n".dup.force_encoding(Reline.encoding_system_needs), # Invalid byte sequence
+      "  \"\C-b\": \"NotRuby\"\n",
+      "$endif\n"
+    ]
 
-    File.open(inputrc, "w") do |f|
-      f.puts("# This is a comment")
-      f.write("set vi-cmd-mode-string ")
-      f.write([0xFF].pack("C*"))  # Invalid UTF-8 byte sequence
-      f.puts("")
+    e = assert_raise(Reline::Config::InvalidInputrc) do
+      @config.read_lines(lines, "INPUTRC")
     end
 
-    def capture_stderr
-      original_stderr = $stderr
-      $stderr = StringIO.new
-      yield
-      $stderr.string
-    ensure
-      $stderr = original_stderr
-    end
-
-    output = capture_stderr do
-      @config.read
-    end
-
-    assert_match(/Warning invalid byte sequence found at line 2 in inputrc file/, output)
-    assert_match(/can't be converted to the locale/, output)
-  rescue Encoding::InvalidByteSequenceError
-    # do nothing
+    assert_equal "INPUTRC:4: can't be converted to the locale #{Reline.encoding_system_needs}", e.message
   end
 end
