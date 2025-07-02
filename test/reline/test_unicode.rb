@@ -283,4 +283,48 @@ class Reline::Unicode::Test < Reline::TestCase
     refute(Reline::Unicode.space_character?('-'))
     refute(Reline::Unicode.space_character?(nil))
   end
+
+  def test_halfwidth_dakuten_handakuten_combinations
+    assert_equal 2, Reline::Unicode.get_mbchar_width("ｶﾞ")
+    assert_equal 2, Reline::Unicode.get_mbchar_width("ﾊﾟ")
+    assert_equal 2, Reline::Unicode.get_mbchar_width("ｻﾞ")
+    assert_equal 2, Reline::Unicode.get_mbchar_width("aﾞ")
+    assert_equal 2, Reline::Unicode.get_mbchar_width("1ﾟ")
+    assert_equal 3, Reline::Unicode.get_mbchar_width("あﾞ")
+    assert_equal 3, Reline::Unicode.get_mbchar_width("紅ﾞ")
+  end
+
+  def test_get_next_mbchar_size_with_dakuten
+    line = "ｶﾞtest" # valid combination
+    assert_equal 6, Reline::Unicode.get_next_mbchar_size(line, 0)  # 'ｶ' (3 bytes) + 'ﾞ' (3 bytes)
+    assert_equal 1, Reline::Unicode.get_next_mbchar_size(line, 6)  # 't' only (1 byte)
+
+    line = "aﾞtest" # invalid combination
+    assert_equal 1, Reline::Unicode.get_next_mbchar_size(line, 0)  # 'a' only (1 byte)
+    assert_equal 3, Reline::Unicode.get_next_mbchar_size(line, 1)  # 'ﾞ' only (3 bytes)
+    assert_equal 1, Reline::Unicode.get_next_mbchar_size(line, 4)  # 't' only (1 bytes)
+  end
+
+  def test_get_prev_mbchar_size_with_dakuten
+    line = "testｶﾞ" # valid combination
+    assert_equal 0, Reline::Unicode.get_prev_mbchar_size(line, 0)
+    assert_equal 1, Reline::Unicode.get_prev_mbchar_size(line, 4) # 't' (1 byte)
+    assert_equal 3, Reline::Unicode.get_prev_mbchar_size(line, 7) # 'ｶ' (3 bytes)
+    assert_equal 6, Reline::Unicode.get_prev_mbchar_size(line, 10) # ｶﾞ (6 bytes)
+
+    line = "testaﾞ" # invalid combination
+    assert_equal 1, Reline::Unicode.get_prev_mbchar_size(line, 4)  # 't' (1 byte)
+    assert_equal 3, Reline::Unicode.get_prev_mbchar_size(line, 8)  # 'ﾞ' (3 byte)
+  end
+
+  def test_invalid_combining_mark_cluster
+    assert_equal false, Reline::Unicode.invalid_combining_mark_cluster?("ｶﾞ")
+    assert_equal false, Reline::Unicode.invalid_combining_mark_cluster?("ﾊﾟ")
+
+    assert_equal true, Reline::Unicode.invalid_combining_mark_cluster?("aﾞ")
+    assert_equal true, Reline::Unicode.invalid_combining_mark_cluster?("あﾟ")
+
+    assert_equal false, Reline::Unicode.invalid_combining_mark_cluster?("abc")
+    assert_equal false, Reline::Unicode.invalid_combining_mark_cluster?("ｶ")
+  end
 end

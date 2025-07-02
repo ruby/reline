@@ -40,6 +40,8 @@ class Reline::Unicode
   CSI_REGEXP = /\e\[[\d;]*[ABCDEFGHJKSTfminsuhl]/
   OSC_REGEXP = /\e\]\d+(?:;[^;\a\e]+)*(?:\a|\e\\)/
   WIDTH_SCANNER = /\G(?:(#{NON_PRINTING_START})|(#{NON_PRINTING_END})|(#{CSI_REGEXP})|(#{OSC_REGEXP})|(\X))/o
+  HALFWIDTH_DAKUTEN = 0xFF9E
+  HALFWIDTH_HANDAKUTEN = 0xFF9F
 
   def self.escape_for_print(str)
     str.chars.map! { |gr|
@@ -73,6 +75,32 @@ class Reline::Unicode
   require 'reline/unicode/east_asian_width'
 
   def self.get_mbchar_width(mbchar)
+    # If mbchar contains multiple characters, check if it's a valid combination
+    if mbchar.length >= 2 && invalid_combining_mark_cluster?(mbchar)
+      # Calculate width for each character separately for invalid combinations
+      mbchar.each_char.sum { |char| get_single_char_width(char) }
+    else
+      get_single_char_width(mbchar)
+    end
+  end
+
+  def self.invalid_combining_mark_cluster?(mbchar)
+    begin
+      chars = mbchar.encode(Encoding::UTF_8).chars
+      return false if chars.length < 2
+
+      # Check if the last character is a combining mark (Halfwidth Dakuten/Handakuten)
+      return false unless halfwidth_dakuten_or_handakuten_character?(chars.last)
+
+      # Check if the base character can validly combine with Halfwidth dakuten/handakuten
+      ord = chars[-2].ord
+      ord < 0xFF66 || ord > 0xFF9D # out-of-range of Halfwidth Katakana
+    rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError, ArgumentError
+      false
+    end
+  end
+
+  def self.get_single_char_width(mbchar)
     ord = mbchar.ord
     if ord <= 0x1F # in EscapedPairs
       return 2
@@ -86,10 +114,9 @@ class Reline::Unicode
     if size == -1
       Reline.ambiguous_width
     elsif size == 1 && utf8_mbchar.size >= 2
-      second_char_ord = utf8_mbchar[1].ord
       # Halfwidth Dakuten Handakuten
       # Only these two character has Letter Modifier category and can be combined in a single grapheme cluster
-      (second_char_ord == 0xFF9E || second_char_ord == 0xFF9F) ? 2 : 1
+      halfwidth_dakuten_or_handakuten_character?(utf8_mbchar[1]) ? 2 : 1
     else
       size
     end
@@ -248,16 +275,30 @@ class Reline::Unicode
   end
 
   def self.get_next_mbchar_size(line, byte_pointer)
-    grapheme = line.byteslice(byte_pointer..-1).grapheme_clusters.first
-    grapheme ? grapheme.bytesize : 0
+    byteslice = line.byteslice(byte_pointer..-1)
+    grapheme = byteslice.grapheme_clusters.first
+    return 0 unless grapheme
+
+    # If it's an invalid combining mark cluster, move one character at a time
+    if invalid_combining_mark_cluster?(grapheme)
+      byteslice.chars.first.bytesize
+    else
+      grapheme.bytesize
+    end
   end
 
   def self.get_prev_mbchar_size(line, byte_pointer)
-    if byte_pointer.zero?
-      0
+    return 0 if byte_pointer <= 0
+
+    byteslice = line.byteslice(0..(byte_pointer - 1))
+    grapheme = byteslice.grapheme_clusters.last
+    return 0 unless grapheme
+
+    # If it's an invalid combining mark cluster, move one character at a time
+    if invalid_combining_mark_cluster?(grapheme)
+      byteslice.chars.last.bytesize
     else
-      grapheme = line.byteslice(0..(byte_pointer - 1)).grapheme_clusters.last
-      grapheme ? grapheme.bytesize : 0
+      grapheme.bytesize
     end
   end
 
@@ -411,5 +452,12 @@ class Reline::Unicode
 
   def self.space_character?(s)
     s.match?(/\s/) if s
+  end
+
+  def self.halfwidth_dakuten_or_handakuten_character?(s)
+    return false if s.encoding != Encoding::UTF_8 || !s.valid_encoding?
+
+    ord = s.ord
+    ord == HALFWIDTH_DAKUTEN || ord == HALFWIDTH_HANDAKUTEN
   end
 end
