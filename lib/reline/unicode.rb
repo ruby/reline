@@ -84,7 +84,7 @@ class Reline::Unicode
     # ^ fast path to quickly calculate the width.
 
     # If mbchar contains multiple characters, check if it's a valid combination
-    if mbchar.length >= 2 && invalid_combining_mark_cluster?(mbchar)
+    if invalid_combining_mark_cluster?(mbchar)
       # Calculate width for each character separately for invalid combinations
       mbchar.each_char.sum { |char| get_single_char_width(char) }
     else
@@ -93,6 +93,8 @@ class Reline::Unicode
   end
 
   def self.invalid_combining_mark_cluster?(mbchar)
+    return false if mbchar.length < 2
+
     begin
       chars = mbchar.encode(Encoding::UTF_8).chars
       return false if chars.length < 2
