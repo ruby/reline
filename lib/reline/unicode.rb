@@ -75,6 +75,14 @@ class Reline::Unicode
   require 'reline/unicode/east_asian_width'
 
   def self.get_mbchar_width(mbchar)
+    ord = mbchar.ord
+    if ord <= 0x1F # in EscapedPairs
+      return 2
+    elsif mbchar.length <= 1 && ord <= 0x7E # printable ASCII chars
+      return 1
+    end
+    # ^ fast path to quickly calculate the width.
+
     # If mbchar contains multiple characters, check if it's a valid combination
     if mbchar.length >= 2 && invalid_combining_mark_cluster?(mbchar)
       # Calculate width for each character separately for invalid combinations
@@ -107,8 +115,10 @@ class Reline::Unicode
     elsif ord <= 0x7E # printable ASCII chars
       return 1
     end
+
     utf8_mbchar = mbchar.encode(Encoding::UTF_8)
     ord = utf8_mbchar.ord
+
     chunk_index = EastAsianWidth::CHUNK_LAST.bsearch_index { |o| ord <= o }
     size = EastAsianWidth::CHUNK_WIDTH[chunk_index]
     if size == -1
