@@ -287,30 +287,16 @@ class Reline::Unicode
   end
 
   def self.get_next_mbchar_size(line, byte_pointer)
-    byteslice = line.byteslice(byte_pointer..-1)
-    grapheme = byteslice.grapheme_clusters.first
-    return 0 unless grapheme
-
-    # If it's an invalid combining mark cluster, move one character at a time
-    if invalid_combining_mark_cluster?(grapheme)
-      byteslice.chars.first.bytesize
-    else
-      grapheme.bytesize
-    end
+    grapheme = line.byteslice(byte_pointer..-1).grapheme_clusters.first
+    grapheme ? grapheme.bytesize : 0
   end
 
   def self.get_prev_mbchar_size(line, byte_pointer)
-    return 0 if byte_pointer <= 0
-
-    byteslice = line.byteslice(0..(byte_pointer - 1))
-    grapheme = byteslice.grapheme_clusters.last
-    return 0 unless grapheme
-
-    # If it's an invalid combining mark cluster, move one character at a time
-    if invalid_combining_mark_cluster?(grapheme)
-      byteslice.chars.last.bytesize
+    if byte_pointer.zero?
+      0
     else
-      grapheme.bytesize
+      grapheme = line.byteslice(0..(byte_pointer - 1)).grapheme_clusters.last
+      grapheme ? grapheme.bytesize : 0
     end
   end
 

@@ -294,29 +294,6 @@ class Reline::Unicode::Test < Reline::TestCase
     assert_equal 3, Reline::Unicode.get_mbchar_width("紅ﾞ")
   end
 
-  def test_get_next_mbchar_size_with_dakuten
-    line = "ｶﾞtest" # valid combination
-    assert_equal 6, Reline::Unicode.get_next_mbchar_size(line, 0)  # 'ｶ' (3 bytes) + 'ﾞ' (3 bytes)
-    assert_equal 1, Reline::Unicode.get_next_mbchar_size(line, 6)  # 't' only (1 byte)
-
-    line = "aﾞtest" # invalid combination
-    assert_equal 1, Reline::Unicode.get_next_mbchar_size(line, 0)  # 'a' only (1 byte)
-    assert_equal 3, Reline::Unicode.get_next_mbchar_size(line, 1)  # 'ﾞ' only (3 bytes)
-    assert_equal 1, Reline::Unicode.get_next_mbchar_size(line, 4)  # 't' only (1 bytes)
-  end
-
-  def test_get_prev_mbchar_size_with_dakuten
-    line = "testｶﾞ" # valid combination
-    assert_equal 0, Reline::Unicode.get_prev_mbchar_size(line, 0)
-    assert_equal 1, Reline::Unicode.get_prev_mbchar_size(line, 4) # 't' (1 byte)
-    assert_equal 3, Reline::Unicode.get_prev_mbchar_size(line, 7) # 'ｶ' (3 bytes)
-    assert_equal 6, Reline::Unicode.get_prev_mbchar_size(line, 10) # ｶﾞ (6 bytes)
-
-    line = "testaﾞ" # invalid combination
-    assert_equal 1, Reline::Unicode.get_prev_mbchar_size(line, 4)  # 't' (1 byte)
-    assert_equal 3, Reline::Unicode.get_prev_mbchar_size(line, 8)  # 'ﾞ' (3 byte)
-  end
-
   def test_invalid_combining_mark_cluster
     assert_equal false, Reline::Unicode.invalid_combining_mark_cluster?("ｶﾞ")
     assert_equal false, Reline::Unicode.invalid_combining_mark_cluster?("ﾊﾟ")
