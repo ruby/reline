@@ -285,6 +285,8 @@ class Reline::Unicode::Test < Reline::TestCase
   end
 
   def test_halfwidth_dakuten_handakuten_combinations
+    assert_equal 1, Reline::Unicode.get_mbchar_width("\uFF9E")
+    assert_equal 1, Reline::Unicode.get_mbchar_width("\uFF9F")
     assert_equal 2, Reline::Unicode.get_mbchar_width("ｶﾞ")
     assert_equal 2, Reline::Unicode.get_mbchar_width("ﾊﾟ")
     assert_equal 2, Reline::Unicode.get_mbchar_width("ｻﾞ")
@@ -292,16 +294,5 @@ class Reline::Unicode::Test < Reline::TestCase
     assert_equal 2, Reline::Unicode.get_mbchar_width("1ﾟ")
     assert_equal 3, Reline::Unicode.get_mbchar_width("あﾞ")
     assert_equal 3, Reline::Unicode.get_mbchar_width("紅ﾞ")
-  end
-
-  def test_invalid_combining_mark_cluster
-    assert_equal false, Reline::Unicode.invalid_combining_mark_cluster?("ｶﾞ")
-    assert_equal false, Reline::Unicode.invalid_combining_mark_cluster?("ﾊﾟ")
-
-    assert_equal true, Reline::Unicode.invalid_combining_mark_cluster?("aﾞ")
-    assert_equal true, Reline::Unicode.invalid_combining_mark_cluster?("あﾟ")
-
-    assert_equal false, Reline::Unicode.invalid_combining_mark_cluster?("abc")
-    assert_equal false, Reline::Unicode.invalid_combining_mark_cluster?("ｶ")
   end
 end

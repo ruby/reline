@@ -79,42 +79,7 @@ class Reline::Unicode
     if ord <= 0x1F # in EscapedPairs
       return 2
     elsif mbchar.length <= 1 && ord <= 0x7E # printable ASCII chars
-      return 1
-    end
-    # ^ fast path to quickly calculate the width.
-
-    # If mbchar contains multiple characters, check if it's a valid combination
-    if invalid_combining_mark_cluster?(mbchar)
-      # Calculate width for each character separately for invalid combinations
-      mbchar.each_char.sum { |char| get_single_char_width(char) }
-    else
-      get_single_char_width(mbchar)
-    end
-  end
-
-  def self.invalid_combining_mark_cluster?(mbchar)
-    return false if mbchar.length < 2
-
-    begin
-      chars = mbchar.encode(Encoding::UTF_8).chars
-      return false if chars.length < 2
-
-      # Check if the last character is a combining mark (Halfwidth Dakuten/Handakuten)
-      return false unless halfwidth_dakuten_or_handakuten_character?(chars.last)
-
-      # Check if the base character can validly combine with Halfwidth dakuten/handakuten
-      ord = chars[-2].ord
-      ord < 0xFF66 || ord > 0xFF9D # out-of-range of Halfwidth Katakana
-    rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError, ArgumentError
-      false
-    end
-  end
-
-  def self.get_single_char_width(mbchar)
-    ord = mbchar.ord
-    if ord <= 0x1F # in EscapedPairs
-      return 2
-    elsif ord <= 0x7E # printable ASCII chars
+      #   ~~~~~~~~~~~~~~~~~~ guard against the following grapheme combination character (e.g., dakuten/handakuten)
       return 1
     end
 
@@ -125,10 +90,12 @@ class Reline::Unicode
     size = EastAsianWidth::CHUNK_WIDTH[chunk_index]
     if size == -1
       Reline.ambiguous_width
-    elsif size == 1 && utf8_mbchar.size >= 2
-      # Halfwidth Dakuten Handakuten
-      # Only these two character has Letter Modifier category and can be combined in a single grapheme cluster
-      halfwidth_dakuten_or_handakuten_character?(utf8_mbchar[1]) ? 2 : 1
+    elsif halfwidth_dakuten_or_handakuten_character?(utf8_mbchar[-1])
+      if utf8_mbchar.length >= 2 # Whether this is a dakuten or handakuten combination character
+        utf8_mbchar.each_char.sum { |char| get_mbchar_width(char) }
+      else
+        1
+      end
     else
       size
     end
