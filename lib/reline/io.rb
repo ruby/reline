@@ -37,10 +37,10 @@ module Reline
     end
 
     # Read a single encoding valid character from the input.
-    def read_single_char(keyseq_timeout)
+    def read_single_char(timeout_second)
       buffer = String.new(encoding: Encoding::ASCII_8BIT)
       loop do
-        timeout = buffer.empty? ? Float::INFINITY : keyseq_timeout
+        timeout = buffer.empty? ? Float::INFINITY : timeout_second
         c = getc(timeout)
         return unless c
 

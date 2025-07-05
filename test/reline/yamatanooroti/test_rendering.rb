@@ -1798,6 +1798,21 @@ begin
       close
     end
 
+    def test_quoted_insert_timeout
+      omit if Reline.core.io_gate.win?
+
+      start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      write "\C-v"
+      write "\C-a"
+      write "\C-v"
+      # broken bytes should be ignored with timeout
+      write_without_meta_conversion "\xE3\xE4\xE5"
+      sleep 1
+      write "\C-v"
+      write "\C-b"
+      assert_screen(/prompt> \^A\^B/)
+    end
+
     def test_print_before_readline
       code = <<~RUBY
         puts 'Multiline REPL.'
