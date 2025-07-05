@@ -52,6 +52,14 @@ begin
       ENV.delete('RELINE_TEST_PROMPT') if ENV['RELINE_TEST_PROMPT']
     end
 
+    # Yamatanooroti::TestCase#write converts 0x80-0xff bytes to "\e"+(byte&0x7f).chr
+    # This method avoids the conversion and writes the string as is.
+    def write_without_meta_conversion(str)
+      sync
+      @pty_input.write(str)
+      try_sync
+    end
+
     def test_history_back
       start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
       write(":a\n")
@@ -559,6 +567,27 @@ begin
         prompt> end
       EOC
       close
+    end
+
+    def test_ctrl_v_escaped_input
+      omit if Reline.core.io_gate.win?
+
+      start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+
+      # When a configuration "Escape non-ASCII Input with Control-V" is enabled
+      # in macOS Termina.app, all non-ascii characters are escaped with ^V.
+      write_without_meta_conversion "\C-v\xE3\C-v\x81\C-v\x82"
+      assert_screen(/prompt> あ/)
+
+      # Bracketed pasted content is also escaped
+      write_without_meta_conversion "\e[200~\C-a\C-v\xE3\C-v\x81\C-v\x84\C-b\e[201~"
+      assert_screen(/prompt> あ\^Aい\^B/)
+
+      # Invalid bytes should be ignored with timeout
+      write_without_meta_conversion "\C-v\x82\C-v\xA4"
+      sleep 1
+      write 'C'
+      assert_screen(/prompt> あ\^Aい\^BC/)
     end
 
     def test_bracketed_paste_with_undo_redo

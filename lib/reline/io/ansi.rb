@@ -124,6 +124,10 @@ class Reline::ANSI < Reline::IO
       Reline.core.line_editor.handle_signal
     end
     c = @input.getbyte
+
+    # When "Escape non-ASCII Input with Control-V" is enabled in macOS Terminal.app,
+    # all non-ascii bytes are automatically escaped with `C-v`.
+    # "\xE3\x81\x82" (U+3042) becomes "\x16\xE3\x16\x81\x16\x82".
     (c == 0x16 && @input.tty? && @input.raw(min: 0, time: 0, &:getbyte)) || c
   rescue Errno::EIO
     # Maybe the I/O has been closed.
