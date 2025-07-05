@@ -1,20 +1,43 @@
 # For Users
 
 This page is for the user of a console application
-that uses module `reline`.
+that uses module Reline.
 
-Other pages:
+For other usages, see [Your Reline](rdoc-ref:README.md@Your+Reline).
 
-- Page [README](README.md) gives a general description
-  of `reline` and what it does.
-- Page [For Developers](for_developers.md)
-  is for the developer who wants to use `reline`
-  in a console application.
-
-Note that the usages described here are the _default_ usages for `reline`.
-A console application that uses module `reline` may have implemented other usages.
+Note that the usages described here are the _default_ usages for Reline.
+A console application that uses module Reline may have implemented different usages.
 
 ## The Basics
+
+Reline lets you edit typed command-line text.
+
+These are the basic editing commands:
+
+- Left-Arrow or Ctrl-b: move the cursor one character backward.
+- Right-Arrow or Ctrl-f: move the cursor one character forward.
+- Home or Ctrl-a: move the cursor to the beginning of the line.
+- End or Ctrl-e: move the cursor to the end of the line.
+- Alt-b: move the cursor backward to the beginning of a word.
+- Alt-f: move the cursor forward to the end of a word.
+
+- Delete or Ctrl-d: remove the character at the cursor.
+- Backspace: remove the character before the cursor.
+
+- Printing characters: insert text at the cursor;
+  existing characters to the right of the cursor are move rightward.
+
+- Ctrl-_: undo the last editing command.
+- Ctrl-l: clear the screen and reprint the current line at the top.
+
+left- and right-arrows: navigation
+end and home: navigation
+delete and backspace: removal
+typing: insertion
+Ctrl-_: undo
+tab: completion
+
+up- and down-arrows: history
 
 ### Command Line
 
