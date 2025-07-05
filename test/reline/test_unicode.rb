@@ -107,6 +107,21 @@ class Reline::Unicode::Test < Reline::TestCase
     assert_equal ["\e[41m \e[42mい\e[43m ", 1, 4], Reline::Unicode.take_mbchar_range("\e[41mあ\e[42mい\e[43mう", 1, 4, padding: true)
   end
 
+  def test_three_width_characters_take_mbchar_range
+    halfwidth_dakuten = 0xFF9E.chr('utf-8')
+    a = 'あ' + halfwidth_dakuten
+    b = 'い' + halfwidth_dakuten
+    c = 'う' + halfwidth_dakuten
+    line = 'x' + a + b + c + 'x'
+    assert_equal ['  ' + b + ' ', 2, 6], Reline::Unicode.take_mbchar_range(line, 2, 6, padding: true)
+    assert_equal [' ' + b + '  ', 3, 6], Reline::Unicode.take_mbchar_range(line, 3, 6, padding: true)
+    assert_equal [b + c, 4, 6], Reline::Unicode.take_mbchar_range(line, 4, 6, padding: true)
+    assert_equal [a + b, 1, 6], Reline::Unicode.take_mbchar_range(line, 2, 6, cover_begin: true)
+    assert_equal [a + b, 1, 6], Reline::Unicode.take_mbchar_range(line, 3, 6, cover_begin: true)
+    assert_equal [b + c, 4, 6], Reline::Unicode.take_mbchar_range(line, 2, 6, cover_end: true)
+    assert_equal [b + c, 4, 6], Reline::Unicode.take_mbchar_range(line, 3, 6, cover_end: true)
+  end
+
   def test_common_prefix
     assert_equal('', Reline::Unicode.common_prefix([]))
     assert_equal('abc', Reline::Unicode.common_prefix(['abc']))
