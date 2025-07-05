@@ -299,7 +299,7 @@ class Reline::ANSI < Reline::IO
     # Signal.trap may raise an ArgumentError if the platform doesn't support the signal.
   end
 
-  def read_single_char(keyseq_timeout)
+  def read_single_char(timeout_second)
     # Disable intr to read `C-c` `C-z` `C-\` for quoted insert
     @input.raw(intr: false) do
       super
