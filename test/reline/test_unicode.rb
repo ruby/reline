@@ -283,4 +283,16 @@ class Reline::Unicode::Test < Reline::TestCase
     refute(Reline::Unicode.space_character?('-'))
     refute(Reline::Unicode.space_character?(nil))
   end
+
+  def test_halfwidth_dakuten_handakuten_combinations
+    assert_equal 1, Reline::Unicode.get_mbchar_width("\uFF9E")
+    assert_equal 1, Reline::Unicode.get_mbchar_width("\uFF9F")
+    assert_equal 2, Reline::Unicode.get_mbchar_width("ｶﾞ")
+    assert_equal 2, Reline::Unicode.get_mbchar_width("ﾊﾟ")
+    assert_equal 2, Reline::Unicode.get_mbchar_width("ｻﾞ")
+    assert_equal 2, Reline::Unicode.get_mbchar_width("aﾞ")
+    assert_equal 2, Reline::Unicode.get_mbchar_width("1ﾟ")
+    assert_equal 3, Reline::Unicode.get_mbchar_width("あﾞ")
+    assert_equal 3, Reline::Unicode.get_mbchar_width("紅ﾞ")
+  end
 end

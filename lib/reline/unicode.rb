@@ -40,6 +40,8 @@ class Reline::Unicode
   CSI_REGEXP = /\e\[[\d;]*[ABCDEFGHJKSTfminsuhl]/
   OSC_REGEXP = /\e\]\d+(?:;[^;\a\e]+)*(?:\a|\e\\)/
   WIDTH_SCANNER = /\G(?:(#{NON_PRINTING_START})|(#{NON_PRINTING_END})|(#{CSI_REGEXP})|(#{OSC_REGEXP})|(\X))/o
+  HALFWIDTH_DAKUTEN = 0xFF9E
+  HALFWIDTH_HANDAKUTEN = 0xFF9F
 
   def self.escape_for_print(str)
     str.chars.map! { |gr|
@@ -76,20 +78,24 @@ class Reline::Unicode
     ord = mbchar.ord
     if ord <= 0x1F # in EscapedPairs
       return 2
-    elsif ord <= 0x7E # printable ASCII chars
+    elsif mbchar.length <= 1 && ord <= 0x7E # printable ASCII chars
+      #   ~~~~~~~~~~~~~~~~~~ guard against the following grapheme combination character (e.g., dakuten/handakuten)
       return 1
     end
+
     utf8_mbchar = mbchar.encode(Encoding::UTF_8)
     ord = utf8_mbchar.ord
+
     chunk_index = EastAsianWidth::CHUNK_LAST.bsearch_index { |o| ord <= o }
     size = EastAsianWidth::CHUNK_WIDTH[chunk_index]
     if size == -1
       Reline.ambiguous_width
-    elsif size == 1 && utf8_mbchar.size >= 2
-      second_char_ord = utf8_mbchar[1].ord
-      # Halfwidth Dakuten Handakuten
-      # Only these two character has Letter Modifier category and can be combined in a single grapheme cluster
-      (second_char_ord == 0xFF9E || second_char_ord == 0xFF9F) ? 2 : 1
+    elsif halfwidth_dakuten_or_handakuten_character?(utf8_mbchar[-1])
+      if utf8_mbchar.length >= 2 # Whether this is a dakuten or handakuten combination character
+        utf8_mbchar.each_char.sum { |char| get_mbchar_width(char) }
+      else
+        1
+      end
     else
       size
     end
@@ -411,5 +417,12 @@ class Reline::Unicode
 
   def self.space_character?(s)
     s.match?(/\s/) if s
+  end
+
+  def self.halfwidth_dakuten_or_handakuten_character?(s)
+    return false if s.encoding != Encoding::UTF_8 || !s.valid_encoding?
+
+    ord = s.ord
+    ord == HALFWIDTH_DAKUTEN || ord == HALFWIDTH_HANDAKUTEN
   end
 end
