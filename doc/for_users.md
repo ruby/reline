@@ -12,53 +12,44 @@ A console application that uses module Reline may have implemented different usa
 
 Reline lets you edit typed command-line text.
 
-These are the basic editing commands:
+Cursor-movement commands:
 
-- Left-Arrow or Ctrl-b: move the cursor one character backward.
-- Right-Arrow or Ctrl-f: move the cursor one character forward.
-- Home or Ctrl-a: move the cursor to the beginning of the line.
-- End or Ctrl-e: move the cursor to the end of the line.
-- Alt-b: move the cursor backward to the beginning of a word.
-- Alt-f: move the cursor forward to the end of a word.
+- `Left-Arrow` or `Ctrl-b`: backward one character.
+- `Right-Arrow` or `Ctrl-f`: forward one character.
+- `Alt-b`: backward to the beginning of a word.
+- `Alt-f`: forward to the end of a word.
+- `Home` or `Ctrl-a`: backward to the beginning of the line.
+- `End` or `Ctrl-e`: forward to the end of the line.
 
-- Delete or Ctrl-d: remove the character at the cursor.
-- Backspace: remove the character before the cursor.
+Text-deletion commands:
 
-- Printing characters: insert text at the cursor;
+- `Delete` or `Ctrl-d`: remove the character to the right the cursor.
+- `Backspace`: remove the character to the left the cursor.
+
+Text-insertion commands:
+
+- Printable characters: insert text at the cursor;
   existing characters to the right of the cursor are move rightward.
 
-- Ctrl-_: undo the last editing command.
-- Ctrl-l: clear the screen and reprint the current line at the top.
+Other commands:
 
-left- and right-arrows: navigation
-end and home: navigation
-delete and backspace: removal
-typing: insertion
-Ctrl-_: undo
-tab: completion
+- `Ctrl-_`: undo the last editing command.
+- `Ctrl-l`: clear the screen and reprint the current line at the top.
 
-up- and down-arrows: history
+## Killing and Yanking
 
-### Command Line
+Kill commands; each kills text beginning at the cursor:
 
-### History
+- `Ctrl-k`: kill to the end of the line.
+- `Alt-d`: kill to the end of the current word,
+  or, if between words, to the end of the next word.
+- `Alt-Delete`: kill to the start of the current word,
+  or, if between words, to the start of the previous word.
+- `Ctrl-w`: kill to the previous whitespace.`
 
-## Command Line Details
+Yank commands; each inserts killed text at the cursor:
 
-### Auto-Completion
-
-### Moving the Cursor
-
-### Deleting Text
-
-### Inserting Text
-
-### Killing and Yanking
-
-## Command History Details
-
-### Scrolling
-
-### Searching
-
-
+- `Ctrl-y`: yank the most recently killed text.
+- `Alt-y`: rotate the kill-ring, and yank the new top.
+  Available only if the immediately preceding command was `Ctrl-y` or another `Alt-y`;
+  otherwise, does nothing.
