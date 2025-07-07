@@ -5,8 +5,14 @@ if ARGV.empty?
   exit 1
 end
 
-def unicode_width(type, category)
-  return 0 if category == 'Mn' # Nonspacing Mark
+def unicode_width(type, category, rest)
+  # Nonspacing Mark, Enclosing Mark
+  return 0 if category == 'Mn' || category == 'Me'
+
+  # Grapheme_Cluster_Break=V, Grapheme_Cluster_Break=T.
+  # Width of L, LV, LVT are 2. Treat V and T as width=0 because there should be L or LV before V or T.
+  return 0 if rest =~ /HANGUL JUNGSEONG|HANGUL JONGSEONG/
+
   case type
   when 'F', 'W' # Fullwidth, Wide
     2
@@ -27,10 +33,10 @@ open(ARGV.first, 'rt') do |f|
 
   widths = []
   f.each_line do |line|
-    next unless /^(?<first>\h+)(?:\.\.(?<last>\h+))?\s*;\s*(?<type>\w+)\s+# +(?<category>[^ ]+)/ =~ line
+    next unless /^(?<first>\h+)(?:\.\.(?<last>\h+))?\s*;\s*(?<type>\w+)\s+# +(?<category>[^ ]+)(?<rest>.*)/ =~ line
 
     range = first.to_i(16)..(last || first).to_i(16)
-    widths.fill(unicode_width(type, category), range)
+    widths.fill(unicode_width(type, category, rest), range)
   end
 
   # EscapedPairs
