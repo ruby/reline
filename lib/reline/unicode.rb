@@ -40,8 +40,11 @@ class Reline::Unicode
   CSI_REGEXP = /\e\[[\d;]*[ABCDEFGHJKSTfminsuhl]/
   OSC_REGEXP = /\e\]\d+(?:;[^;\a\e]+)*(?:\a|\e\\)/
   WIDTH_SCANNER = /\G(?:(#{NON_PRINTING_START})|(#{NON_PRINTING_END})|(#{CSI_REGEXP})|(#{OSC_REGEXP})|(\X))/o
-  HALFWIDTH_DAKUTEN = 0xFF9E
-  HALFWIDTH_HANDAKUTEN = 0xFF9F
+
+  AMBIGUOUS_WIDTH_EMOJI_CLUSTER = Regexp.union(
+    /\p{Grapheme_Cluster_Break=Regional_Indicator}{2}/, # Flag emoji
+    /\p{Extended_Pictographic}\u{FE0F}/ # Variation selector-16
+  )
 
   def self.escape_for_print(str)
     str.chars.map! { |gr|
@@ -74,30 +77,54 @@ class Reline::Unicode
 
   require 'reline/unicode/east_asian_width'
 
+  def self.east_asian_width(ord)
+    chunk_index = EastAsianWidth::CHUNK_LAST.bsearch_index { |o| ord <= o }
+    size = EastAsianWidth::CHUNK_WIDTH[chunk_index]
+    size == -1 ? Reline.ambiguous_width : size
+  end
+
+  # Some emoji needs special handling on rendering because width is ambiguous depending on terminal emulator and configuration.
+  # For example, iTerm can configure flag-emoji width and variation selector 16 emoji width.
+  #   split_ambiguous_emoji('abc') #=> nil (no ambiguous emoji)
+  #   split_ambiguous_emoji('abc[flag][flag]de') #=> [['abc', false], ['[flag]', true], ['[flag]', true], ['de', false]]
+  def self.split_ambiguous_emoji(str)
+    return if str.ascii_only? || !str.match?(AMBIGUOUS_WIDTH_EMOJI_CLUSTER)
+
+    str.grapheme_clusters.chunk.with_index do |gc, idx|
+      gc.match?(AMBIGUOUS_WIDTH_EMOJI_CLUSTER) ? idx : -1
+    end.map do |key, gcs|
+      [gcs.join, key != -1]
+    end
+  end
+
   def self.get_mbchar_width(mbchar)
     ord = mbchar.ord
     if ord <= 0x1F # in EscapedPairs
       return 2
-    elsif mbchar.length <= 1 && ord <= 0x7E # printable ASCII chars
-      #   ~~~~~~~~~~~~~~~~~~ guard against the following grapheme combination character (e.g., dakuten/handakuten)
+    elsif mbchar.length == 1 && ord <= 0x7E # printable ASCII chars
       return 1
     end
 
     utf8_mbchar = mbchar.encode(Encoding::UTF_8)
-    ord = utf8_mbchar.ord
+    return east_asian_width(utf8_mbchar.ord) if utf8_mbchar.size == 1
 
-    chunk_index = EastAsianWidth::CHUNK_LAST.bsearch_index { |o| ord <= o }
-    size = EastAsianWidth::CHUNK_WIDTH[chunk_index]
-    if size == -1
-      Reline.ambiguous_width
-    elsif halfwidth_dakuten_or_handakuten_character?(utf8_mbchar[-1])
-      if utf8_mbchar.length >= 2 # Whether this is a dakuten or handakuten combination character
-        utf8_mbchar.each_char.sum { |char| get_mbchar_width(char) }
+    width = 0
+    if utf8_mbchar.match?(AMBIGUOUS_WIDTH_EMOJI_CLUSTER)
+      width += 2
+      utf8_mbchar = utf8_mbchar.sub(AMBIGUOUS_WIDTH_EMOJI_CLUSTER, '')
+    end
+
+    zwj = false
+    width + utf8_mbchar.chars.sum do |c|
+      if zwj
+        zwj = false
+        0
+      elsif c.ord == 0x200D # Zero Width Joiner
+        zwj = true
+        0
       else
-        1
+        east_asian_width(c.ord)
       end
-    else
-      size
     end
   end
 
@@ -417,12 +444,5 @@ class Reline::Unicode
 
   def self.space_character?(s)
     s.match?(/\s/) if s
-  end
-
-  def self.halfwidth_dakuten_or_handakuten_character?(s)
-    return false if s.encoding != Encoding::UTF_8 || !s.valid_encoding?
-
-    ord = s.ord
-    ord == HALFWIDTH_DAKUTEN || ord == HALFWIDTH_HANDAKUTEN
   end
 end
