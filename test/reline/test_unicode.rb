@@ -296,6 +296,15 @@ class Reline::Unicode::Test < Reline::TestCase
     assert_equal 3, Reline::Unicode.get_mbchar_width("紅ﾞ")
   end
 
+  def test_split_ambiguous_emoji
+    variant_selector_emoji = "©️"
+    flag_emoji = '🇯🇵'
+    normal_text = '😀abc😀👨‍👩‍👧'
+    text_target = normal_text + variant_selector_emoji + flag_emoji + normal_text + flag_emoji + normal_text
+    expected = [[normal_text, false], [variant_selector_emoji, true], [flag_emoji, true], [normal_text, false], [flag_emoji, true], [normal_text, false]]
+    assert_equal expected, Reline::Unicode.split_ambiguous_emoji(text_target)
+  end
+
   def test_grapheme_cluster_width
     # GB6, GB7, GB8: Hangul syllable
     assert_equal 2, Reline::Unicode.get_mbchar_width('한'.unicode_normalize(:nfd))
