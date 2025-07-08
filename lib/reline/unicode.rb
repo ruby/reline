@@ -40,8 +40,6 @@ class Reline::Unicode
   CSI_REGEXP = /\e\[[\d;]*[ABCDEFGHJKSTfminsuhl]/
   OSC_REGEXP = /\e\]\d+(?:;[^;\a\e]+)*(?:\a|\e\\)/
   WIDTH_SCANNER = /\G(?:(#{NON_PRINTING_START})|(#{NON_PRINTING_END})|(#{CSI_REGEXP})|(#{OSC_REGEXP})|(\X))/o
-  HALFWIDTH_DAKUTEN = 0xFF9E
-  HALFWIDTH_HANDAKUTEN = 0xFF9F
 
   def self.escape_for_print(str)
     str.chars.map! { |gr|
@@ -74,30 +72,32 @@ class Reline::Unicode
 
   require 'reline/unicode/east_asian_width'
 
+  def self.east_asian_width(ord)
+    chunk_index = EastAsianWidth::CHUNK_LAST.bsearch_index { |o| ord <= o }
+    size = EastAsianWidth::CHUNK_WIDTH[chunk_index]
+    size == -1 ? Reline.ambiguous_width : size
+  end
+
   def self.get_mbchar_width(mbchar)
     ord = mbchar.ord
     if ord <= 0x1F # in EscapedPairs
       return 2
-    elsif mbchar.length <= 1 && ord <= 0x7E # printable ASCII chars
-      #   ~~~~~~~~~~~~~~~~~~ guard against the following grapheme combination character (e.g., dakuten/handakuten)
+    elsif mbchar.length == 1 && ord <= 0x7E # printable ASCII chars
       return 1
     end
 
     utf8_mbchar = mbchar.encode(Encoding::UTF_8)
-    ord = utf8_mbchar.ord
-
-    chunk_index = EastAsianWidth::CHUNK_LAST.bsearch_index { |o| ord <= o }
-    size = EastAsianWidth::CHUNK_WIDTH[chunk_index]
-    if size == -1
-      Reline.ambiguous_width
-    elsif halfwidth_dakuten_or_handakuten_character?(utf8_mbchar[-1])
-      if utf8_mbchar.length >= 2 # Whether this is a dakuten or handakuten combination character
-        utf8_mbchar.each_char.sum { |char| get_mbchar_width(char) }
+    zwj = false
+    utf8_mbchar.chars.sum do |c|
+      if zwj
+        zwj = false
+        0
+      elsif c.ord == 0x200D # Zero Width Joiner
+        zwj = true
+        0
       else
-        1
+        east_asian_width(c.ord)
       end
-    else
-      size
     end
   end
 
@@ -417,12 +417,5 @@ class Reline::Unicode
 
   def self.space_character?(s)
     s.match?(/\s/) if s
-  end
-
-  def self.halfwidth_dakuten_or_handakuten_character?(s)
-    return false if s.encoding != Encoding::UTF_8 || !s.valid_encoding?
-
-    ord = s.ord
-    ord == HALFWIDTH_DAKUTEN || ord == HALFWIDTH_HANDAKUTEN
   end
 end
