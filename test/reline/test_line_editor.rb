@@ -242,6 +242,14 @@ class Reline::LineEditor
         @line_editor.render_line_differential(state_b, state_a)
       end
     end
+
+    def test_ambiguous_emoji
+      state_a = [nil]
+      state_b = [[0, 12, '😄😄©️🇯🇵😄😄']]
+      assert_output '[COL_0]😄😄[COL_4]  [COL_4]©️[COL_6]  [COL_6]🇯🇵[COL_8]😄😄' do
+        @line_editor.render_line_differential(state_a, state_b)
+      end
+    end
   end
 
   def test_menu_info_format
