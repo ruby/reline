@@ -295,4 +295,33 @@ class Reline::Unicode::Test < Reline::TestCase
     assert_equal 3, Reline::Unicode.get_mbchar_width("あﾞ")
     assert_equal 3, Reline::Unicode.get_mbchar_width("紅ﾞ")
   end
+
+  def test_grapheme_cluster_width
+    # GB6, GB7, GB8: Hangul syllable
+    assert_equal 2, Reline::Unicode.get_mbchar_width('한'.unicode_normalize(:nfd))
+    assert_equal 6, Reline::Unicode.get_mbchar_width('ᄀ' * 3)
+
+    # GB9
+    # Char + NonspacingMark
+    assert_equal 1, Reline::Unicode.get_mbchar_width('ç'.unicode_normalize(:nfd))
+    assert_equal 2, Reline::Unicode.get_mbchar_width('ぱ'.unicode_normalize(:nfd))
+    assert_equal 1, Reline::Unicode.get_mbchar_width("c\u{301}\u{327}")
+    # '1' + NonspacingMark + EnclosingMark
+    assert_equal 1, Reline::Unicode.get_mbchar_width('1️⃣')
+    # Char + SpacingMark
+    assert_equal 2, Reline::Unicode.get_mbchar_width('কা')
+    assert_equal 5, Reline::Unicode.get_mbchar_width('ｶﾞﾟﾞﾞ')
+    # Emoji joined with ZeroWidthJoiner
+    assert_equal 2, Reline::Unicode.get_mbchar_width('👨‍👩‍👧')
+    assert_equal 7, Reline::Unicode.get_mbchar_width('👨‍👩‍👧ﾞﾟﾟﾟﾞ')
+
+    # GB9a: Char + GraphemeClusterBreak=SpacingMark
+    assert_equal 2, Reline::Unicode.get_mbchar_width('คำ')
+
+    # GB9c: Consonant + Linker(NonspacingMark) + Consonant
+    assert_equal 2, Reline::Unicode.get_mbchar_width('क्त')
+
+    # GB12, GB13: RegionalIndicator
+    assert_equal 2, Reline::Unicode.get_mbchar_width('🇯🇵')
+  end
 end
