@@ -347,7 +347,8 @@ module Reline
                 # io_gate is Reline::ANSI because the key :bracketed_paste_start is only assigned in Reline::ANSI
                 key = Reline::Key.new(io_gate.read_bracketed_paste, :insert_multiline_text)
               when :quoted_insert, :ed_quoted_insert
-                key = Reline::Key.new(io_gate.read_single_char(config.keyseq_timeout), :insert_raw_char)
+                char = io_gate.read_single_char(config.keyseq_timeout.fdiv(1000))
+                key = Reline::Key.new(char || '', :insert_raw_char)
               end
               line_editor.set_pasting_state(io_gate.in_pasting?)
               line_editor.update(key)
