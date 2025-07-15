@@ -324,8 +324,6 @@ module Reline
       line_editor.auto_indent_proc = auto_indent_proc
       line_editor.dig_perfect_match_proc = dig_perfect_match_proc
 
-      # Readline calls pre_input_hook just after printing the first prompt.
-      line_editor.print_nomultiline_prompt
       pre_input_hook&.call
 
       unless Reline::IOGate.dumb?

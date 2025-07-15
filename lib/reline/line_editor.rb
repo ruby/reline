@@ -470,14 +470,6 @@ class Reline::LineEditor
     end
   end
 
-  def print_nomultiline_prompt
-    Reline::IOGate.disable_auto_linewrap(true) if Reline::IOGate.win?
-    # Readline's test `TestRelineAsReadline#test_readline` requires first output to be prompt, not cursor reset escape sequence.
-    Reline::IOGate.write Reline::Unicode.strip_non_printing_start_end(@prompt) if @prompt && !@is_multiline
-  ensure
-    Reline::IOGate.disable_auto_linewrap(false) if Reline::IOGate.win?
-  end
-
   def render
     wrapped_cursor_x, wrapped_cursor_y = wrapped_cursor_position
     new_lines = wrapped_prompt_and_input_lines.flatten(1)[screen_scroll_top, screen_height].map do |prompt, line|
