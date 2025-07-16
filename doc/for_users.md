@@ -95,25 +95,50 @@ Other commands:
 
 ## Killing and Yanking
 
-The _kill ring_ is a stack containing zero or more strings
-that have been killed by kill commands.
+_Killing_ means deleting text from the current line
+and saving it for potential later use.
+Killed text is pushed onto the _kill ring_
+(a last-in, first-out [stack](https://en.wikipedia.org/wiki/Stack_(abstract_data_type))).
 
-Kill commands; each kills text beginning at the cursor
-and pushes that text onto the kill ring.
+_Yanking_ means inserting previously-killed text into the current line.
+Yanked text is popped from the kill ring.
 
-- `C-k`: kill to the end of the line.
-- `M-d`: kill to the end of the current word,
-  or, if between words, to the end of the next word.
-- `M-Del`: kill to the start of the current word,
-  or, if between words, to the start of the previous word.
-- `C-w`: kill to the previous whitespace.
+For a kill command that is preceded by another kill command,
+the killed text is appended to the text already at the top of the kill ring.
+Thus, any number of consecutive kills save text as one string.
 
-Yank commands; pops text from the kill ring
-amd inserts the that text at the cursor.
+For a kill command that is _not_ preceded by another kill command,
+the killed text is pushed onto the kill ring as a new entry.
 
-- `C-y`: yank the most recently killed text.
-- `M-y`: rotate the kill ring, and yank the new top.
-  Available only if the immediately preceding command was `C-y` or another `M-y`;
+The kill ring is not line specific;
+text killed from a the current line is available for yanking into a new, later, current line.
+
+### Kill Commands
+
+Each kill command pushes the killed text onto the kill ring.
+
+Kill forward; the cursor does not move:
+
+- `C-k`: Kill from the cursor position to the end of the line.
+- `M-d`: Kill from the cursor to the end of the current word,
+  or, if between words, to the end of the next word;
+  word boundaries are the same as those used by M-f.
+
+Kill backward; the cursor moves leftward to "close the gap":
+
+- `M-Del`: Kill from the cursor to the start of the current word,
+  or, if between words, to the start of the previous word;
+  word boundaries are the same as those used by M-b.
+- `C-w`: Kill from the cursor to the previous whitespace;
+  this is different from `M-Del` because the word boundaries are different.
+
+### Yank Commands
+
+Each yank command pops text from the kill ring.
+
+- `C-y`: Yank the most recently killed text at the cursor.
+- `M-y`: Rotate the kill ring, and yank from the new top.
+  Effective only if the immediately preceding command was `C-y` or another `M-y`;
   otherwise, does nothing.
 
 ## Arguments
