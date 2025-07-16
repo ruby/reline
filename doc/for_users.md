@@ -12,6 +12,19 @@ For other usages, see [Your Reline](rdoc-ref:README.md@Your+Reline).
 Note that the usages described here are the _default_ usages for Reline.
 A console application that uses module Reline may have implemented different usages.
 
+## Notations
+
+- The text `C-k` is read as "Control-k", and describes the character input produced
+  when the [Control key](https://en.wikipedia.org/wiki/Control_key) is depressed (held down)
+  the `k` key is then pressed, then both are released.
+  The `Control` key is often labelled `Ctrl`.
+- The text `M-k` is read as "Meta-k" or "Alt-k", and describes the character input produced
+  when the [Alt key](https://en.wikipedia.org/wiki/Alt_key) is depressed (held down),
+  the `k` key is then pressed, then both are released.
+  The Meta key is often labelled `Alt` or `Option`.
+  On a keyboard with two keys labeled `Alt` (usually to either side of the space bar),
+  the `Alt` on the left side is generally set to work as a `Meta` key.
+
 ## The Basics
 
 Reline lets you edit typed command-line text.
