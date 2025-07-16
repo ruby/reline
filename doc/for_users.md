@@ -93,7 +93,8 @@ each of which is an `$if/$endif` pair,
 or an `$if/$else/$endif` triplet.
 
 - In the `$if/$endif` form,
-  the if-block consists of the lines between `$if` and `$endif`:
+  the if-block consists of the lines between `$if` and `$endif`,
+  and there is no else-block:
 
     ```
     $if <condition>
@@ -115,9 +116,9 @@ or an `$if/$else/$endif` triplet.
 
 The `$if` directive takes a single argument that expresses a condition.
 If the condition evaluates to `true`,
-the expressions in the `$if` block are evaluated;
+the expressions in the if-block are evaluated;
 if it evaluates to `false`,
-the expressions in the `$else` block (if any) are evaluated.
+the expressions in the else-block (if any) are evaluated.
 
 The arguments:
 
