@@ -154,6 +154,14 @@ Each yank command pops text from the kill ring.
 - `C-g`: abort search.
 - `C-j`: abort search.
 
+## Macros
+
+[TODO]
+
+## Auto-Completion
+
+[TODO]
+
 ## Initialization File
 
 When a Reline application starts, it reads a user-provided initialization file,
