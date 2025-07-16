@@ -70,7 +70,7 @@ Yank commands; each inserts killed text at the cursor:
 - `Up-Arrow`: scroll upward.
 - `Down-Arrow`: scroll downward.
 
-## Init File
+## Initialization File
 
 When a Reline application starts, it reads a user-provided initialization file,
 whose path is determined thus:
@@ -137,7 +137,19 @@ Conditional directives may be nested.
 
 #### $include
 
-[TODO] 
+The `$include` directive takes a single argument,
+which is the path to a file that is to be read and evaluated
+as if it were part of the initialization file.
+
+Pro tip: You can use the `$include` directive to override (in full or in part)
+another initialization file:
+
+    ```
+    $include <filepath>
+    # Assignments and directives that will override.
+    # ...
+    ```
+
 
 ### Bindings
 
