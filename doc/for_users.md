@@ -14,16 +14,45 @@ A console application that uses module Reline may have implemented different usa
 
 ## Notations
 
-- The text `C-k` is read as "Control-k", and describes the character input produced
-  when the [Control key](https://en.wikipedia.org/wiki/Control_key) is depressed (held down)
-  the `k` key is then pressed, then both are released.
-  The `Control` key is often labelled `Ctrl`.
-- The text `M-k` is read as "Meta-k" or "Alt-k", and describes the character input produced
-  when the [Alt key](https://en.wikipedia.org/wiki/Alt_key) is depressed (held down),
-  the `k` key is then pressed, then both are released.
-  The Meta key is often labelled `Alt` or `Option`.
-  On a keyboard with two keys labeled `Alt` (usually to either side of the space bar),
-  the `Alt` on the left side is generally set to work as a `Meta` key.
+### Keys
+
+[Arrow Keys](https://en.wikipedia.org/wiki/Arrow_keys):
+
+- `←` denotes the left-arrow key.
+- `→` denotes the right-arrow key.
+- `↑` denotes the up-arrow key.
+- `↓` denotes the down-arrow key.
+  
+Other Keys
+
+- `Alt` denotes the [Alt key](https://en.wikipedia.org/wiki/Alt_key).
+- `Bsp` denotes the [Backspace key](https://en.wikipedia.org/wiki/Backspace).
+- `Ctrl` denotes the [Control key](https://en.wikipedia.org/wiki/Control_key).
+- `Del` denotes the [Delete key](https://en.wikipedia.org/wiki/Delete_key) .
+- `End` denotes the [End key](https://en.wikipedia.org/wiki/End_key).
+- `Esc` denotes the [Escape key](https://en.wikipedia.org/wiki/Esc_key).
+- `Home` denotes the [Home key](https://en.wikipedia.org/wiki/Home_key).
+- `Ret` denotes the [Enter key](https://en.wikipedia.org/wiki/Enter_key).
+- `Spc` denotes the [Space bar](https://en.wikipedia.org/wiki/Space_bar).
+- `Tab` denotes the [Tab key](https://en.wikipedia.org/wiki/Tab_key).
+
+### Control Characters
+
+`C-k` (read as "Control-k") denotes the input produced
+when `Ctrl` is depressed (held down),
+then the `k` key is then pressed, and both are released.
+
+Almost any character can have a "control" version:
+`C-a`, `C-{`, `C-]`, etc.
+
+### Meta Characters
+
+`M-k` (read as "Meta-k" or "Alt-k") denotes the input produced
+when the `Alt` is depressed (held down),
+then the `k` key is then pressed, and both are released.
+
+Almost any character can have "meta" version:
+`M-c`, `M->`, `M-#`, etc.
 
 ## The Basics
 
@@ -31,43 +60,59 @@ Reline lets you edit typed command-line text.
 
 Cursor-movement commands:
 
-- `Left-Arrow` or `C-b`: backward one character.
-- `Right-Arrow` or `C-f`: forward one character.
-- `M-b`: backward to the beginning of a word.
-- `M-f`: forward to the end of a word.
-- `Home` or `C-a`: backward to the beginning of the line.
-- `End` or `C-e`: forward to the end of the line.
+- Character-by-character:
+
+    - `←` or `C-b`: backward one character.
+    - `→` or `C-f`: forward one character.
+Word-by-word:
+
+    - `M-b`: backward to the beginning of a word.
+    - `M-f`: forward to the end of a word.
+
+Whole line:
+
+    - `Home` or `C-a`: backward to the beginning of the line.
+    - `End` or `C-e`: forward to the end of the line.
 
 Text-deletion commands:
 
-- `Delete` or `C-d`: remove the character to the right the cursor.
-- `Backspace`: remove the character to the left the cursor.
+- `Del` or `C-d`: remove the character to the right the cursor
+- `Bsp`: remove the character to the left the cursor.
+
+In either case, existing characters to the right of the cursor are move leftward
+to "close the gap."
 
 Text-insertion commands:
 
-- Printable characters: insert text at the cursor;
-  existing characters to the right of the cursor are move rightward.
+- Any printable character: insert the character at the cursor;
+  existing characters to the right of the cursor are move rightward to "make room."
 
 Other commands:
 
-- `C-_`: undo the last editing command.
+- `C-_`: undo the last editing command;
+  may be repeated until the original (unedited) line is restored.
 - `C-l`: clear the screen and reprint the current line at the top.
 
 ## Killing and Yanking
 
-Kill commands; each kills text beginning at the cursor:
+The _kill ring_ is a stack containing zero or more strings
+that have been killed by kill commands.
+
+Kill commands; each kills text beginning at the cursor
+and pushes that text onto the kill ring.
 
 - `C-k`: kill to the end of the line.
 - `M-d`: kill to the end of the current word,
   or, if between words, to the end of the next word.
-- `M-Delete`: kill to the start of the current word,
+- `M-Del`: kill to the start of the current word,
   or, if between words, to the start of the previous word.
-- `C-w`: kill to the previous whitespace.`
+- `C-w`: kill to the previous whitespace.
 
-Yank commands; each inserts killed text at the cursor:
+Yank commands; pops text from the kill ring
+amd inserts the that text at the cursor.
 
 - `C-y`: yank the most recently killed text.
-- `M-y`: rotate the kill-ring, and yank the new top.
+- `M-y`: rotate the kill ring, and yank the new top.
   Available only if the immediately preceding command was `C-y` or another `M-y`;
   otherwise, does nothing.
 
@@ -77,11 +122,11 @@ Yank commands; each inserts killed text at the cursor:
 
 ## History
 
+- `↑`: scroll upward in history (if not already at the earliest history).
+- `↓`: scroll downward in history (if not already at the current line).
 - `C-r`: search backward.
 - `C-g`: abort search.
 - `C-j`: abort search.
-- `Up-Arrow`: scroll upward.
-- `Down-Arrow`: scroll downward.
 
 ## Initialization File
 
@@ -183,7 +228,7 @@ If set to `'on'`, affects 8-bit characters that have their high bits set
 (i.e., characters whose values in range `128..255`).
 Reline converts each such character by clearing the high bit
 (which puts the character in range `0..127`)
-and prefixing an `Escape` character.
+and prefixing `Esc`.
 
 The default value is `'on'`, but Reline sets it to `'off'`
 if the locale contains characters whose encodings may include bytes with the eighth bit set.
@@ -236,7 +281,7 @@ Default value is `'-1'`
 Sets the strings of characters that terminate an incremental search
 without subsequently executing the character as a command.
 
-Default: `Escape` and `C-j`.
+Default: `Esc` and `C-j`.
 
 ### `keymap`
 
