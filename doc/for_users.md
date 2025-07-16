@@ -18,16 +18,16 @@ Reline lets you edit typed command-line text.
 
 Cursor-movement commands:
 
-- `Left-Arrow` or `Ctrl-b`: backward one character.
-- `Right-Arrow` or `Ctrl-f`: forward one character.
-- `Alt-b`: backward to the beginning of a word.
-- `Alt-f`: forward to the end of a word.
-- `Home` or `Ctrl-a`: backward to the beginning of the line.
-- `End` or `Ctrl-e`: forward to the end of the line.
+- `Left-Arrow` or `C-b`: backward one character.
+- `Right-Arrow` or `C-f`: forward one character.
+- `M-b`: backward to the beginning of a word.
+- `M-f`: forward to the end of a word.
+- `Home` or `C-a`: backward to the beginning of the line.
+- `End` or `C-e`: forward to the end of the line.
 
 Text-deletion commands:
 
-- `Delete` or `Ctrl-d`: remove the character to the right the cursor.
+- `Delete` or `C-d`: remove the character to the right the cursor.
 - `Backspace`: remove the character to the left the cursor.
 
 Text-insertion commands:
@@ -37,25 +37,25 @@ Text-insertion commands:
 
 Other commands:
 
-- `Ctrl-_`: undo the last editing command.
-- `Ctrl-l`: clear the screen and reprint the current line at the top.
+- `C-_`: undo the last editing command.
+- `C-l`: clear the screen and reprint the current line at the top.
 
 ## Killing and Yanking
 
 Kill commands; each kills text beginning at the cursor:
 
-- `Ctrl-k`: kill to the end of the line.
-- `Alt-d`: kill to the end of the current word,
+- `C-k`: kill to the end of the line.
+- `M-d`: kill to the end of the current word,
   or, if between words, to the end of the next word.
-- `Alt-Delete`: kill to the start of the current word,
+- `M-Delete`: kill to the start of the current word,
   or, if between words, to the start of the previous word.
-- `Ctrl-w`: kill to the previous whitespace.`
+- `C-w`: kill to the previous whitespace.`
 
 Yank commands; each inserts killed text at the cursor:
 
-- `Ctrl-y`: yank the most recently killed text.
-- `Alt-y`: rotate the kill-ring, and yank the new top.
-  Available only if the immediately preceding command was `Ctrl-y` or another `Alt-y`;
+- `C-y`: yank the most recently killed text.
+- `M-y`: rotate the kill-ring, and yank the new top.
+  Available only if the immediately preceding command was `C-y` or another `M-y`;
   otherwise, does nothing.
 
 ## Arguments
@@ -64,9 +64,9 @@ Yank commands; each inserts killed text at the cursor:
 
 ## History
 
-- `Ctrl-r`: search backward.
-- `Ctrl-g`: abort search.
-- `Ctrl-j`: abort search.
+- `C-r`: search backward.
+- `C-g`: abort search.
+- `C-j`: abort search.
 - `Up-Arrow`: scroll upward.
 - `Down-Arrow`: scroll downward.
 
@@ -178,7 +178,7 @@ if the locale contains characters whose encodings may include bytes with the eig
 ### `disable-completion`
 
 If set to `'on'`, Reline inhibits word completion.
-Completion characters (`Tab`, `Alt-?`, and `Alt-*`) lose their usual meanings,
+Completion characters (`Tab`, `M-?`, and `M-*`) lose their usual meanings,
 and are inserted directly into the line.
 
 The default is `'off'`.
@@ -223,7 +223,7 @@ Default value is `'-1'`
 Sets the strings of characters that terminate an incremental search
 without subsequently executing the character as a command.
 
-Default: `Escape` and `Ctrl-j`.
+Default: `Escape` and `C-j`.
 
 ### `keymap`
 
