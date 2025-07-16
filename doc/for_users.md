@@ -58,23 +58,24 @@ Almost any character can have "meta" version:
 
 Reline lets you edit typed command-line text.
 
-Cursor-movement commands:
+### Cursor-Movement Commands
 
-- Character-by-character:
+Character-by-character:
 
-    - `←` or `C-b`: backward one character.
-    - `→` or `C-f`: forward one character.
+- `←` or `C-b`: backward one character.
+- `→` or `C-f`: forward one character.
+
 Word-by-word:
 
-    - `M-b`: backward to the beginning of a word.
-    - `M-f`: forward to the end of a word.
+- `M-b`: backward to the beginning of a word.
+- `M-f`: forward to the end of a word.
 
 Whole line:
 
-    - `Home` or `C-a`: backward to the beginning of the line.
-    - `End` or `C-e`: forward to the end of the line.
+- `Home` or `C-a`: backward to the beginning of the line.
+- `End` or `C-e`: forward to the end of the line.
 
-Text-deletion commands:
+### Text-Deletion Commands
 
 - `Del` or `C-d`: remove the character to the right the cursor
 - `Bsp`: remove the character to the left the cursor.
@@ -82,12 +83,12 @@ Text-deletion commands:
 In either case, existing characters to the right of the cursor are move leftward
 to "close the gap."
 
-Text-insertion commands:
+### Text-Insertion Commands
 
 - Any printable character: insert the character at the cursor;
   existing characters to the right of the cursor are move rightward to "make room."
 
-Other commands:
+### Other Commands
 
 - `C-_`: undo the last editing command;
   may be repeated until the original (unedited) line is restored.
