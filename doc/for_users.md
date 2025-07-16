@@ -92,23 +92,47 @@ The initialization file may contain conditional directives,
 each of which is an `$if/$endif` pair,
 or an `$if/$else/$endif` triplet.
 
-The `$if` directive takes a single argument;
-if the argument is:
+- In the `$if/$endif` form,
+  the if-block consists of the lines between `$if` and `$endif`:
+
+    ```
+    $if <condition>
+      # If-block
+    #endif
+    ```
+
+- In the `$if/$else/$endif` form,
+  the if-block consists of the lines between `$if` and `$else`,
+  and the else-block consists of the lines between `$else` and `$endif`:
+
+    ```
+    $if <condition>
+      # If-block
+    $else
+      # Else-block.
+    #endif
+    ```
+
+The `$if` directive takes a single argument that expresses a condition.
+If the condition evaluates to `true`,
+the expressions in the `$if` block are evaluated;
+if it evaluates to `false`,
+the expressions in the `$else` block (if any) are evaluated.
+
+The arguments:
 
 - `'mode=emacs'`:
-  if variable [editing-mode](rdoc-ref:for_users.md@editing-mode) is `'emacs'`,
-  the settings in the $if section are applied;
-  otherwise the settings in the $else section (if any) are applied.
+  evaluates to `true` if variable [editing-mode](rdoc-ref:for_users.md@editing-mode) is `'emacs'`,
+  `false` otherwise.
 - `'mode=vi'`:
-  if variable [editing-mode](rdoc-ref:for_users.md@editing-mode) is `'vi'`,
-  the settings in the $if section are applied;
-  otherwise the settings in the $else section (if any) are applied.
+  evaluates to `true` if variable [editing-mode](rdoc-ref:for_users.md@editing-mode) is `'vi'`,
+  `false` otherwise.
 - `'Ruby'` or `'Reline'`:
-  the settings in the $if section are applied.
+  evaluates to `true`.
 - Anything else:
-  the settings in the $else section are applied.
+  evaluates to `false`.
 
-The conditional directives may be nested.
+Conditional directives may be nested.
 
 #### $include
 
