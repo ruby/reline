@@ -118,7 +118,7 @@ text killed from a the current line is available for yanking into a new, later, 
 
 ### Kill Commands
 
-Each kill command pushes the killed text onto the kill ring.
+Each kill command pushes the removed text onto the kill ring.
 
 Kill forward; the cursor does not move:
 
@@ -137,7 +137,9 @@ Kill backward; the cursor moves leftward to "close the gap":
 
 ### Yank Commands
 
-Each yank command pops text from the kill ring.
+Each yank command pops text from the kill ring
+and inserts it at the cursor;
+the cursor is moved forward to the end of the inserted text.
 
 - `C-y`: Yank the most recently killed text at the cursor.
 - `M-y`: Rotate the kill ring, and yank from the new top.
