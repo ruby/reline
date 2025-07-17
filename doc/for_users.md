@@ -1,16 +1,18 @@
 # For Users
 
-This page is for the user of a console application that uses module Reline,
-such as Ruby's own:
+This page is for the user of a console application that uses module Reline.
+For other usages, see [Your Reline](rdoc-ref:README.md@Your+Reline).
+
+Note that this page describes the _default_ usages for Reline.
+A console application that uses module Reline may have implemented different usages.
+
+## Reline in Ruby
+
+Ruby itself uses Reline in these:
 
 - [irb](https://ruby.github.io/irb/index.html): Interactive Ruby.
 - [debug](https://github.com/ruby/debug): Ruby debugger.
 - [ri](https://ruby.github.io/rdoc/RI_md.html) Ruby information.
-
-For other usages, see [Your Reline](rdoc-ref:README.md@Your+Reline).
-
-Note that the usages described here are the _default_ usages for Reline.
-A console application that uses module Reline may have implemented different usages.
 
 ## Notations
 
