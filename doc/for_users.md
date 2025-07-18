@@ -158,10 +158,6 @@ the cursor is moved forward to the end of the inserted text.
 - `C-g`: abort search.
 - `C-j`: abort search.
 
-## Macros
-
-[TODO]
-
 ## Auto-Completion
 
 [TODO]
