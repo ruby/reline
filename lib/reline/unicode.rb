@@ -220,7 +220,7 @@ class Reline::Unicode
           next
         elsif padding && !cover_begin && prev_width < start_col && start_col < total_width
           # Add preceding padding. This padding might have background color.
-          chunk << ' '
+          chunk << ' ' * (total_width - start_col)
           chunk_start_col ||= start_col
           chunk_end_col = total_width
           next
@@ -234,7 +234,7 @@ class Reline::Unicode
           # Current character exceeds end_col
           if padding && end_col < total_width
             # Add succeeding padding. This padding might have background color.
-            chunk << ' '
+            chunk << ' ' * (end_col - prev_width)
             chunk_start_col ||= prev_width
             chunk_end_col = end_col
           end
