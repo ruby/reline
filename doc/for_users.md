@@ -30,7 +30,7 @@ A Reline application may also support:
 
 - [Command history](https://en.wikipedia.org/wiki/Command_history):
   a store of previously entered commands that may be retrieved, edited, and re-used.
-- [Command-line completion](https://en.wikipedia.org/wiki/Command-line_completion):
+- [Command completion](https://en.wikipedia.org/wiki/Command-line_completion):
   assistance in completing a partly-entered command,
   or in choosing among possible completions.
   
@@ -60,9 +60,9 @@ Other Keys
 - `Ctrl` denotes the [Control key](https://en.wikipedia.org/wiki/Control_key).
 - `Del` denotes the [Delete key](https://en.wikipedia.org/wiki/Delete_key) .
 - `End` denotes the [End key](https://en.wikipedia.org/wiki/End_key).
+- `Ent` denotes the [Enter key](https://en.wikipedia.org/wiki/Enter_key).
 - `Esc` denotes the [Escape key](https://en.wikipedia.org/wiki/Esc_key).
 - `Home` denotes the [Home key](https://en.wikipedia.org/wiki/Home_key).
-- `Ret` denotes the [Enter key](https://en.wikipedia.org/wiki/Enter_key).
 - `Spc` denotes the [Space bar](https://en.wikipedia.org/wiki/Space_bar).
 - `Tab` denotes the [Tab key](https://en.wikipedia.org/wiki/Tab_key).
 
@@ -178,15 +178,60 @@ the cursor is moved forward to the end of the inserted text.
 
 [TODO]
 
-## History
+## Command History
+
+A Reline application may support command history.
+
+An easy way to find out whether it does is (after entering one or more commands) pressing key `↑`:
+
+- Yes, if you now see the most recently entered command; read on.
+- No, if you see no change; this section does not apply.
+
+You can browse the history:
 
 - `↑`: scroll upward in history (if not already at the earliest history).
 - `↓`: scroll downward in history (if not already at the current line).
-- `C-r`: search backward.
-- `C-g`: abort search.
-- `C-j`: abort search.
 
-## Auto-Completion
+You can search the history using these commands:
+
+- `C-r`: Initiate reverse search.
+- `C-g` or `C-j`: Abort search.
+
+To see history searching in action,
+begin an [IRB](https://ruby.github.io/irb/index.html) session:
+
+```
+$ irb
+'xyz'
+# => "xyz"
+'xy'
+# => "xy"
+'x'
+# => "x"
+```
+
+In the table below:
+
+- Each input character is incremental (no intervening characters)
+  and is all on one editing line (does not generate a newline).
+- Each result (still on that same line) is the immediate effect of that input.
+
+|    Input     | Result                                | Details                             |
+|:------------:|---------------------------------------|-------------------------------------|
+| <tt>C-r</tt> | <tt>(reverse-i-search)`':</tt>        | New backward search.                |
+| <tt>'x'</tt> | <tt>(reverse-i-search)`x''x'</tt>     | First command matching <tt>'x'</tt> |
+| <tt>'y'</tt> | <tt>(reverse-i-search)`xy''xy'</tt>   | First command matching <tt>'y'</tt> |
+| <tt>'z'</tt> | <tt>(reverse-i-search)`xyz''xyz'</tt> | First command matching <tt>'z'</tt> |
+| <tt>C-j</tt> | <tt>'xyz'</tt>                        | Search aborted.                     |
+| <tt>C-r</tt> | <tt>(reverse-i-search)`':</tt>        | New backward search.                |
+| <tt>'y'</tt> | <tt>(reverse-i-search)`y''xy'</tt>    | First command matching <tt>'y'</tt> |
+| <tt>Ent</tt> | <tt>'xy'</tt>                         | Command <tt>'xy'</tt> ready.        |
+
+In the last instance, command `xy` is displayed on the edit line,
+and is ready for execution (via `Ent`),
+or for editing (via cursor movement, insertion, deletion, killing, yanking).
+
+## Command Completion
 
 [TODO]
 
