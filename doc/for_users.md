@@ -6,6 +6,34 @@ For other usages, see [Your Reline](rdoc-ref:README.md@Your+Reline).
 Note that this page describes the _default_ usages for Reline.
 A console application that uses module Reline may have implemented different usages.
 
+## Reline Application
+
+A _Reline application_ is a Ruby
+[console application](https://en.wikipedia.org/wiki/Console_application)
+that uses module Reline.
+
+Such an application typically implements
+a [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop)
+(a read-evaluate-print loop)
+that allows you to type a command, get a response,
+type another command, get another response, and so on.
+
+A Reline application allows editing a partly-entered command by:
+
+- Moving the cursor within its text.
+- Deleting text.
+- Inserting text.
+- "Killing" text (i.e., deleting and saving text).
+- "Yanking" text (i.e., inserting previously killed text).
+
+A Reline application may also support:
+
+- [Command history](https://en.wikipedia.org/wiki/Command_history):
+  a store of previously entered commands that may be retrieved, edited, and re-used.
+- [Command-line completion](https://en.wikipedia.org/wiki/Command-line_completion):
+  assistance in completing a partly-entered command,
+  or in choosing among possible completions.
+  
 ## Reline in Ruby
 
 Ruby itself uses Reline in these:
@@ -146,7 +174,7 @@ the cursor is moved forward to the end of the inserted text.
   Effective only if the immediately preceding command was `C-y` or another `M-y`;
   otherwise, does nothing.
 
-## Arguments
+## Quantifiers
 
 [TODO]
 
