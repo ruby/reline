@@ -1,7 +1,7 @@
 # For Users
 
 This page is for the user of a console application that uses module Reline.
-For other usages, see [Your Reline](rdoc-ref:README.md@Your+Reline).
+For other usages, see [Your Reline][your reline].
 
 Note that this page describes the _default_ usages for Reline.
 A console application that uses module Reline may have implemented different usages.
@@ -9,11 +9,10 @@ A console application that uses module Reline may have implemented different usa
 ## Reline Application
 
 A _Reline application_ is a Ruby
-[console application](https://en.wikipedia.org/wiki/Console_application)
+[console application][console application]
 that uses module Reline.
 
-Such an application typically implements
-a [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop)
+Such an application typically implements a [REPL][repl]
 (a read-evaluate-print loop)
 that allows you to type a command, get a response,
 type another command, get another response, and so on.
@@ -28,9 +27,9 @@ A Reline application allows editing a partly-entered command by:
 
 A Reline application may also support:
 
-- [Command history](https://en.wikipedia.org/wiki/Command_history):
+- [Command history][command history]:
   a store of previously entered commands that may be retrieved, edited, and re-used.
-- [Command completion](https://en.wikipedia.org/wiki/Command-line_completion):
+- [Command completion][command completion]:
   assistance in completing a partly-entered command,
   or in choosing among possible completions.
   
@@ -38,15 +37,15 @@ A Reline application may also support:
 
 Ruby itself uses Reline in these:
 
-- [irb](https://ruby.github.io/irb/index.html): Interactive Ruby.
-- [debug](https://github.com/ruby/debug): Ruby debugger.
-- [ri](https://ruby.github.io/rdoc/RI_md.html) Ruby information.
+- [irb][irb]: Interactive Ruby.
+- [debug][debug]: Ruby debugger.
+- [ri][ri]: Ruby information.
 
 ## Notations
 
 ### Keys
 
-[Arrow Keys](https://en.wikipedia.org/wiki/Arrow_keys):
+[Arrow Keys][arrow keys]:
 
 - `←` denotes the left-arrow key.
 - `→` denotes the right-arrow key.
@@ -55,16 +54,16 @@ Ruby itself uses Reline in these:
   
 Other Keys
 
-- `Alt` denotes the [Alt key](https://en.wikipedia.org/wiki/Alt_key).
-- `Bsp` denotes the [Backspace key](https://en.wikipedia.org/wiki/Backspace).
-- `Ctrl` denotes the [Control key](https://en.wikipedia.org/wiki/Control_key).
-- `Del` denotes the [Delete key](https://en.wikipedia.org/wiki/Delete_key) .
-- `End` denotes the [End key](https://en.wikipedia.org/wiki/End_key).
-- `Ent` denotes the [Enter key](https://en.wikipedia.org/wiki/Enter_key).
-- `Esc` denotes the [Escape key](https://en.wikipedia.org/wiki/Esc_key).
-- `Home` denotes the [Home key](https://en.wikipedia.org/wiki/Home_key).
-- `Spc` denotes the [Space bar](https://en.wikipedia.org/wiki/Space_bar).
-- `Tab` denotes the [Tab key](https://en.wikipedia.org/wiki/Tab_key).
+- `Alt` denotes the [Alt key][alt key]
+- `Bsp` denotes the [Backspace key][backspace key]
+- `Ctrl` denotes the [Control key][control key]
+- `Del` denotes the [Delete key][delete key]
+- `End` denotes the [End key][end key]
+- `Ent` denotes the [Enter key][enter key]
+- `Esc` denotes the [Escape key][escape key]
+- `Home` denotes the [Home key][home key]
+- `Spc` denotes the [Space bar][space bar]
+- `Tab` denotes the [Tab key][tab key]
 
 ### Control Characters
 
@@ -129,7 +128,7 @@ to "close the gap."
 _Killing_ means deleting text from the current line
 and saving it for potential later use.
 Killed text is pushed onto the _kill ring_
-(a last-in, first-out [stack](https://en.wikipedia.org/wiki/Stack_(abstract_data_type))).
+(a last-in, first-out [stack][stack]).
 
 _Yanking_ means inserting previously-killed text into the current line.
 Yanked text is popped from the kill ring.
@@ -198,7 +197,7 @@ You can search the history using these commands:
 - `C-g` or `C-j`: Abort search.
 
 To see history searching in action,
-begin an [IRB](https://ruby.github.io/irb/index.html) session:
+begin an [IRB][irb] session:
 
 ```
 $ irb
@@ -288,10 +287,10 @@ the expressions in the else-block (if any) are evaluated.
 The arguments:
 
 - `'mode=emacs'`:
-  evaluates to `true` if variable [editing-mode](rdoc-ref:for_users.md@editing-mode) is `'emacs'`,
+  evaluates to `true` if variable [editing-mode][editing-mode] is `'emacs'`,
   `false` otherwise.
 - `'mode=vi'`:
-  evaluates to `true` if variable [editing-mode](rdoc-ref:for_users.md@editing-mode) is `'vi'`,
+  evaluates to `true` if variable [editing-mode][editing-mode] is `'vi'`,
   `false` otherwise.
 - `'Ruby'` or `'Reline'`:
   evaluates to `true`.
@@ -358,7 +357,7 @@ The default is `'emacs'`.
 ### `emacs-mode-string`
 
 Specifies the mode string for Emacs mode;
-see [Mode Strings](rdoc-ref:for_users.md@Mode+Strings).
+see [Mode Strings][mode strings].
 
 The default is `'@'`.
 
@@ -402,7 +401,7 @@ Values are:
 - `'vi-insert'`.
 
 Default is `'emacs'`.
-The value of variable [editing-mode](rdoc-ref:for_users.md@editing-mode)
+The value of variable [editing-mode][editing-mode]
 also affects the default keymap.
 
 ### `keyseq-timeout`
@@ -430,47 +429,47 @@ The default is `'off'`.
 ### `show-mode-in-prompt`
 
 If set to `'on'`, prefixed the mode string to the displayed prompt;
-see [Mode Strings](rdoc-ref:for_users.md@Mode+Strings).
+see [Mode Strings][mode strings].
 
 The default is `'off'`.
 
 ### `vi-cmd-mode-string`
 
 Specifies the mode string for Vi command mode;
-see [Mode Strings](rdoc-ref:for_users.md@Mode+Strings).
+see [Mode Strings][mode strings].
 
 The default is ‘(cmd)’.
 
 ### `vi-ins-mode-string`
 
 Specifies the mode string for Vi insertion mode;
-see [Mode Strings](rdoc-ref:for_users.md@Mode+Strings).
+see [Mode Strings][mode strings].
 
 The default is ‘(ins)’.
 
 ### Mode Strings
 
 A _mode string_ is a string that is to be displayed immediately before the prompt string
-when variable [show-mode-in-prompt](rdoc-ref:for_users.md@show-mode-in-prompt) is set to `'on'`.
+when variable [show-mode-in-prompt][show-mode-in-prompt] is set to `'on'`.
 
 There are three mode strings:
 
 - Emacs mode string:
-  the value of variable [emacs-mode-string](rdoc-ref:for_users.md@emacs-mode-string);
-  effective when variable [editing-mode](rdoc-ref:for_users.md@editing-mode) is `'emacs'`.
+  the value of variable [emacs-mode-string][emacs-mode-string];
+  effective when variable [editing-mode][editing-mode] is `'emacs'`.
   Default value is `'@'`.
 - Vi command mode string:
-  the value of variable [vi-cmd-mode-string](rdoc-ref:for_users.md@vi-cmd-mode-string);
-  effective when variable [editing-mode](rdoc-ref:for_users.md@editing-mode) is `'vi'`
+  the value of variable [vi-cmd-mode-string][vi-cmd-mode-string];
+  effective when variable [editing-mode][editing-mode] is `'vi'`
   and the editing is in command mode.
   Default value is `'(cmd)'`.
 - Vi insertion mode string:
-  the value of variable [vi-ins-mode-string](rdoc-ref:for_users.md@vi-ins-mode-string);
-  effective when variable [editing-mode](rdoc-ref:for_users.md@editing-mode) is `'vi'`
+  the value of variable [vi-ins-mode-string][vi-ins-mode-string];
+  effective when variable [editing-mode][editing-mode] is `'vi'`
   and the editing is in insertion mode.
   Default value is `'(ins)'`.
 
-The mode string may include [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code),
+The mode string may include [ANSI escape codes][ansi escape codes]
 which can affect the color (foreground and background) and font (bold, italic, etc.) of the display.
 The ANSI escape codes must be preceded by escape `\1` and followed by escape `\2`.
 
@@ -480,3 +479,30 @@ Example (turns the mode string green):
 "\1\e[32mabcd \e[0m\2"
 ```
 
+[alt key]: https://en.wikipedia.org/wiki/Alt_key
+[ansi escape codes]: https://en.wikipedia.org/wiki/ANSI_escape_code
+[arrow keys]: https://en.wikipedia.org/wiki/Arrow_keys
+[backspace key]: https://en.wikipedia.org/wiki/Backspace
+[command completion]: https://en.wikipedia.org/wiki/Command-line_completion
+[command history]: https://en.wikipedia.org/wiki/Command_history
+[console application]: https://en.wikipedia.org/wiki/Console_application
+[control key]: https://en.wikipedia.org/wiki/Control_key
+[debug]: https://github.com/ruby/debug
+[delete key]: https://en.wikipedia.org/wiki/Delete_key
+[editing-mode]: rdoc-ref:for_users.md@editing-mode
+[emacs-mode-string]: rdoc-ref:for_users.md@emacs-mode-string
+[end key]: https://en.wikipedia.org/wiki/End_key
+[enter key]: https://en.wikipedia.org/wiki/Enter_key
+[escape key]: https://en.wikipedia.org/wiki/Esc_key
+[home key]: https://en.wikipedia.org/wiki/Home_key
+[irb]: https://ruby.github.io/irb/index.html
+[mode strings]: rdoc-ref:for_users.md@Mode+Strings
+[repl]: https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop
+[ri]: https://ruby.github.io/rdoc/RI_md.html
+[show-mode-in-prompt]: rdoc-ref:for_users.md@show-mode-in-prompt
+[space bar]: https://en.wikipedia.org/wiki/Space_bar
+[stack]: https://en.wikipedia.org/wiki/Stack_(abstract_data_type)
+[tab key]: https://en.wikipedia.org/wiki/Tab_key
+[vi-cmd-mode-string]: rdoc-ref:for_users.md@vi-cmd-mode-string
+[vi-ins-mode-string]: rdoc-ref:for_users.md@vi-ins-mode-string
+[your reline]: rdoc-ref:README.md@Your+Reline
