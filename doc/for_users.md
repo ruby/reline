@@ -520,5 +520,5 @@ Example (turns the mode string green):
 
 [TODO]
 
-Resolve all C- and M- from Gnu doc.
-Doc which commands accept arguments.
+- Resolve all C- and M- from Gnu doc.
+- Doc which commands accept arguments.
