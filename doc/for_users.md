@@ -175,7 +175,18 @@ the cursor is moved forward to the end of the inserted text.
 
 ## Quantifiers
 
-[TODO]
+Some Reline commands accept quantifiers.
+
+A quantifier is a positive integer repeat count `n`
+that tells Reline to execute the command `n` times.
+
+The quantifier precedes the command,
+and is typed as numeric characters in range `('0'..'9')` while holding down the `Alt` key.
+
+Examples:
+
+- `M-4` `←` moves the cursor four characters to the left.
+- `M-1` `M-4` `←` moves the cursor fourteen characters to the left.
 
 ## Command History
 
@@ -506,3 +517,8 @@ Example (turns the mode string green):
 [vi-cmd-mode-string]: rdoc-ref:for_users.md@vi-cmd-mode-string
 [vi-ins-mode-string]: rdoc-ref:for_users.md@vi-ins-mode-string
 [your reline]: rdoc-ref:README.md@Your+Reline
+
+[TODO]
+
+Resolve all C- and M- from Gnu doc.
+Doc which commands accept arguments.
