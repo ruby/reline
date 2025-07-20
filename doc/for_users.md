@@ -330,6 +330,170 @@ whose path is determined thus:
 
 The initialization file may contain _directives_, _bindings_, and _variables_.
   
+### Variables
+
+#### `completion-ignore-case`
+
+If set to `'on'`, Reline performs case-insensitive
+filename matching and completion.
+
+The default setting is `'off'`.
+
+#### `convert-meta`
+
+If set to `'on'`, affects 8-bit characters that have their high bits set
+(i.e., characters whose values in range `128..255`).
+Reline converts each such character by clearing the high bit
+(which puts the character in range `0..127`)
+and prefixing `Esc`.
+
+The default value is `'on'`, but Reline sets it to `'off'`
+if the locale contains characters whose encodings may include bytes with the eighth bit set.
+
+#### `disable-completion`
+
+If set to `'on'`, Reline inhibits word completion.
+Completion characters (`Tab`, `M-?`, and `M-*`) lose their usual meanings,
+and are inserted directly into the line.
+
+The default is `'off'`.
+
+#### `editing-mode`
+
+If set to `'emacs'`, the default key bindings are similar to Emacs;
+If set to `'vi'`, the default key bindings are similar to Vi.
+
+The default is `'emacs'`.
+
+#### `emacs-mode-string`
+
+Specifies the mode string for Emacs mode;
+see [Mode Strings][mode strings].
+
+The default is `'@'`.
+
+#### `enable-bracketed-paste`
+
+When set to `'On'`, Reline is in _bracketed-paste_ mode,
+which means that it inserts each paste or yank
+into the editing buffer as a single string of characters,
+instead of treating each character as if it had been read from the keyboard.
+This prevents Reline from executing any editing commands
+bound to key sequences appearing in the pasted text.
+
+The default is `'on'`.
+
+#### `history-size`
+
+Set the maximum number of entries saved in the history list:
+
+- Zero: existing history entries are deleted and no new entries are saved.
+- Negative: the number of history entries is not limited.
+- Non-numeric value: the maximum number of history entries is set to 500.
+
+Default value is `'-1'`
+
+#### `isearch-terminators`
+
+Sets the strings of characters that terminate an incremental search
+without subsequently executing the character as a command.
+
+Default: `Esc` and `C-j`.
+
+#### `keymap`
+
+Sets the keymap for key binding commands.
+Values are:
+
+- `'emacs'` (aliased as `'emacs-standard'`).
+- `'emacs-ctlx'`.
+- `'emacs-meta'`.
+- `'vi-command'` (aliased as `'vi'` and `'vi-move'`).
+- `'vi-insert'`.
+
+Default is `'emacs'`.
+The value of variable [editing-mode][editing-mode]
+also affects the default keymap.
+
+#### `keyseq-timeout`
+
+Specifies the time (in milliseconds) that Reline will wait for further input
+when reading an ambiguous key sequence
+(i.e., one that can form a complete key sequence using the input read so far,
+or can take additional input to complete a longer key sequence).
+
+If Reline doesn’t receive further input within the timeout,
+it uses the shorter but complete key sequence.
+
+If this variable is set to a value less than or equal to zero, or to a non-numeric value,
+Reline waits until another key is pressed to decide which key sequence to complete.
+
+The default `'500'`.
+
+#### `show-all-if-ambiguous`
+
+If set to `'on'`, input that has more than one possible completion
+cause the completions to be listed immediately (instead of ringing the bell).
+
+The default is `'off'`.
+
+#### `show-mode-in-prompt`
+
+If set to `'on'`, prefixed the mode string to the displayed prompt;
+see [Mode Strings][mode strings].
+
+The default is `'off'`.
+
+#### `vi-cmd-mode-string`
+
+Specifies the mode string for Vi command mode;
+see [Mode Strings][mode strings].
+
+The default is ‘(cmd)’.
+
+#### `vi-ins-mode-string`
+
+Specifies the mode string for Vi insertion mode;
+see [Mode Strings][mode strings].
+
+The default is ‘(ins)’.
+
+#### Mode Strings
+
+A _mode string_ is a string that is to be displayed immediately before the prompt string
+when variable [show-mode-in-prompt][show-mode-in-prompt] is set to `'on'`.
+
+There are three mode strings:
+
+- Emacs mode string:
+  the value of variable [emacs-mode-string][emacs-mode-string];
+  effective when variable [editing-mode][editing-mode] is `'emacs'`.
+  Default value is `'@'`.
+- Vi command mode string:
+  the value of variable [vi-cmd-mode-string][vi-cmd-mode-string];
+  effective when variable [editing-mode][editing-mode] is `'vi'`
+  and the editing is in command mode.
+  Default value is `'(cmd)'`.
+- Vi insertion mode string:
+  the value of variable [vi-ins-mode-string][vi-ins-mode-string];
+  effective when variable [editing-mode][editing-mode] is `'vi'`
+  and the editing is in insertion mode.
+  Default value is `'(ins)'`.
+
+The mode string may include [ANSI escape codes][ansi escape codes]
+which can affect the color (foreground and background) and font (bold, italic, etc.) of the display.
+The ANSI escape codes must be preceded by escape `\1` and followed by escape `\2`.
+
+Example (turns the mode string green):
+
+```
+"\1\e[32mabcd \e[0m\2"
+```
+
+### Bindings
+
+[TODO]
+
 ### Directives
 
 #### `$if`, `$else`, and `$endif`
@@ -395,171 +559,6 @@ another initialization file:
     # Assignments and directives that will override.
     # ...
     ```
-
-
-### Bindings
-
-[TODO]
-
-### Variables
-
-### `completion-ignore-case`
-
-If set to `'on'`, Reline performs case-insensitive
-filename matching and completion.
-
-The default setting is `'off'`.
-
-### `convert-meta`
-
-If set to `'on'`, affects 8-bit characters that have their high bits set
-(i.e., characters whose values in range `128..255`).
-Reline converts each such character by clearing the high bit
-(which puts the character in range `0..127`)
-and prefixing `Esc`.
-
-The default value is `'on'`, but Reline sets it to `'off'`
-if the locale contains characters whose encodings may include bytes with the eighth bit set.
-
-### `disable-completion`
-
-If set to `'on'`, Reline inhibits word completion.
-Completion characters (`Tab`, `M-?`, and `M-*`) lose their usual meanings,
-and are inserted directly into the line.
-
-The default is `'off'`.
-
-### `editing-mode`
-
-If set to `'emacs'`, the default key bindings are similar to Emacs;
-If set to `'vi'`, the default key bindings are similar to Vi.
-
-The default is `'emacs'`.
-
-### `emacs-mode-string`
-
-Specifies the mode string for Emacs mode;
-see [Mode Strings][mode strings].
-
-The default is `'@'`.
-
-### `enable-bracketed-paste`
-
-When set to `'On'`, Reline is in _bracketed-paste_ mode,
-which means that it inserts each paste or yank
-into the editing buffer as a single string of characters,
-instead of treating each character as if it had been read from the keyboard.
-This prevents Reline from executing any editing commands
-bound to key sequences appearing in the pasted text.
-
-The default is `'on'`.
-
-### `history-size`
-
-Set the maximum number of entries saved in the history list:
-
-- Zero: existing history entries are deleted and no new entries are saved.
-- Negative: the number of history entries is not limited.
-- Non-numeric value: the maximum number of history entries is set to 500.
-
-Default value is `'-1'`
-
-### `isearch-terminators`
-
-Sets the strings of characters that terminate an incremental search
-without subsequently executing the character as a command.
-
-Default: `Esc` and `C-j`.
-
-### `keymap`
-
-Sets the keymap for key binding commands.
-Values are:
-
-- `'emacs'` (aliased as `'emacs-standard'`).
-- `'emacs-ctlx'`.
-- `'emacs-meta'`.
-- `'vi-command'` (aliased as `'vi'` and `'vi-move'`).
-- `'vi-insert'`.
-
-Default is `'emacs'`.
-The value of variable [editing-mode][editing-mode]
-also affects the default keymap.
-
-### `keyseq-timeout`
-
-Specifies the time (in milliseconds) that Reline will wait for further input
-when reading an ambiguous key sequence
-(i.e., one that can form a complete key sequence using the input read so far,
-or can take additional input to complete a longer key sequence).
-
-If Reline doesn’t receive further input within the timeout,
-it uses the shorter but complete key sequence.
-
-If this variable is set to a value less than or equal to zero, or to a non-numeric value,
-Reline waits until another key is pressed to decide which key sequence to complete.
-
-The default `'500'`.
-
-### `show-all-if-ambiguous`
-
-If set to `'on'`, input that has more than one possible completion
-cause the completions to be listed immediately (instead of ringing the bell).
-
-The default is `'off'`.
-
-### `show-mode-in-prompt`
-
-If set to `'on'`, prefixed the mode string to the displayed prompt;
-see [Mode Strings][mode strings].
-
-The default is `'off'`.
-
-### `vi-cmd-mode-string`
-
-Specifies the mode string for Vi command mode;
-see [Mode Strings][mode strings].
-
-The default is ‘(cmd)’.
-
-### `vi-ins-mode-string`
-
-Specifies the mode string for Vi insertion mode;
-see [Mode Strings][mode strings].
-
-The default is ‘(ins)’.
-
-### Mode Strings
-
-A _mode string_ is a string that is to be displayed immediately before the prompt string
-when variable [show-mode-in-prompt][show-mode-in-prompt] is set to `'on'`.
-
-There are three mode strings:
-
-- Emacs mode string:
-  the value of variable [emacs-mode-string][emacs-mode-string];
-  effective when variable [editing-mode][editing-mode] is `'emacs'`.
-  Default value is `'@'`.
-- Vi command mode string:
-  the value of variable [vi-cmd-mode-string][vi-cmd-mode-string];
-  effective when variable [editing-mode][editing-mode] is `'vi'`
-  and the editing is in command mode.
-  Default value is `'(cmd)'`.
-- Vi insertion mode string:
-  the value of variable [vi-ins-mode-string][vi-ins-mode-string];
-  effective when variable [editing-mode][editing-mode] is `'vi'`
-  and the editing is in insertion mode.
-  Default value is `'(ins)'`.
-
-The mode string may include [ANSI escape codes][ansi escape codes]
-which can affect the color (foreground and background) and font (bold, italic, etc.) of the display.
-The ANSI escape codes must be preceded by escape `\1` and followed by escape `\2`.
-
-Example (turns the mode string green):
-
-```
-"\1\e[32mabcd \e[0m\2"
-```
 
 [alt key]: https://en.wikipedia.org/wiki/Alt_key
 [ansi escape codes]: https://en.wikipedia.org/wiki/ANSI_escape_code
