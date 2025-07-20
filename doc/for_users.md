@@ -243,7 +243,78 @@ or for editing (via cursor movement, insertion, deletion, killing, yanking).
 
 ## Command Completion
 
-[TODO]
+A Reline application may support command completion,
+which is implemented as responses to the `Tab` command,
+by providing a list of command words.
+
+Suppose an application just echoes whatever is typed to its prompt:
+
+```
+$ruby
+echo> Hi!
+You typed: 'Hi!'.
+```
+
+And suppose further that it has these command words:
+
+```
+['foo_foo', 'foo_bar', 'foo_baz', 'qux']
+```
+
+Then typing a single character `'q'` does not do much; we just see the one typed character:
+
+```
+echo> q
+```
+
+Pressing `Tab` requests command completion; we see the complete word:
+
+```
+echo> qux
+```
+
+That's because the only possible command word beginning with `'q'` is `'qux'`.
+Then typing `'f'` does not do much; we just see the one character typed:
+
+Adding `Ent` executes the command:
+
+```
+echo> qux
+You typed: 'qux'.
+echo>  
+```
+
+Typing the single character `'f'`, as before, does not do much:
+```
+echo> f
+```
+
+Pressing `Tab`, as before, requests command completion.
+Because there are multiple command words starting with `'f'`, Reline cannot complete the command;
+but because all command words starting with `'f'` also start with `'foo_'`,
+Reline can partially complete the command:
+
+```
+echo> foo_
+```
+
+Pressing `Tab` a second time requests possible completions:
+
+```
+echo> foo_               
+foo_bar foo_baz foo_foo
+```
+
+Now typing `'f'`, `Tab`, and `Ent` completes and enters the command:
+
+```
+echo> foo_foo
+You typed: 'foo_foo'.
+echo>     
+```
+
+Note that when the command line is empty, or when the typing so far does not match any command word,
+`Tab` has no effect.
 
 ## Initialization File
 
