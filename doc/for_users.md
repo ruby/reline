@@ -83,7 +83,7 @@ then the `k` key is then pressed, and both are released.
 Almost any character can have "meta" version:
 `M-c`, `M->`, `M-#`, etc.
 
-## The Basics
+## Reline Basics
 
 Reline lets you edit typed command-line text.
 
@@ -318,6 +318,17 @@ Note that when the command line is empty, or when the typing so far does not mat
 
 ## Initialization File
 
+A Reline application has default key bindings and variable definitions,
+as determined by the application itself.
+
+You can customize the application's behavior by specifying key bindings and variable definitions
+in an _initialization file_.
+The initialization file may define:
+
+- [Key Bindings][key bindings]: Definitions relating keys to variables.
+- [Variables][variables]:
+- [Directives][directives].
+
 When a Reline application starts, it reads a user-provided initialization file,
 whose path is determined thus:
 
@@ -328,9 +339,9 @@ whose path is determined thus:
 - Otherwise, `'~/.config/readline/inputrc'`.
 - Otherwise, no initialization file is read.
 
-The initialization file may contain _directives_, _bindings_, and _variables_.
-  
 ### Variables
+
+The initialization file may re-define certain variables.
 
 #### `completion-ignore-case`
 
@@ -490,9 +501,66 @@ Example (turns the mode string green):
 "\1\e[32mabcd \e[0m\2"
 ```
 
-### Bindings
+### Key Bindings
 
-[TODO]
+#### Key Sequences and Macros
+
+You can define a _macro_ by binding a _key sequence_ to some text.
+The key sequence specifies a sequence of one or more keys that are to be mapped
+to text that is to be inserted when the sequence is typed as input.
+
+This example binds a key sequence to the _macro_ text,
+which means that in the application pressing `C-x` followed by `M-r` inserts the text  `'Ruby!'`:
+
+```
+"\C-x\M-r": "Ruby!"
+```
+
+Note that:
+
+- The key sequence is in double-quotes.
+- There is no space between the two key specifications.
+- The key sequence is immediately followed by a colon (`':'`); no intervening whitespace.
+- The colon may be separated from the following text by whitespace.
+- The text is in double-quotes.
+- The first key must be specified in an escaped notation
+  (not just a regular character).
+
+
+More examples:
+
+```
+"\M-x":     "Alt-x"          # Single meta character.
+"\C-a":     "Ctrl-a"         # Single control character.
+"\C-x\C-y": "Ctrl-x, Ctrl-y" # Multiple keys.
+"\C-xm":    "Ctrl-x, m"      # Control key followed by regular character.
+
+"\\":       "Backslash"      # Backslash character.
+"\"":       "Double-quote"   # Double-quote character.
+"\'":       "Single-quote"   # Single-quote character.
+
+"\a":       "Bell"
+"\b":       "Backspace"
+"\d":       "Delete"
+# Probably not a good idea to interfere with whitespace.
+# "\f":       "Form-feed"
+# "\n":       "Newline"
+# "\r":       "Carriage return"
+# "\t":       "Horizontal tab"
+# "\v":       "Vertical tab"
+
+"\001": "Ctrl-a" # Octal number.
+"\x02": "Ctrl-b" # Hexadecimal number.
+```
+
+#### Key Sequences and Methods
+
+
+#### Key Names
+
+Meta-L: " | less"
+Meta-S: "sudo "
+
 
 ### Directives
 
@@ -570,6 +638,7 @@ another initialization file:
 [control key]: https://en.wikipedia.org/wiki/Control_key
 [debug]: https://github.com/ruby/debug
 [delete key]: https://en.wikipedia.org/wiki/Delete_key
+[directives]: rdoc-ref:for_users.md@Directives
 [editing-mode]: rdoc-ref:for_users.md@editing-mode
 [emacs-mode-string]: rdoc-ref:for_users.md@emacs-mode-string
 [end key]: https://en.wikipedia.org/wiki/End_key
@@ -577,6 +646,7 @@ another initialization file:
 [escape key]: https://en.wikipedia.org/wiki/Esc_key
 [home key]: https://en.wikipedia.org/wiki/Home_key
 [irb]: https://ruby.github.io/irb/index.html
+[key bindings]: rdoc-ref:for_users.md@Key+Bindings
 [mode strings]: rdoc-ref:for_users.md@Mode+Strings
 [repl]: https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop
 [ri]: https://ruby.github.io/rdoc/RI_md.html
@@ -584,6 +654,7 @@ another initialization file:
 [space bar]: https://en.wikipedia.org/wiki/Space_bar
 [stack]: https://en.wikipedia.org/wiki/Stack_(abstract_data_type)
 [tab key]: https://en.wikipedia.org/wiki/Tab_key
+[variables]: rdoc-ref:for_users.md@Variables
 [vi-cmd-mode-string]: rdoc-ref:for_users.md@vi-cmd-mode-string
 [vi-ins-mode-string]: rdoc-ref:for_users.md@vi-ins-mode-string
 [your reline]: rdoc-ref:README.md@Your+Reline
@@ -592,3 +663,4 @@ another initialization file:
 
 - Resolve all C- and M- from Gnu doc.
 - Doc which commands accept arguments.
+- Multi-line editing.
