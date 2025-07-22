@@ -503,9 +503,25 @@ Example (turns the mode string green):
 
 ### Key Bindings
 
-#### Key Sequences and Macros
+In brief:
 
-You can define a _macro_ by binding a _key sequence_ to some text.
+```
+"\C-x\M-r":  "Ruby!"          # Key sequence bound to text.
+"\C-x\M-c":  ed_clear_screen  # Key sequence bound to method.
+Meta-l:      " | less"        # Key name bound to text.
+Control-b:   ed_clear_screen  # Key name bound method.
+```
+
+A key or key sequence may be bound to:
+
+- Text to be inserted when the key or key sequence is typed in:
+  in effect a [macro][macro].
+- A Reline method that is to be called when the key or key sequence is typed in:
+  in effect an alias.
+
+#### Key Sequences
+
+You can bind a key sequence to text, defining a macro.
 The key sequence specifies a sequence of one or more keys that are to be mapped
 to text that is to be inserted when the sequence is typed as input.
 
@@ -519,12 +535,12 @@ which means that in the application pressing `C-x` followed by `M-r` inserts the
 Note that:
 
 - The key sequence must be enclosed by double-quotes.
+- The first key must be specified in an escaped notation
+  (not just a regular character).
 - There may be no space between the two key specifications.
 - The key sequence must be immediately followed by a colon (`':'`); no intervening whitespace.
 - The colon may be separated from the following text by whitespace.
 - The text must be enclosed by double-quotes.
-- The first key must be specified in an escaped notation
-  (not just a regular character).
 
 
 More examples:
@@ -557,8 +573,6 @@ More examples:
 "\x02": "Ctrl-b" # Hexadecimal number; begins with "\x".
 ```
 
-#### Key Sequences and Methods
-
 You can bind a key sequence to a Reline method,
 so that the method is called when the key sequence is typed as input.
 See [Methods](rdoc-ref:for_users.md@Methods).
@@ -575,13 +589,15 @@ This binding is the same as the default binding for `C-l`.
 Note that this new binding would override the old one, if any, for that key,
 but does not disturb other bindings (`C-l` is still bound to `ed_clear_screen`).
 
-#### Key Names, Macros, and Methods
+#### Key Names
 
 You can bind a single key to text or a method using its _key name_
 (instead of the key sequence notation):
 
+```
 Control-b: ed_clear_screen
 Meta-L: " | less"
+```
 
 #### Methods
 
@@ -754,6 +770,7 @@ another initialization file:
 [home key]: https://en.wikipedia.org/wiki/Home_key
 [irb]: https://ruby.github.io/irb/index.html
 [key bindings]: rdoc-ref:for_users.md@Key+Bindings
+[macro]: https://en.wikipedia.org/wiki/Macro_(computer_science)
 [mode strings]: rdoc-ref:for_users.md@Mode+Strings
 [repl]: https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop
 [ri]: https://ruby.github.io/rdoc/RI_md.html
