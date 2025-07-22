@@ -518,11 +518,11 @@ which means that in the application pressing `C-x` followed by `M-r` inserts the
 
 Note that:
 
-- The key sequence is in double-quotes.
-- There is no space between the two key specifications.
-- The key sequence is immediately followed by a colon (`':'`); no intervening whitespace.
+- The key sequence must be enclosed by double-quotes.
+- There may be no space between the two key specifications.
+- The key sequence must be immediately followed by a colon (`':'`); no intervening whitespace.
 - The colon may be separated from the following text by whitespace.
-- The text is in double-quotes.
+- The text must be enclosed by double-quotes.
 - The first key must be specified in an escaped notation
   (not just a regular character).
 
@@ -530,36 +530,143 @@ Note that:
 More examples:
 
 ```
+# Meta characters and control characters.
 "\M-x":     "Alt-x"          # Single meta character.
 "\C-a":     "Ctrl-a"         # Single control character.
 "\C-x\C-y": "Ctrl-x, Ctrl-y" # Multiple keys.
 "\C-xm":    "Ctrl-x, m"      # Control key followed by regular character.
 
+# Escaped regular characters.
 "\\":       "Backslash"      # Backslash character.
 "\"":       "Double-quote"   # Double-quote character.
 "\'":       "Single-quote"   # Single-quote character.
 
+# Special escapes for certain control characters.
 "\a":       "Bell"
-"\b":       "Backspace"
-"\d":       "Delete"
-# Probably not a good idea to interfere with whitespace.
+# (Probably not a good idea to interfere with these.)
+# "\b":       "Backspace"
+# "\d":       "Delete"
 # "\f":       "Form-feed"
 # "\n":       "Newline"
 # "\r":       "Carriage return"
 # "\t":       "Horizontal tab"
 # "\v":       "Vertical tab"
 
-"\001": "Ctrl-a" # Octal number.
-"\x02": "Ctrl-b" # Hexadecimal number.
+# Other forms for the key sequence.
+"\001": "Ctrl-a" # Octal number; begins with "\0".
+"\x02": "Ctrl-b" # Hexadecimal number; begins with "\x".
 ```
 
 #### Key Sequences and Methods
 
+You can bind a key sequence to a Reline method,
+so that the method is called when the key sequence is typed as input.
 
-#### Key Names
+This example binds a key sequence to the method `ed_clear_screen`,
+which means that in the application pressing `Alt-x` clears the screen
+and reprints the prompt at the top:
 
+```
+"\M-x": ed_clear_screen
+```
+
+This binding is the same as the default binding for `C-l`.
+Note that this new binding would override the old one, if any, for that key,
+but does not disturb other bindings (`C-l` is still bound to `ed_clear_screen`).
+
+#### Methods
+
+These are the methods available for binding by a key or key sequence:
+
+- `ed_argument_digit(key)`
+- `ed_beginning_of_history(key)`
+- `ed_clear_screen(key)`
+- `ed_delete_next_char(key, arg: 1)`
+- `ed_delete_prev_char(key, arg: 1)`
+- `ed_delete_prev_word(key)`
+- `ed_digit(key)`
+- `ed_end_of_history(key)`
+- `ed_kill_line(key)`
+- `ed_move_to_beg(key)`
+- `ed_move_to_end(key)`
+- `ed_newline(key)`
+- `ed_next_char(key, arg: 1)`
+- `ed_next_history(key, arg: 1)`
+- `ed_prev_char(key, arg: 1)`
+- `ed_prev_history(key, arg: 1)`
+- `ed_prev_word(key)`
+- `ed_search_next_history(key, arg: 1)`
+- `ed_search_prev_history(key, arg: 1)`
+- `ed_transpose_chars(key)`
+- `ed_transpose_words(key)`
+- `ed_unassigned(key) end # do nothing`
+- `em_capitol_case(key)`
+- `em_delete(key)`
+- `em_delete_next_word(key)`
+- `em_delete_or_list(key)`
+- `em_delete_prev_char(key, arg: 1)`
+- `em_exchange_mark(key)`
+- `em_kill_line(key)`
+- `em_kill_region(key)`
+- `em_lower_case(key)`
+- `em_next_word(key)`
+- `em_set_mark(key)`
+- `em_upper_case(key)`
+- `em_yank(key)`
+- `em_yank_pop(key)`
+- `emacs_editing_mode(key)`
+- `incremental_search_history(key)`
+- `key_delete(key)`
+- `key_newline(key)`
+- `process_key(key, method_symbol)`
+- `run_for_operators(key, method_symbol)`
+- `search_next_char(key, arg, need_prev_char: false, inclusive: false)`
+- `search_prev_char(key, arg, need_next_char = false)`
+- `vi_add(key)`
+- `vi_add_at_eol(key)`
+- `vi_change_meta(key, arg: nil)`
+- `vi_change_to_eol(key)`
+- `vi_command_mode(key)`
+- `vi_delete_meta(key, arg: nil)`
+- `vi_delete_prev_char(key)`
+- `vi_editing_mode(key)`
+- `vi_end_big_word(key, arg: 1, inclusive: false)`
+- `vi_end_word(key, arg: 1, inclusive: false)`
+- `vi_first_print(key)`
+- `vi_histedit(key)`
+- `vi_insert(key)`
+- `vi_insert_at_bol(key)`
+- `vi_join_lines(key, arg: 1)`
+- `vi_kill_line_prev(key)`
+- `vi_list_or_eof(key)`
+- `vi_next_big_word(key, arg: 1)`
+- `vi_next_char(key, arg: 1, inclusive: false)`
+- `vi_next_word(key, arg: 1)`
+- `vi_paste_next(key, arg: 1)`
+- `vi_paste_prev(key, arg: 1)`
+- `vi_prev_big_word(key, arg: 1)`
+- `vi_prev_char(key, arg: 1)`
+- `vi_prev_word(key, arg: 1)`
+- `vi_replace_char(key, arg: 1)`
+- `vi_search_next(key)`
+- `vi_search_prev(key)`
+- `vi_to_column(key, arg: 0)`
+- `vi_to_history_line(key)`
+- `vi_to_next_char(key, arg: 1, inclusive: false)`
+- `vi_to_prev_char(key, arg: 1)`
+- `vi_yank(key, arg: nil)`
+- `vi_zero(key)`
+
+#### Key Names, Macros, and Methods
+
+You can bind a single key to text or a method using its _key name_
+(instead of the key sequence notation):
+
+Control-b: ed_clear_screen
 Meta-L: " | less"
-Meta-S: "sudo "
+
+#### Methods
+
 
 
 ### Directives
