@@ -561,6 +561,7 @@ More examples:
 
 You can bind a key sequence to a Reline method,
 so that the method is called when the key sequence is typed as input.
+See [Methods](rdoc-ref:for_users.md@Methods).
 
 This example binds a key sequence to the method `ed_clear_screen`,
 which means that in the application pressing `Alt-x` clears the screen
@@ -573,6 +574,14 @@ and reprints the prompt at the top:
 This binding is the same as the default binding for `C-l`.
 Note that this new binding would override the old one, if any, for that key,
 but does not disturb other bindings (`C-l` is still bound to `ed_clear_screen`).
+
+#### Key Names, Macros, and Methods
+
+You can bind a single key to text or a method using its _key name_
+(instead of the key sequence notation):
+
+Control-b: ed_clear_screen
+Meta-L: " | less"
 
 #### Methods
 
@@ -657,15 +666,6 @@ These are the methods available for binding by a key or key sequence:
 - `vi_yank(key, arg: nil)`
 - `vi_zero(key)`
 
-#### Key Names, Macros, and Methods
-
-You can bind a single key to text or a method using its _key name_
-(instead of the key sequence notation):
-
-Control-b: ed_clear_screen
-Meta-L: " | less"
-
-#### Methods
 
 
 
