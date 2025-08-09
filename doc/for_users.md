@@ -43,6 +43,12 @@ Ruby itself uses Reline in these:
 
 ## Notations
 
+Reline is basically a domain-specific language,
+implemented via certain keys, control characters, and meta characters.
+
+To denote these here in the documentation,
+we use certain notations.
+
 ### Keys
 
 [Arrow Keys][arrow keys]:
