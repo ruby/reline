@@ -97,7 +97,12 @@ begin
     end
 
     def test_fullwidth
-      start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      unless Yamatanooroti.win? && Yamatanooroti.options.windows == :"legacy-conhost"
+        start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      else
+        start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.', codepage: 932)
+        omit "codepage 932 not supported" if !codepage_success?
+      end
       write(":あ\n")
       assert_screen(<<~EOC)
         Multiline REPL.
@@ -109,7 +114,12 @@ begin
     end
 
     def test_two_fullwidth
-      start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      unless Yamatanooroti.win? && Yamatanooroti.options.windows == :"legacy-conhost"
+        start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      else
+        start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.', codepage: 932)
+        omit "codepage 932 not supported" if !codepage_success?
+      end
       write(":あい\n")
       assert_screen(<<~EOC)
         Multiline REPL.
@@ -385,7 +395,12 @@ begin
     end
 
     def test_nearest_cursor
-      start_terminal(10, 20, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      unless Yamatanooroti.win? && Yamatanooroti.options.windows == :"legacy-conhost"
+        start_terminal(10, 20, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      else
+        start_terminal(10, 20, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.', codepage: 932)
+        omit "codepage 932 not supported" if !codepage_success?
+      end
       write("def ああ\n  :いい\nend\C-pbb\C-pcc")
       assert_screen(<<~EOC)
         Multiline REPL.
@@ -755,7 +770,12 @@ begin
     end
 
     def test_auto_indent_multibyte_insert_line
-      start_terminal(10, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --auto-indent}, startup_message: 'Multiline REPL.')
+      unless Yamatanooroti.win? && Yamatanooroti.options.windows == :"legacy-conhost"
+        start_terminal(10, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --auto-indent}, startup_message: 'Multiline REPL.')
+      else
+        start_terminal(10, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --auto-indent}, startup_message: 'Multiline REPL.', codepage: 932)
+        omit "codepage 932 not supported" if !codepage_success?
+      end
       write "if true\n"
       write "あいうえお\n"
       4.times { write "\C-b\C-b\C-b\C-b\e\r" }
@@ -800,7 +820,12 @@ begin
     end
 
     def test_suppress_auto_indent_for_adding_newlines_in_pasting
-      start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --auto-indent}, startup_message: 'Multiline REPL.')
+      unless Yamatanooroti.win? && Yamatanooroti.options.windows == :"legacy-conhost"
+        start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --auto-indent}, startup_message: 'Multiline REPL.')
+      else
+        start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --auto-indent}, startup_message: 'Multiline REPL.', codepage: 932)
+        omit "codepage 932 not supported" if !codepage_success?
+      end
       write("<<~Q\n")
       write("{\n  #\n}")
       write("#")
@@ -908,7 +933,12 @@ begin
     end
 
     def test_not_meta_key
-      start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      unless Yamatanooroti.win? && Yamatanooroti.options.windows == :"legacy-conhost"
+        start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.')
+      else
+        start_terminal(5, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl}, startup_message: 'Multiline REPL.', codepage: 932)
+        omit "codepage 932 not supported" if !codepage_success?
+      end
       write("おだんご") # "だ" in UTF-8 contains "\xA0"
       assert_screen(<<~EOC)
         Multiline REPL.
@@ -1274,12 +1304,15 @@ begin
 
     def test_dialog_with_fullwidth_chars
       ENV['RELINE_TEST_PROMPT'] = '> '
-      start_terminal(20, 5, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --dialog fullwidth,scrollkey,scrollbar}, startup_message: 'Multiline REPL.')
+      unless Yamatanooroti.win? && Yamatanooroti.options.windows == :"legacy-conhost"
+        start_terminal(20, 5, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --dialog fullwidth,scrollkey,scrollbar}, startup_message: 'Multiline REPL.')
+      else
+        start_terminal(20, 5, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --dialog fullwidth,scrollkey,scrollbar}, startup_message: 'Multiline REPL.', codepage: 932)
+        omit "codepage 932 not supported" if !codepage_success?
+      end
+      write("\C-l")
       6.times{ write('j') }
       assert_screen(<<~'EOC')
-        Multi
-        line
-        REPL.
         >
         オー
         グ言▄
@@ -1291,7 +1324,12 @@ begin
 
     def test_dialog_with_fullwidth_chars_split
       ENV['RELINE_TEST_PROMPT'] = '> '
-      start_terminal(20, 6, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --dialog fullwidth,scrollkey,scrollbar}, startup_message: 'Multiline REPL.')
+      unless Yamatanooroti.win? && Yamatanooroti.options.windows == :"legacy-conhost"
+        start_terminal(20, 6, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --dialog fullwidth,scrollkey,scrollbar}, startup_message: 'Multiline REPL.')
+      else
+        start_terminal(20, 6, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --dialog fullwidth,scrollkey,scrollbar}, startup_message: 'Multiline REPL.', codepage: 932)
+        omit "codepage 932 not supported" if !codepage_success?
+      end
       6.times{ write('j') }
       assert_screen(<<~'EOC')
         Multil
