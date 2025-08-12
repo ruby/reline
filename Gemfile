@@ -13,6 +13,7 @@ gem 'bundler'
 gem 'rdoc'
 gem 'rake'
 gem 'test-unit'
+gem 'tsort'
 
 # Only used in ci to run readline-ext test using Reline as Readline
 gem 'readline'

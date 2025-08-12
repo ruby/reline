@@ -103,7 +103,7 @@ jobs:
           make
           sudo make install
       - name: Install dependencies
-        run: bundle install
+        run: bundle install && bundle add tsort
       - name: Install reline
         run: rake install
       - name: Download ruby/irb
@@ -112,7 +112,7 @@ jobs:
       - name: Run irb test
         working-directory: ./irb
         run: |
-          bundle install
+          bundle install && bundle add tsort
           bundle exec rake test
       - name: Run irb yamatanooroti test
         working-directory: ./irb
