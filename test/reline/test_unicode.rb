@@ -19,7 +19,7 @@ class Reline::Unicode::Test < Reline::TestCase
   end
 
   def test_csi_regexp
-    csi_sequences = ["\e[m", "\e[1m", "\e[12;34m", "\e[12;34H"]
+    csi_sequences = ["\e[m", "\e[1m", "\e[12;34m", "\e[12;34H", "\e[5 q", "\e[?2004h"]
     assert_equal(csi_sequences, "text#{csi_sequences.join('text')}text".scan(Reline::Unicode::CSI_REGEXP))
   end
 
