@@ -57,6 +57,27 @@ Sections = {
     %w[TAB complete],
     %w[M-? possible-completions],
     %w[M-* insert-completions],
+  ],
+  'Keyboard Macros' => [
+    ['C-x (', 'start-kbd-macro'],
+    ['C-x )', 'end-kbd-macro'],
+    ['C-x e', 'call-last-kbd-macro'],
+  ],
+  'Some Miscellaneous Commands' => [
+    ['C-x C-r', 're-read-init-file'],
+    %w[C-g abort],
+    ['M-A, M-B, M-x, …', 'do-lowercase-version'],
+    %w[ESC prefix-meta],
+    ['C-_ or C-x C-u', 'undo'],
+    %w[M-r revert-line],
+    %w[M-~ tilde-expand],
+    %w[C-@ set-mark],
+    ['C-x C-x', 'exchange-point-and-mark'],
+    ['M-C-]', 'character-search-backward'],
+    %w[M-# insert-comment],
+    %w[M-x execute-named-command],
+    %w[C-e emacs-editing-mode],
+    %w[M-C-j vi-editing-mode],
   ]
 }
 Headings = %w[ Keys Command reline debug irb ri ]
@@ -100,6 +121,10 @@ Escapes = {
   '?' => '_003f',
   '*' => '_002a',
   '!' => '_0021',
+  ']' => '_005d',
+  '~' => '_007e',
+  '#' => '_0023',
+  '@' => '_0040',
   ' ' => '-'      # Must be last.
 }
 
