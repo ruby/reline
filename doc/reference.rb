@@ -114,9 +114,6 @@ Sections = {
   ]
 }
 
-# Column headings for tables.
-Headings = %w[ Keys Command reline irb ri debug]
-
 # Make a TD element to show whether supported in the app.
 def td_for_support(value)
   td = Element.new('td')
@@ -177,12 +174,19 @@ Sections.each do |title, commands|
   h2.text = title
   html.add_element(table = Element.new('table'))
   table.add_element(tr = Element.new('tr'))
-  Headings.each_with_index do |heading, i|
+  %w[Keys Command].each do |heading|
     tr.add_element(th = Element.new('th'))
-    if i > 1
-      th.add_attribute('width', '10%')
-      th.add_attribute('id', 'app_name')
-    end
+    th.add_attribute('rowspan', 2)
+    th.text = heading
+  end
+  tr.add_element(th = Element.new('th'))
+  th.add_attribute('colspan', 4)
+  th.text = 'Supported in Applications?'
+  table.add_element(tr = Element.new('tr'))
+  %w[reline irb ri debug].each do |heading|
+    tr.add_element(th = Element.new('th'))
+    th.add_attribute('width', '10%')
+    th.add_attribute('id', 'app_name')
     th.text = heading
   end
   commands.each do |data|
