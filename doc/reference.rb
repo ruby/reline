@@ -2,6 +2,37 @@ require 'rexml/document'
 
 include REXML
 
+Style = <<STYLE
+    table {
+    }
+    tr:nth-child(even) {
+        background-color: lightgray;
+    }
+    tr:nth-child(odd) {
+        background-color: AntiqueWhite;
+    }
+    #supported {
+        text-align: center;
+        color: green;
+    }
+    #unsupported {
+        text-align: center;
+        color: red;
+    }
+    #support_unknown {
+        text-align: center;
+        color: gray;
+    }
+    #app_name {
+        text-align: center;
+        font-family: monospace;
+    }
+
+    #keys {
+        text-align: center;
+    }
+STYLE
+
 Sections = {
   'Commands for Moving' => [
     %w[C-a beginning-of-line true],
@@ -84,22 +115,15 @@ Headings = %w[ Keys Command reline irb ri debug]
 
 def td_for(value)
   td = Element.new('td')
-  td.add_attribute('align', 'center')
   case value
   when 'true'
-    font = Element.new('font')
-    font.add_attribute('color', 'green')
-    td.add_element(font)
+    td.add_attribute('id', 'supported')
     td.text = 'Yes'
   when 'false'
-    font = Element.new('font')
-    font.add_attribute('color', 'red')
-    td.add_element(font)
+    td.add_attribute('id', 'unsupported')
     td.text = 'No'
   when nil
-    font = Element.new('font')
-    font.add_attribute('color', 'gray')
-    td.add_element(font)
+    td.add_attribute('id', 'support_unknown')
     td.text = '?'
   else
     raise value.to_s
@@ -139,16 +163,20 @@ end
 doc = Document.new
 doc.add_element(html = Element.new('html'))
 html.add_element(head = Element.new('head'))
+head.add_element(style = Element.new('style'))
+style.text = Style
 html.add_element(body = Element.new('body'))
 Sections.each do |title, commands|
   html.add_element(h2 = Element.new('h2'))
   h2.text = title
   html.add_element(table = Element.new('table'))
-  table.add_attribute('border', 1)
   table.add_element(tr = Element.new('tr'))
   Headings.each_with_index do |heading, i|
     tr.add_element(th = Element.new('th'))
-    th.add_attribute('width', '10%') if i > 1
+    if i > 1
+      th.add_attribute('width', '10%')
+      th.add_attribute('id', 'app_name')
+    end
     th.text = heading
   end
   commands.each do |data|
