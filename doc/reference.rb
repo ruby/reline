@@ -2,6 +2,7 @@ require 'rexml/document'
 
 include REXML
 
+# CSS styles.
 Style = <<STYLE
     table {
     }
@@ -33,6 +34,7 @@ Style = <<STYLE
     }
 STYLE
 
+# Here's the data.
 Sections = {
   'Commands for Moving' => [
     %w[C-a beginning-of-line true],
@@ -111,9 +113,12 @@ Sections = {
     %w[M-C-j vi-editing-mode false],
   ]
 }
+
+# Column headings for tables.
 Headings = %w[ Keys Command reline irb ri debug]
 
-def td_for(value)
+# Make a TD element to show whether supported in the app.
+def td_for_support(value)
   td = Element.new('td')
   case value
   when 'true'
@@ -152,6 +157,7 @@ Escapes = {
   ' ' => '-'      # Must be last.
 }
 
+# Escapes, Readline's way.
 def escape(keys, command)
   s = "#{command} (#{keys})"
   Escapes.each_pair do |old, new|
@@ -195,13 +201,13 @@ Sections.each do |title, commands|
     a.add_attribute('href', href)
     a.add_element(code = Element.new('code'))
     code.text = command
-
-    tr.add_element(td_for(reline))
-    tr.add_element(td_for(debug))
-    tr.add_element(td_for(irb))
-    tr.add_element(td_for(ri))
-
+    # Cells for app support.
+    tr.add_element(td_for_support(reline))
+    tr.add_element(td_for_support(debug))
+    tr.add_element(td_for_support(irb))
+    tr.add_element(td_for_support(ri))
   end
+  
 end
 
 doc.write(indent: 2)
