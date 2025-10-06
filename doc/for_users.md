@@ -110,6 +110,8 @@ Whole line:
 - `Home` or `C-a`: backward to the beginning of the line.
 - `End` or `C-e`: forward to the end of the line.
 
+TODO:  M-C-l;
+
 ### Text-Deletion Commands
 
 - `Del` or `C-d`: remove the character to the right the cursor
@@ -128,6 +130,8 @@ to "close the gap."
 - `C-_`: undo the last editing command;
   may be repeated until the original (unedited) line is restored.
 - `C-l`: clear the screen and reprint the current line at the top.
+
+TODO: C-q;  C-v;  C-t;  C-_;  C-x C-u;  C-@;  C-x C-x;  C-];
 
 ## Killing and Yanking
 
@@ -168,6 +172,8 @@ Kill backward; the cursor moves leftward to "close the gap":
 - `C-w`: Kill from the cursor to the previous whitespace;
   this is different from `M-Del` because the word boundaries are different.
 
+TODO: C-x Rubout;  C-u;  M-y;
+
 ### Yank Commands
 
 Each yank command pops text from the kill ring
@@ -178,6 +184,15 @@ the cursor is moved forward to the end of the inserted text.
 - `M-y`: Rotate the kill ring, and yank from the new top.
   Effective only if the immediately preceding command was `C-y` or another `M-y`;
   otherwise, does nothing.
+
+## Keyboard Macros
+
+TODO: C-x (;  C-x );  C-x e;
+
+## Miscellaneous Commands
+
+TODO:  C-x C-r;
+TODO:  M-A;  M-r;  M-~;  M-C-];  M-#;  M-x;  M-C-j
 
 ## Quantifiers
 
@@ -193,6 +208,8 @@ Examples:
 
 - `M-4` `←` moves the cursor four characters to the left.
 - `M-1` `M-4` `←` moves the cursor fourteen characters to the left.
+
+TODO:  M-0;  
 
 ## Command History
 
@@ -246,6 +263,9 @@ In the table below:
 In the last instance, command `xy` is displayed on the edit line,
 and is ready for execution (via `Ent`),
 or for editing (via cursor movement, insertion, deletion, killing, yanking).
+
+TODO: C-p;  C-n;  C-s;  C-o;
+TODO: M->;  M-<;  M-p;  M-n;  M-C-y;  M-.;  M-_;  M-Tab;  M-t;  M-u;  M-l;  M-c;  
 
 ## Command Completion
 
@@ -321,6 +341,8 @@ echo>
 
 Note that when the command line is empty, or when the typing so far does not match any command word,
 `Tab` has no effect.
+
+TODO:  M-?;  M-*;
 
 ## Initialization File
 

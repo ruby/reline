@@ -14,15 +14,18 @@ Style = <<STYLE
     }
     #supported {
         text-align: center;
-        color: green;
+        color: rgb(0,97,0);
+        background-color: rgb(198,239,206);
     }
     #unsupported {
         text-align: center;
-        color: red;
+        color: rgb(156,0,6);
+        background-color: rgb(255,199,206);
     }
     #support_unknown {
         text-align: center;
-        color: gray;
+        color: black;
+        background-color: lightgray;
     }
     #app_name {
         text-align: center;
@@ -120,13 +123,16 @@ def td_for_support(value)
   case value
   when 'true'
     td.add_attribute('id', 'supported')
-    td.text = 'Yes'
+    check = "\u2714".encode('utf-8')
+    td.text = Text.new(check, false, nil, true)
   when 'false'
     td.add_attribute('id', 'unsupported')
-    td.text = 'No'
+    cross = "\u2716".encode('utf-8')
+    td.text = Text.new(cross, false, nil, true)
   when nil
     td.add_attribute('id', 'support_unknown')
-    td.text = '?'
+    question_mark = '?'
+    td.text = Text.new(question_mark, false, nil, true)
   else
     raise value.to_s
   end
