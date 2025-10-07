@@ -29,6 +29,11 @@ class ReferenceMaker
         color: black;
         background-color: lightgray;
     }
+    #note {
+        text-align: center;
+        color: black;
+        background-color: lightgray;
+    }
     #app_name {
         text-align: center;
         font-family: monospace;
@@ -120,6 +125,22 @@ STYLE
     ]
   }
 
+  Notes = {
+    'reline' => {
+       'end-of-file' => 'Exits application when the command-line is empty.',
+       'delete-char' => 'Deletes character when command line is not empty.',
+    },
+    'irb' => {
+
+    },
+    'ri' => {
+
+    },
+    'debug' => {
+
+    }
+  }
+
   # The order matters here.
   Escapes = {
     '_' => '_005f', # Must be first..
@@ -142,13 +163,19 @@ STYLE
   }
 
   # Make a TD element to show whether supported in the app.
-  def td_for_support(supported_p)
+  def td_for_support(app_name, command_name, supported_p)
+    note = Notes[app_name][command_name]
     td = Element.new('td')
     case supported_p
     when 'true'
       td.add_attribute('id', 'supported')
-      check = "\u2714".encode('utf-8')
-      td.text = Text.new(check, false, nil, true)
+      if note
+        td.text = 'See note.'
+        @notes.push([app_name, command_name, note])
+      else
+        check = "\u2714".encode('utf-8')
+        td.text = Text.new(check, false, nil, true)
+      end
     when 'false'
       td.add_attribute('id', 'unsupported')
       cross = "\u2716".encode('utf-8')
@@ -201,6 +228,7 @@ STYLE
     style.text = Style
     html.add_element(body = Element.new('body'))
     Sections.each do |title, commands_in_section|
+      @notes = []
       html.add_element(h2 = Element.new('h2'))
       h2.text = title
       html.add_element(table = Element.new('table'))
@@ -238,15 +266,37 @@ STYLE
         a.add_element(code = Element.new('code'))
         code.text = command.name
         # Cells for app support.
-        tr.add_element(td_for_support(command.reline))
-        tr.add_element(td_for_support(command.irb))
-        tr.add_element(td_for_support(command.ri))
-        tr.add_element(td_for_support(command.debug))
+        tr.add_element(td_for_support('reline', command.name, command.reline))
+        tr.add_element(td_for_support('irb', command.name, command.irb))
+        tr.add_element(td_for_support('ri', command.name, command.ri))
+        tr.add_element(td_for_support('debug', command.name, command.debug))
+      end
+      unless @notes.empty?
+        html.add_element(h3 = Element.new('h3'))
+        h3.text = 'Notes'
+        html.add_element(table = Element.new('table'))
+        table.add_element(tr = Element.new('tr'))
+        %w[Application Command Note].each do |heading|
+          tr.add_element(th = Element.new('th'))
+          th.text = heading
+        end
+        @notes.each do |note|
+          application, command_name, text = *note
+          table.add_element(tr = Element.new('tr'))
+          tr.add_element(td = Element.new('td'))
+          td.add_element(code = Element.new('code'))
+          code.text = application
+          tr.add_element(td = Element.new('td'))
+          td.add_element(code = Element.new('code'))
+          code.text = command_name
+          tr.add_element(td = Element.new('td'))
+          td.text = text
+        end
+
       end
       doc.write(indent: 2)
     end
   end
 end
-
 
 ReferenceMaker.new
