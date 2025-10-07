@@ -142,7 +142,7 @@ STYLE
   }
 
   # Make a TD element to show whether supported in the app.
-  def td_for_support(keys, application, supported_p)
+  def td_for_support(supported_p)
     td = Element.new('td')
     case supported_p
     when 'true'
@@ -172,14 +172,35 @@ STYLE
     s
   end
 
+  class Command
+
+    attr_accessor :keys, :name, :reline, :irb, :ri, :debug
+    def initialize(command_data)
+      keys, name, reline, irb, ri, debug = *command_data
+      self.keys = keys
+      self.name = name
+      self.reline = reline
+      self.irb = irb
+      self.ri = ri
+      self.debug = debug
+    end
+  end
+
   def initialize
+    @commands = {}
+    Sections.each_pair do |_, commands_in_section|
+      commands_in_section.each do |command_data|
+        command = Command.new(command_data)
+        @commands[command.name] = command
+      end
+    end
     doc = Document.new
     doc.add_element(html = Element.new('html'))
     html.add_element(head = Element.new('head'))
     head.add_element(style = Element.new('style'))
     style.text = Style
     html.add_element(body = Element.new('body'))
-    Sections.each do |title, commands|
+    Sections.each do |title, commands_in_section|
       html.add_element(h2 = Element.new('h2'))
       h2.text = title
       html.add_element(table = Element.new('table'))
@@ -191,7 +212,7 @@ STYLE
       end
       tr.add_element(th = Element.new('th'))
       th.add_attribute('colspan', 4)
-      th.text = 'Supported in Applications?'
+      th.text = 'Applications'
       table.add_element(tr = Element.new('tr'))
       Applications.each do |heading|
         tr.add_element(th = Element.new('th'))
@@ -199,32 +220,33 @@ STYLE
         th.add_attribute('id', 'app_name')
         th.text = heading
       end
-      commands.each do |data|
-        keys = data.shift
-        command = data.shift
-        supported_p = data
+      commands_in_section.each do |data|
+        _, name = *data
+        command = @commands[name]
         table.add_element(tr = Element.new('tr'))
         # Cell for Keys.
         tr.add_element(td = Element.new('td'))
         td.add_attribute('align', 'center')
         td.add_element(code = Element.new('code'))
-        code.text = keys
-        # Cell for Command.
+        code.text = command.keys
+        # Cell for command name.
         tr.add_element(td = Element.new('td'))
         td.add_element(a = Element.new('a'))
         href = 'https://tiswww.case.edu/php/chet/readline/readline.html#index-' +
-               escape(keys, command)
+               escape(command.keys, command.name)
         a.add_attribute('href', href)
         a.add_element(code = Element.new('code'))
-        code.text = command
+        code.text = command.name
         # Cells for app support.
-        Applications.each_with_index do |application, i|
-          tr.add_element(td_for_support(keys, application, supported_p[i]))
-        end
+        tr.add_element(td_for_support(command.reline))
+        tr.add_element(td_for_support(command.irb))
+        tr.add_element(td_for_support(command.ri))
+        tr.add_element(td_for_support(command.debug))
       end
+      doc.write(indent: 2)
     end
-    doc.write(indent: 2)
   end
 end
+
 
 ReferenceMaker.new
