@@ -40,19 +40,19 @@ STYLE
 # Here's the data.
 Sections = {
   'Commands for Moving' => [
-    %w[C-a beginning-of-line true],
-    %w[C-e end-of-line true],
-    %w[C-f forward-char true],
-    %w[C-b backward-char true],
-    %w[M-f forward-word true],
-    %w[M-b backward-word true],
-    %w[M-C-l clear-display false],
-    %w[C-l clear-screen true],
+    %w[C-a beginning-of-line true true true true],
+    %w[C-e end-of-line  true true true true],
+    %w[C-f forward-char true true true true],
+    %w[C-b backward-char true true true true],
+    %w[M-f forward-word true true true true],
+    %w[M-b backward-word true true true true],
+    %w[M-C-l clear-display true true true true],
+    %w[C-l clear-screen true true true true],
   ],
   'Commands For Manipulating The History' => [
     ['Newline or Return', 'accept-line', 'true'],
-    %w[C-p previous-history false],
-    %w[C-n next-history false],
+    %w[C-p previous-history true],
+    %w[C-n next-history true],
     %w[M-< beginning-of-history false],
     %w[M-> end-of-history false],
     %w[C-r reverse-search-history true],
@@ -70,24 +70,24 @@ Sections = {
     ['C-q or C-v', 'quoted-insert', 'false'],
     %w[M-TAB tab-insert false],
     ['a, b, A, 1, !, …', 'self-insert', 'true'],
-    %w[C-t transpose-chars false],
-    %w[M-t transpose-words false],
-    %w[M-u upcase-word false],
-    %w[M-l downcase-word false],
-    %w[M-c capitalize-word false],
+    %w[C-t transpose-chars true],
+    %w[M-t transpose-words true],
+    %w[M-u upcase-word true],
+    %w[M-l downcase-word true],
+    %w[M-c capitalize-word true],
   ],
   'Killing and Yanking' => [
     %w[C-k kill-line true],
     ['C-x Rubout', 'backward-kill-line', 'false'],
-    %w[C-u unix-line-discard false],
+    %w[C-u unix-line-discard true],
     %w[M-d kill-word true],
-    %w[M-DEL backward-kill-word true],
+    %w[M-DEL backward-kill-word false],
     %w[C-w unix-word-rubout true],
     %w[C-y yank true],
-    %w[M-y yank-pop true],
+    %w[M-y yank-pop false],
   ],
   'Specifying Numeric Arguments' => [
-    ['M-0, M-1, … M--', 'digit-argument', 'false']
+    ['M-0, M-1, … M--', 'digit-argument', 'true']
   ],
   'Letting Readline Type for You' => [
     %w[TAB complete true],
@@ -100,11 +100,11 @@ Sections = {
     ['C-x e', 'call-last-kbd-macro', 'false'],
   ],
   'Some Miscellaneous Commands' => [
-    ['C-x C-r', 're-read-init-file', 'false'],
-    %w[C-g abort true],
-    ['M-A, M-B, M-x, …', 'do-lowercase-version', 'false'],
+    ['C-x C-r', 're-read-init-file'],
+    %w[C-g abort false],
+    ['M-A, M-B, M-x, …', 'do-lowercase-version'],
     %w[ESC prefix-meta true],
-    ['C-_ or C-x C-u', 'undo', 'false'],
+    ['C-_ or C-x C-u', 'undo', 'true'],
     %w[M-r revert-line false],
     %w[M-~ tilde-expand false],
     %w[C-@ set-mark false],
@@ -112,7 +112,7 @@ Sections = {
     ['M-C-]', 'character-search-backward', 'false'],
     %w[M-# insert-comment false],
     %w[M-x execute-named-command false],
-    %w[C-e emacs-editing-mode true],
+    %w[C-e emacs-editing-mode false],
     %w[M-C-j vi-editing-mode false],
   ]
 }
@@ -157,7 +157,7 @@ Escapes = {
   '~' => '_007e',
   '#' => '_0023',
   '@' => '_0040',
-  ' ' => '-'      # Must be last.
+  ' ' => '-' # Must be last.
 }
 
 # Escapes, Readline's way.
@@ -217,7 +217,7 @@ Sections.each do |title, commands|
     tr.add_element(td_for_support(irb))
     tr.add_element(td_for_support(ri))
   end
-  
+
 end
 
 doc.write(indent: 2)
