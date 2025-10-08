@@ -14,32 +14,35 @@ class ReferenceMaker
     tr:nth-child(odd) {
         background-color: AntiqueWhite;
     }
-    #supported {
+    .supported {
         text-align: center;
         color: rgb(0,97,0);
-        background-color: rgb(198,239,206);
     }
-    #unsupported {
+    .unsupported {
         text-align: center;
         color: rgb(156,0,6);
-        background-color: rgb(255,199,206);
     }
-    #support_unknown {
+    .support_unknown {
         text-align: center;
         color: black;
-        background-color: lightgray;
     }
-    #note {
-        text-align: center;
-        color: black;
-        background-color: lightgray;
-    }
-    #app_name {
+    .app_name {
         text-align: center;
         font-family: monospace;
     }
-
-    #keys {
+    .reline {
+        background-color: rgb(230, 170, 210);
+    }
+    .irb {
+        background-color: rgb(211, 184, 161);
+    }
+    .ri {
+        background-color: rgb(134, 134, 175);
+    }
+    .debug {
+        background-color: rgb(214, 151, 89);
+    }
+    .keys {
         text-align: center;
     }
 STYLE
@@ -168,7 +171,7 @@ STYLE
     td = Element.new('td')
     case supported_p
     when 'true'
-      td.add_attribute('id', 'supported')
+      td.add_attribute('class', 'supported ' + app_name)
       if note
         td.text = 'See note.'
         @notes.push([app_name, command_name, note])
@@ -177,11 +180,11 @@ STYLE
         td.text = Text.new(check, false, nil, true)
       end
     when 'false'
-      td.add_attribute('id', 'unsupported')
+      td.add_attribute('class', 'unsupported ' + app_name)
       cross = "\u2716".encode('utf-8')
       td.text = Text.new(cross, false, nil, true)
     when nil
-      td.add_attribute('id', 'support_unknown')
+      td.add_attribute('class', 'support_unknown ' + app_name)
       question_mark = '?'
       td.text = Text.new(question_mark, false, nil, true)
     else
@@ -214,6 +217,7 @@ STYLE
   end
 
   def initialize
+    # Make data into Command objects and store in @commands.
     @commands = {}
     Sections.each_pair do |_, commands_in_section|
       commands_in_section.each do |command_data|
@@ -221,17 +225,22 @@ STYLE
         @commands[command.name] = command
       end
     end
+    # Start document.
     doc = Document.new
     doc.add_element(html = Element.new('html'))
     html.add_element(head = Element.new('head'))
     head.add_element(style = Element.new('style'))
     style.text = Style
     html.add_element(body = Element.new('body'))
+    # Add each section.
     Sections.each do |title, commands_in_section|
       @notes = []
-      html.add_element(h2 = Element.new('h2'))
+      body.add_element(h2 = Element.new('h2'))
+      $stderr.puts title
       h2.text = title
-      html.add_element(table = Element.new('table'))
+      # Add commands table.
+      body.add_element(table = Element.new('table'))
+      # Add headings.
       table.add_element(tr = Element.new('tr'))
       %w[Keys Command].each do |heading|
         tr.add_element(th = Element.new('th'))
@@ -245,9 +254,10 @@ STYLE
       Applications.each do |heading|
         tr.add_element(th = Element.new('th'))
         th.add_attribute('width', '10%')
-        th.add_attribute('id', 'app_name')
+        th.add_attribute('class', heading)
         th.text = heading
       end
+      # Add command rows.
       commands_in_section.each do |data|
         _, name = *data
         command = @commands[name]
@@ -272,27 +282,27 @@ STYLE
         tr.add_element(td_for_support('debug', command.name, command.debug))
       end
       unless @notes.empty?
-        html.add_element(h3 = Element.new('h3'))
+        body.add_element(h3 = Element.new('h3'))
         h3.text = 'Notes'
-        html.add_element(table = Element.new('table'))
+        body.add_element(table = Element.new('table'))
         table.add_element(tr = Element.new('tr'))
         %w[Application Command Note].each do |heading|
           tr.add_element(th = Element.new('th'))
           th.text = heading
         end
         @notes.each do |note|
-          application, command_name, text = *note
+          app_name, command_name, text = *note
           table.add_element(tr = Element.new('tr'))
           tr.add_element(td = Element.new('td'))
-          td.add_element(code = Element.new('code'))
-          code.text = application
+          td.add_attribute('class', 'app_name ' + app_name)
+          td.text = app_name
           tr.add_element(td = Element.new('td'))
-          td.add_element(code = Element.new('code'))
-          code.text = command_name
+          td.add_attribute('class', 'app_name ' + app_name)
+          td.text = command_name
           tr.add_element(td = Element.new('td'))
+          td.add_attribute('class', app_name)
           td.text = text
         end
-
       end
       doc.write(indent: 2)
     end
