@@ -304,7 +304,7 @@ STYLE
       Applications.each do |heading|
         tr.add_element(th = Element.new('th'))
         th.add_attribute('width', '10%')
-        th.add_attribute('class', heading)
+        th.add_attribute('class', 'app_name ' + heading)
         th.text = heading
       end
       # Add command rows.
