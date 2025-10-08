@@ -49,85 +49,108 @@ STYLE
 
   # Here's the data.
   Applications = %w[reline irb ri debug]
-  Sections = {
-    'Commands for Moving' => [
-      %w[C-a beginning-of-line true true true true],
-      %w[C-e end-of-line  true true true true],
-      %w[C-f forward-char true true true true],
-      %w[C-b backward-char true true true true],
-      %w[M-f forward-word true true true true],
-      %w[M-b backward-word true true true true],
-      %w[M-C-l clear-display true true true true],
-      %w[C-l clear-screen true true true true],
-    ],
-    'Commands For Manipulating The History' => [
-      ['Newline or Return', 'accept-line', 'true'],
-      %w[C-p previous-history true],
-      %w[C-n next-history true],
-      %w[M-< beginning-of-history false],
-      %w[M-> end-of-history false],
-      %w[C-r reverse-search-history true],
-      %w[C-s forward-search-history false],
-      %w[M-p non-incremental-reverse-search-history true],
-      %w[M-n non-incremental-forward-search-history true],
-      %w[M-C-y yank-nth-arg false],
-      ['M-. or M-_', 'yank-last-arg', 'false'],
-      %w[C-o operate-and-get-next false],
-    ],
-    'Commands For Changing Text' => [
-      ['usually C-d', 'end-of-file', 'true'],
-      %w[C-d delete-char true],
-      %w[Rubout backward-delete-char true],
-      ['C-q or C-v', 'quoted-insert', 'false'],
-      %w[M-TAB tab-insert false],
-      ['a, b, A, 1, !, …', 'self-insert', 'true'],
-      %w[C-t transpose-chars true],
-      %w[M-t transpose-words true],
-      %w[M-u upcase-word true],
-      %w[M-l downcase-word true],
-      %w[M-c capitalize-word true],
-    ],
-    'Killing and Yanking' => [
-      %w[C-k kill-line true],
-      ['C-x Rubout', 'backward-kill-line', 'false'],
-      %w[C-u unix-line-discard true],
-      %w[M-d kill-word true],
-      %w[M-DEL backward-kill-word false],
-      %w[C-w unix-word-rubout true],
-      %w[C-y yank true],
-      %w[M-y yank-pop false],
-    ],
-    'Specifying Numeric Arguments' => [
-      ['M-0, M-1, … M--', 'digit-argument', 'true']
-    ],
-    'Letting Readline Type for You' => [
-      %w[TAB complete true],
-      %w[M-? possible-completions false],
-      %w[M-* insert-completions false],
-    ],
-    'Keyboard Macros' => [
-      ['C-x (', 'start-kbd-macro', 'false'],
-      ['C-x )', 'end-kbd-macro', 'false'],
-      ['C-x e', 'call-last-kbd-macro', 'false'],
-    ],
-    'Some Miscellaneous Commands' => [
-      ['C-x C-r', 're-read-init-file'],
-      %w[C-g abort false],
-      ['M-A, M-B, M-x, …', 'do-lowercase-version'],
-      %w[ESC prefix-meta true],
-      ['C-_ or C-x C-u', 'undo', 'true'],
-      %w[M-r revert-line false],
-      %w[M-~ tilde-expand false],
-      %w[C-@ set-mark false],
-      ['C-x C-x', 'exchange-point-and-mark', 'false'],
-      ['M-C-]', 'character-search-backward', 'false'],
-      %w[M-# insert-comment false],
-      %w[M-x execute-named-command false],
-      %w[C-e emacs-editing-mode false],
-      %w[M-C-j vi-editing-mode false],
-    ]
-  }
-
+  Sections = [
+    {
+      title: 'Commands for Moving',
+      commands: [
+        %w[C-a beginning-of-line true true true true],
+        %w[C-e end-of-line  true true true true],
+        %w[C-f forward-char true true true true],
+        %w[C-b backward-char true true true true],
+        %w[M-f forward-word true true true true],
+        %w[M-b backward-word true true true true],
+        %w[M-C-l clear-display true true true true],
+        %w[C-l clear-screen true true true true],
+      ]
+    },
+    {
+      title: 'Commands For Manipulating The History',
+      commands: [
+        ['Newline or Return', 'accept-line', 'true'],
+        %w[C-p previous-history true],
+        %w[C-n next-history true],
+        %w[M-< beginning-of-history false],
+        %w[M-> end-of-history false],
+        %w[C-r reverse-search-history true],
+        %w[C-s forward-search-history false],
+        %w[M-p non-incremental-reverse-search-history true],
+        %w[M-n non-incremental-forward-search-history true],
+        %w[M-C-y yank-nth-arg false],
+        ['M-. or M-_', 'yank-last-arg', 'false'],
+        %w[C-o operate-and-get-next false],
+      ]
+    },
+    {
+      title: 'Commands For Changing Text',
+      commands: [
+        ['usually C-d', 'end-of-file', 'true'],
+        %w[C-d delete-char true],
+        %w[Rubout backward-delete-char true],
+        ['C-q or C-v', 'quoted-insert', 'false'],
+        %w[M-TAB tab-insert false],
+        ['a, b, A, 1, !, …', 'self-insert', 'true'],
+        %w[C-t transpose-chars true],
+        %w[M-t transpose-words true],
+        %w[M-u upcase-word true],
+        %w[M-l downcase-word true],
+        %w[M-c capitalize-word true],
+      ]
+    },
+    {
+      title: 'Killing and Yanking',
+      commands: [
+        %w[C-k kill-line true],
+        ['C-x Rubout', 'backward-kill-line', 'false'],
+        %w[C-u unix-line-discard true],
+        %w[M-d kill-word true],
+        %w[M-DEL backward-kill-word false],
+        %w[C-w unix-word-rubout true],
+        %w[C-y yank true],
+        %w[M-y yank-pop false],
+      ]
+    },
+    {
+      title: 'Specifying Numeric Arguments',
+      commands: [
+        ['M-0, M-1, … M--', 'digit-argument', 'true']
+      ]
+    },
+    {
+      title: 'Letting Readline Type for You',
+      commands: [
+        %w[TAB complete true],
+        %w[M-? possible-completions false],
+        %w[M-* insert-completions false],
+      ]
+    },
+    {
+      title: 'Keyboard Macros',
+      commands: [
+        ['C-x (', 'start-kbd-macro', 'false'],
+        ['C-x )', 'end-kbd-macro', 'false'],
+        ['C-x e', 'call-last-kbd-macro', 'false'],
+      ]
+    },
+    {
+      title: 'Some Miscellaneous Commands',
+      commands: [
+        ['C-x C-r', 're-read-init-file'],
+        %w[C-g abort false],
+        ['M-A, M-B, M-x, …', 'do-lowercase-version'],
+        %w[ESC prefix-meta true],
+        ['C-_ or C-x C-u', 'undo', 'true'],
+        %w[M-r revert-line false],
+        %w[M-~ tilde-expand false],
+        %w[C-@ set-mark false],
+        ['C-x C-x', 'exchange-point-and-mark', 'false'],
+        ['M-C-]', 'character-search-backward', 'false'],
+        %w[M-# insert-comment false],
+        %w[M-x execute-named-command false],
+        %w[C-e emacs-editing-mode false],
+        %w[M-C-j vi-editing-mode false],
+      ]
+    }
+  ]
   Notes = {
     'reline' => {
        'end-of-file' => 'Exits application when the command-line is empty.',
@@ -239,8 +262,8 @@ STYLE
   def initialize
     # Make data into Command objects and store in @commands.
     @commands = {}
-    Sections.each_pair do |_, commands_in_section|
-      commands_in_section.each do |command_data|
+    Sections.each do |section|
+      section[:commands].each do |command_data|
         command = Command.new(command_data)
         @commands[command.name] = command
       end
@@ -253,10 +276,10 @@ STYLE
     style.text = Style
     html.add_element(body = Element.new('body'))
     # Add each section.
-    Sections.each do |title, commands_in_section|
+    Sections.each do |section|
       @notes = []
       body.add_element(h2 = Element.new('h2'))
-      h2.text = title
+      h2.text = section[:title]
       # Add commands table.
       body.add_element(table = Element.new('table'))
       # Add headings.
@@ -277,7 +300,7 @@ STYLE
         th.text = heading
       end
       # Add command rows.
-      commands_in_section.each do |data|
+      section[:commands].each do |data|
         _, name = *data
         command = @commands[name]
         table.add_element(tr = Element.new('tr'))
