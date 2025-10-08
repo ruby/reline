@@ -65,6 +65,7 @@ STYLE
     },
     {
       title: 'Commands For Manipulating The History',
+      description: 'In a Reline application, history commands are available only if history has been enabled.',
       commands: [
         ['Newline or Return', 'accept-line', 'true'],
         %w[C-p previous-history true],
@@ -280,6 +281,13 @@ STYLE
       @notes = []
       body.add_element(h2 = Element.new('h2'))
       h2.text = section[:title]
+      # Add description if available.
+      description = section[:description]
+      if description
+        body.add_element(span = Element.new('span'))
+        span.text = Text.new(description)
+        body.add_element(Element.new('p'))
+      end
       # Add commands table.
       body.add_element(table = Element.new('table'))
       # Add headings.
