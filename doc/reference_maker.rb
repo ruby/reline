@@ -165,6 +165,26 @@ STYLE
     ' ' => '-' # Must be last.
   }
 
+  def td_for_keys(keys)
+    td = Element.new('td')
+    td.add_attribute('class', 'keys')
+    keys.split(' ').each do |token|
+      if %w[or usually].include?(token)
+        td.add_element(span = Element.new('span'))
+        token.capitalize! if token == 'usually'
+        span.text = token
+      elsif token.end_with?(',')
+        td.add_element(code = Element.new('code'))
+        code.text = token.chop
+        td.add_element(span = Element.new('span'))
+        span.text = ','
+      else
+        td.add_element(code = Element.new('code'))
+        code.text = token
+      end
+    end
+    td
+  end
   # Make a TD element to show whether supported in the app.
   def td_for_support(app_name, command_name, supported_p)
     note = Notes[app_name][command_name]
@@ -236,7 +256,6 @@ STYLE
     Sections.each do |title, commands_in_section|
       @notes = []
       body.add_element(h2 = Element.new('h2'))
-      $stderr.puts title
       h2.text = title
       # Add commands table.
       body.add_element(table = Element.new('table'))
@@ -263,10 +282,7 @@ STYLE
         command = @commands[name]
         table.add_element(tr = Element.new('tr'))
         # Cell for Keys.
-        tr.add_element(td = Element.new('td'))
-        td.add_attribute('align', 'center')
-        td.add_element(code = Element.new('code'))
-        code.text = command.keys
+        tr.add_element(td_for_keys(command.keys))
         # Cell for command name.
         tr.add_element(td = Element.new('td'))
         td.add_element(a = Element.new('a'))
