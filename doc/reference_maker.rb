@@ -217,7 +217,7 @@ STYLE
     when 'true'
       td.add_attribute('class', 'supported ' + app_name)
       if note
-        td.text = 'See note.'
+        td.text = "See note #{1 + @notes.size}"
         @notes.push([app_name, command_name, note])
       else
         check = "\u2714".encode('utf-8')
@@ -333,13 +333,16 @@ STYLE
         h3.text = 'Notes'
         body.add_element(table = Element.new('table'))
         table.add_element(tr = Element.new('tr'))
-        %w[Application Command Note].each do |heading|
+        ['', 'Application', 'Command', 'Note'].each do |heading|
           tr.add_element(th = Element.new('th'))
           th.text = heading
         end
-        @notes.each do |note|
+        @notes.each_with_index do |note, index|
           app_name, command_name, text = *note
           table.add_element(tr = Element.new('tr'))
+          tr.add_element(td = Element.new('td'))
+          td.add_attribute('class', app_name)
+          td.text = "#{1 + index}."
           tr.add_element(td = Element.new('td'))
           td.add_attribute('class', 'app_name ' + app_name)
           td.text = app_name
