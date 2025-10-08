@@ -304,8 +304,8 @@ STYLE
           td.text = text
         end
       end
-      doc.write(indent: 2)
     end
+    doc.write(indent: 2)
   end
 end
 
