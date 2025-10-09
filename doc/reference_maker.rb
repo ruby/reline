@@ -67,15 +67,15 @@ STYLE
       title: 'Commands For Manipulating The History',
       description: 'In a Reline application, history commands are available only if history has been enabled.',
       commands: [
-        ['Newline or Return', 'accept-line', 'true'],
-        %w[C-p previous-history true],
-        %w[C-n next-history true],
+        ['Newline or Return', 'accept-line', 'true', 'true'],
+        %w[C-p previous-history true true],
+        %w[C-n next-history true true],
         %w[M-< beginning-of-history false],
         %w[M-> end-of-history false],
-        %w[C-r reverse-search-history true],
+        %w[C-r reverse-search-history true true],
         %w[C-s forward-search-history false],
-        %w[M-p non-incremental-reverse-search-history true],
-        %w[M-n non-incremental-forward-search-history true],
+        %w[M-p non-incremental-reverse-search-history true true],
+        %w[M-n non-incremental-forward-search-history true true],
         %w[M-C-y yank-nth-arg false],
         ['M-. or M-_', 'yank-last-arg', 'false'],
         %w[C-o operate-and-get-next false],
@@ -84,17 +84,17 @@ STYLE
     {
       title: 'Commands For Changing Text',
       commands: [
-        ['usually C-d', 'end-of-file', 'true'],
-        %w[C-d delete-char true],
-        %w[Rubout backward-delete-char true],
+        ['usually C-d', 'end-of-file', 'true', 'true'],
+        %w[C-d delete-char true true],
+        %w[Rubout backward-delete-char true true],
         ['C-q or C-v', 'quoted-insert', 'false'],
         %w[M-TAB tab-insert false],
-        ['a, b, A, 1, !, …', 'self-insert', 'true'],
-        %w[C-t transpose-chars true],
-        %w[M-t transpose-words true],
-        %w[M-u upcase-word true],
-        %w[M-l downcase-word true],
-        %w[M-c capitalize-word true],
+        ['a, b, A, 1, !, …', 'self-insert', 'true', 'true'],
+        %w[C-t transpose-chars true true],
+        %w[M-t transpose-words true true],
+        %w[M-u upcase-word  true true],
+        %w[M-l downcase-word true true],
+        %w[M-c capitalize-word true true],
       ]
     },
     {
@@ -137,7 +137,7 @@ STYLE
       commands: [
         ['C-x C-r', 're-read-init-file'],
         %w[C-g abort false],
-        ['M-A, M-B, M-x, …', 'do-lowercase-version'],
+        ['M-A, M-B, M-x, …', 'do-lowercase-version', 'false'],
         %w[ESC prefix-meta true],
         ['C-_ or C-x C-u', 'undo', 'true'],
         %w[M-r revert-line false],
@@ -154,11 +154,12 @@ STYLE
   ]
   Notes = {
     'reline' => {
-       'end-of-file' => 'Exits application when the command-line is empty.',
-       'delete-char' => 'Deletes character when command line is not empty.',
+      'end-of-file' => 'Exits application when the command-line is empty.',
+      'delete-char' => 'Deletes character when command line is not empty.',
     },
     'irb' => {
-
+      'end-of-file' => 'Exits application when the command-line is empty.',
+      'delete-char' => 'Deletes character when command line is not empty.',
     },
     'ri' => {
 
@@ -188,6 +189,18 @@ STYLE
     '@' => '_0040',
     ' ' => '-' # Must be last.
   }
+
+  Preface = <<PREFACE
+This is the preface.
+
+This is more preface.
+PREFACE
+
+  def span_for_preface
+    span = Element.new('span')
+    span.text = Preface
+    span
+  end
 
   def td_for_keys(keys)
     td = Element.new('td')
@@ -276,6 +289,9 @@ STYLE
     head.add_element(style = Element.new('style'))
     style.text = Style
     html.add_element(body = Element.new('body'))
+    body.add_element(h1 = Element.new('h1'))
+    h1.text = 'Reline Command-Line Editing'
+    body.add_element(span_for_preface)
     # Add each section.
     Sections.each do |section|
       @notes = []
@@ -323,6 +339,11 @@ STYLE
         a.add_element(code = Element.new('code'))
         code.text = command.name
         # Cells for app support.
+        if command.reline == 'false'
+          command.irb = command.reline
+          command.ri = command.reline
+          command.debug = command.reline
+        end
         tr.add_element(td_for_support('reline', command.name, command.reline))
         tr.add_element(td_for_support('irb', command.name, command.irb))
         tr.add_element(td_for_support('ri', command.name, command.ri))
