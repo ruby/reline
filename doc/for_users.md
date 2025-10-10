@@ -10,68 +10,70 @@ Each table in this section summarizes some Reline commands:
 - *Command*: the keys for the command.
 - *Repeat?*: whether a repeat count may be given;
   see [Specifying Numeric Arguments][specifying numeric arguments].
+- *Undo?*: whether the action may be undone.
 - *Action*: the action to be taken.
 
 [Moving the cursor][commands for moving]:
 
-|    Command     | Repeat? | Action                       |
-|:--------------:|:-------:|------------------------------|
-|  <tt>C-f</tt>  |  Yes.   | Move forward one character.  |
-|  <tt>C-b</tt>  |  Yes.   | Move backward one character. |
-|  <tt>M-f</tt>  |  Yes.   | Move forward one word.       |
-|  <tt>M-b</tt>  |  Yes.   | Move backward one word.      |
-|  <tt>C-a</tt>  |  No.   | Move to beginning of line.   |
-|  <tt>C-e</tt>  |  No.   | Move to end of line.         |
-|  <tt>C-l</tt>  |  No.   | Clear screen.                |
-| <tt>M-C-l</tt> |  No.   | Clear display.               |
+|    Command     | Repeat? | Undo? | Action                       |
+|:--------------:|:-------:|:-----:|------------------------------|
+|  <tt>C-f</tt>  | Yes.    |  No.  | Move forward one character.  |
+|  <tt>C-b</tt>  |  Yes.   |  No.  | Move backward one character. |
+|  <tt>M-f</tt>  |  Yes.   |  No.  | Move forward one word.       |
+|  <tt>M-b</tt>  |  Yes.   |  No.  | Move backward one word.      |
+|  <tt>C-a</tt>  |   No.   |  No.  | Move to beginning of line.   |
+|  <tt>C-e</tt>  |   No.   |  No.  | Move to end of line.         |
+|  <tt>C-l</tt>  |   No.   |  No.  | Clear screen.                |
+| <tt>M-C-l</tt> |   No.   |  No.  | Clear display.               |
 
 [Manipulating history][commands for manipulating the history]:
 
-|    Command     | Repeat? | Action                          |
-|:--------------:|:-------:|---------------------------------|
-| <tt>Enter</tt> |   No.   | Accept the line.                |
-|  <tt>C-p</tt>  |  Yes.   | Move to previous command.       |
-|  <tt>C-n</tt>  |  Yes.   | Move to next command.           |
-|  <tt>C-r</tt>  |   No.   | Reverse search of history.      |
-|  <tt>M-p</tt>  |   No.   | Non-incremental reverse search. |
-|  <tt>M-n</tt>  |   No.   | Non-incremental forward search. |
+|    Command     | Repeat? | Undo? | Action                          |
+|:--------------:|:-------:|:-----:|---------------------------------|
+| <tt>Enter</tt> |   No.   |  No.  | Accept the line.                |
+|  <tt>C-p</tt>  |  Yes.   | Yes.  | Move to previous command.       |
+|  <tt>C-n</tt>  |  Yes.   | Yes.  | Move to next command.           |
+|  <tt>C-r</tt>  |   No.   |  No.  | Reverse search of history.      |
+|  <tt>M-p</tt>  |   No.   |  No.  | Non-incremental reverse search. |
+|  <tt>M-n</tt>  |   No.   |  No.  | Non-incremental forward search. |
 
 [Changing text][commands for changing text]:
 
-|         Command          | Repeat? | Action                                       |
-|:------------------------:|:-------:|----------------------------------------------|
-|       <tt>C-d</tt>       |   No.   | Delete character forward (or exit application). |
-|     <tt>Rubout</tt>      |  Yes.   | Delete character backward.                   |
-| Any printable character. |   No.   | Insert the character.                        |
-|       <tt>C-t</tt>       |   No.   | Transpose characters.                        |
-|       <tt>M-t</tt>       |  Yes.   | Transpose words.                             |
-|       <tt>M-u</tt>       |  Yes.   | Upcase word.                                 |
-|       <tt>M-l</tt>       |  Yes.   | Downcase word.                               |
-|       <tt>M-c</tt>       |   No.   | Capitalize word.                            |
+|         Command          | Repeat? | Undo? | Action                                        |
+|:------------------------:|:-------:|:-----:|-----------------------------------------------|
+|       <tt>C-d</tt>       |   No.   | Yes.  | Delete character forward (if line non-empty). |
+|       <tt>C-d</tt>       |   No.   |  No.  | Exit application (if line empty).             |
+|     <tt>Rubout</tt>      |  Yes.   | Yes.  | Delete character backward.                    |
+| Any printable character. |   No.   | Yes.  | Insert the character.                         |
+|       <tt>C-t</tt>       |   No.   | Yes.  | Transpose characters.                         |
+|       <tt>M-t</tt>       |  Yes.   | Yes.  | Transpose words.                              |
+|       <tt>M-u</tt>       |  Yes.   | Yes.  | Upcase word.                                  |
+|       <tt>M-l</tt>       |  Yes.   | Yes.  | Downcase word.                                |
+|       <tt>M-c</tt>       |   No.   | Yes.  | Capitalize word.                              |
 
 [Killing and yanking][commands for killing and yanking]:
 
-|   Command    | Repeat? | Action              |
-|:------------:|:-------:|---------------------|
-| <tt>C-k</tt> |   No.   | Kill line forward.  |
-| <tt>C-u</tt> |   No.   | Kill line backward. |
-| <tt>M-d</tt> |   No.   | Kill word forward.  |
-| <tt>C-w</tt> |   No.   | Kill word backward. |
-| <tt>C-y</tt> |   No.   | Yank last kill.     |
+|    Command     | Repeat? | Undo? | Action              |
+|:--------------:|:-------:|:-----:|---------------------|
+| <tt>C-k</tt>   |   No.   | Yes.  | Kill line forward.  |
+|  <tt>C-u</tt>  |  No.    |       | Kill line backward. |
+|  <tt>M-d</tt>  |   No.   | Yes.  | Kill word forward.  |
+|  <tt>C-w</tt>  |   No.   | Yes.  | Kill word backward. |
+|  <tt>C-y</tt>  |   No.   | Yes.  | Yank last kill.     |
 
 [Word completion][commands for word completion]:
 
-|     Command      | Repeat? | Action                     |
-|:----------------:|:-------:|----------------------------|
-|   <tt>Tab</tt>   |   No.   | Complete word if possible. |
-| <tt>Tab Tab</tt> |   No.   | Show possible completions. |
+|   Command        | Repeat? | Undo? | Action                     |
+|:----------------:|:-------:|:-----:|----------------------------|
+|   <tt>Tab</tt>   |   No.   | Yes.  | Complete word if possible. |
+| <tt>Tab Tab</tt> |   No.   | No.   | Show possible completions. |
 
 [Other commands][other commands]:
 
-|    Command    | Repeat? | Action       |
-|:-------------:|:-------:|--------------|
-| <tt>Esc</tt>  |   No.   | Meta prefix. |
-| <tt>C-_</tt>  |   No.   | Undo.        |
+|    Command    | Repeat? | Undo? | Action       |
+|:-------------:|:-------:|:-----:|--------------|
+| <tt>Esc</tt>  |   No.   |  No.  | Meta prefix. |
+| <tt>C-_</tt>  |   No.   |  No.  |       Undo.  |
 
 ## Reline Defaults
 
