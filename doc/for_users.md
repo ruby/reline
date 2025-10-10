@@ -3,8 +3,120 @@
 This page is for the user of a console application that uses module Reline.
 For other usages, see [Your Reline][your reline].
 
-Note that this page describes the _default_ usages for Reline.
-A console application that uses module Reline may have implemented different usages.
+## In Brief
+
+Each table in this section summarizes some Reline commands:
+
+- *Command*: the keys for the command.
+- *Repeat?*: whether a repeat count may be given;
+  see [Specifying Numeric Arguments][specifying numeric arguments].
+- *Action*: the action to be taken.
+
+[Moving the cursor][commands for moving]:
+
+|    Command     | Repeat? | Action                       |
+|:--------------:|:-------:|------------------------------|
+|  <tt>C-f</tt>  |  Yes.   | Move forward one character.  |
+|  <tt>C-b</tt>  |  Yes.   | Move backward one character. |
+|  <tt>M-f</tt>  |  Yes.   | Move forward one word.       |
+|  <tt>M-b</tt>  |  Yes.   | Move backward one word.      |
+|  <tt>C-a</tt>  |  No.   | Move to beginning of line.   |
+|  <tt>C-e</tt>  |  No.   | Move to end of line.         |
+|  <tt>C-l</tt>  |  No.   | Clear screen.                |
+| <tt>M-C-l</tt> |  No.   | Clear display.               |
+
+[Manipulating history][commands for manipulating the history]:
+
+|    Command     | Repeat? | Action                          |
+|:--------------:|:-------:|---------------------------------|
+| <tt>Enter</tt> |   No.   | Accept the line.                |
+|  <tt>C-p</tt>  |  Yes.   | Move to previous command.       |
+|  <tt>C-n</tt>  |  Yes.   | Move to next command.           |
+|  <tt>C-r</tt>  |   No.   | Reverse search of history.      |
+|  <tt>M-p</tt>  |   No.   | Non-incremental reverse search. |
+|  <tt>M-n</tt>  |   No.   | Non-incremental forward search. |
+
+[Changing text][commands for changing text]:
+
+|         Command          | Repeat? | Action                                       |
+|:------------------------:|:-------:|----------------------------------------------|
+|       <tt>C-d</tt>       |   No.   | Delete character forward (or exit application). |
+|     <tt>Rubout</tt>      |  Yes.   | Delete character backward.                   |
+| Any printable character. |   No.   | Insert the character.                        |
+|       <tt>C-t</tt>       |   No.   | Transpose characters.                        |
+|       <tt>M-t</tt>       |  Yes.   | Transpose words.                             |
+|       <tt>M-u</tt>       |  Yes.   | Upcase word.                                 |
+|       <tt>M-l</tt>       |  Yes.   | Downcase word.                               |
+|       <tt>M-c</tt>       |   No.   | Capitalize word.                            |
+
+[Killing and yanking][commands for killing and yanking]:
+
+|   Command    | Repeat? | Action              |
+|:------------:|:-------:|---------------------|
+| <tt>C-k</tt> |   No.   | Kill line forward.  |
+| <tt>C-u</tt> |   No.   | Kill line backward. |
+| <tt>M-d</tt> |   No.   | Kill word forward.  |
+| <tt>C-w</tt> |   No.   | Kill word backward. |
+| <tt>C-y</tt> |   No.   | Yank last kill.     |
+
+[Word completion][commands for word completion]:
+
+|     Command      | Repeat? | Action                     |
+|:----------------:|:-------:|----------------------------|
+|   <tt>Tab</tt>   |   No.   | Complete word if possible. |
+| <tt>Tab Tab</tt> |   No.   | Show possible completions. |
+
+[Other commands][other commands]:
+
+|    Command    | Repeat? | Action       |
+|:-------------:|:-------:|--------------|
+| <tt>Esc</tt>  |   No.   | Meta prefix. |
+| <tt>C-_</tt>  |   No.   | Undo.        |
+
+## Reline Defaults
+
+Note that this page describes the _default_ usages for Reline,
+with [command history][command history] and [command completion][command completion] enabled,
+as in this simple "echo" program:
+
+```
+require 'reline'
+require 'open-uri'
+
+# Get words for completion.
+words_url = 'https://raw.githubusercontent.com/first20hours/google-10000-english/refs/heads/master/google-10000-english.txt'
+words = []
+URI.open(words_url) do |file|
+  while !file.eof?
+    words.push(file.readline.chomp)
+  end
+end
+# Install completion proc.
+Reline.completion_proc = proc { |word|
+  words
+}
+# REPL (Read-Evaluate-Print Loop)
+prompt = 'echo> '
+history = true
+while line = Reline.readline(prompt, history)
+  line.chomp!
+  exit 0 if line.empty?
+  puts "You typed: '#{line}'."
+end
+```
+
+Other console applications that use module Reline may have implemented different usages.
+
+## About the Examples
+
+Examples on this page are derived from the echo program above.
+
+In an example where cursor position is important,
+we use the character `'ˇ'` to denote its position, thus:
+
+```
+'abcˇdef' # Denotes 6-character string 'abcdef' with cursor between 'c' and 'd'.
+```
 
 ## Reline Application
 
@@ -17,25 +129,22 @@ Such an application typically implements a [REPL][repl]
 that allows you to type a command, get a response,
 type another command, get another response, and so on.
 
-A Reline application allows editing a partly-entered command by:
+A Reline application by default supports:
 
-- Moving the cursor within its text.
-- Deleting text.
-- Inserting text.
-- "Killing" text (i.e., deleting and saving text).
-- "Yanking" text (i.e., inserting previously killed text).
+- Commands for moving the cursor.
+- Commands for changing text.
+- Commands for killing and yanking.
+- Numeric arguments for certain commands (to specify repetition).
+- Certain miscellaneous commands.
 
-A Reline application may also support:
+A Reline application may support:
 
-- [Command history][command history]:
-  a store of previously entered commands that may be retrieved, edited, and re-used.
-- [Command completion][command completion]:
-  assistance in completing a partly-entered command,
-  or in choosing among possible completions.
-  
+- [Command completion][command completion] (if enabled).
+- [Command history][command history] (if enabled).
+
 ## Reline in Ruby
 
-Ruby itself uses Reline in these:
+Ruby itself uses Reline in these applications:
 
 - [irb][irb]: Interactive Ruby.
 - [debug][debug]: Ruby debugger.
@@ -89,6 +198,112 @@ then the `k` key is then pressed, and both are released.
 Almost any character can have "meta" version:
 `M-c`, `M->`, `M-#`, etc.
 
+## Command-Line Editing
+
+### Commands for Moving
+
+#### `C-a`: Beginning of Line
+
+Move the cursor to the beginning of the line, if not already there.
+
+#### `C-e`: End of Line
+
+Move the cursor to the end of the line, if not already there.
+
+#### `C-f`: Character Forward
+
+Move the cursor forward one character, if not already at end-of-line.
+
+#### `C-b`: Character Backward
+
+Move the cursor backward one character, if not already at beginning-of-line.
+
+#### `M-f`: Word Forward
+
+Move the cursor forward one word, if not already at end-of-line:
+
+- If cursor is in a word, move to the end of that word.
+- If cursor is not in a word (at a space, for example), move to the end of the next word.
+
+#### `M-b`: Word Backward
+
+Move the cursor backward one word, if not already at beginning-of-line:
+
+- If cursor is in a word, move to the beginning of that word.
+- If cursor is not in a word (at a space, for example), move to the beginning of the next word on the left.
+
+#### `C-l`: Clear Screen
+
+Clear the screen, then redraw the current line, leaving the current line at the top of the screen;
+if given a numeric argument, this refreshes the current line without clearing the screen.
+
+#### `M-C-l`: Clear Display
+
+Like 'C-l', but also clear the terminal’s scrollback buffer if possible.
+
+### Commands for Manipulating the History
+
+####  `Ent`: Accept Line
+
+#### `C-p`: Previous History
+
+#### `C-n`: Next History
+
+#### `C-r`: Reverse Search History
+
+#### `M-p`: Non-Incremental Reverse Search History
+
+#### `M-n`: Non-Incremental Forward Search History
+
+### Commands for Changing Text
+
+#### `C-d`: Delete Character Forward or Exit Application
+
+#### `Bsp`: Delete Character Backward
+
+#### Printable Character
+
+#### `C-t`: Transpose Characters
+
+#### `M-t`: Transpose Words
+
+#### `M-u`: Upcase Word
+
+#### `M-l`: Downcase Word
+
+#### `M-c`: Capitalize Word
+
+### Commands for Killing and Yanking
+
+#### `C-k`: Kill Line
+
+#### `C-u`: Unix Discard Line
+
+#### `M-d`: Kill Word
+
+#### `C-w`: Unix Word Rubout
+
+#### `C-y`: Yank
+
+### Specifying Numeric Arguments
+
+#### `M-`_digit_: Repetition
+
+### Commands for Word Completion
+
+#### `Tab`: Complete Word
+
+#### `Tab Tab`: Show Completions
+
+### Other Commands
+
+#### `Esc`: Meta Prefix
+
+#### `C-_` or `C-x C-u`: Undo
+
+
+--------------------------------
+
 ## Reline Basics
 
 Reline lets you edit typed command-line text.
@@ -110,21 +325,40 @@ Whole line:
 - `Home` or `C-a`: backward to the beginning of the line.
 - `End` or `C-e`: forward to the end of the line.
 
-TODO:  M-C-l;
+Clear screen:
 
-### Text-Deletion Commands
+- 'C-l': Clear the screen, then redraw the current line, leaving the current line at the top of the screen.
+  If given a numeric argument, this refreshes the current line without clearing the screen.
+- 'M-C-l': Like 'C-l', but if possible also clear the terminal’s scrollback buffer. 
 
-- `Del` or `C-d`: remove the character to the right the cursor
-- `Bsp`: remove the character to the left the cursor.
+### Commands for Changing Text
 
-In either case, existing characters to the right of the cursor are move leftward
+Character deletion commands:
+
+- `Del`: remove the character to the right the cursor if there is one.
+- `C-d`: remove the character to the right the cursor if there is one.
+  Note: if the command-line is empty, exit the application.
+- `Bsp` or 'Rubout': remove the character to the left the cursor.
+
+If a character is removed, existing characters to the right of the cursor are move leftward
 to "close the gap."
 
-### Text-Insertion Commands
+Text insertion commands:
 
 - Any printable character: insert the character at the cursor;
   existing characters to the right of the cursor are move rightward to "make room."
 
+Transposing commands:
+
+- 'C-t': transpose characters.
+- 'M-t': transpose words.
+
+Casing commands:
+
+- 'M-u': upcase word.
+- 'M-l': downcase word.
+- 'M-c': capitalize word.
+- 
 ### Other Commands
 
 - `C-_`: undo the last editing command;
@@ -779,12 +1013,20 @@ another initialization file:
     # ...
     ```
 
+[commands for moving]:                   rdoc-ref:for_users.md@Commands+for+Moving
+[commands for manipulating the history]: rdoc-ref:for_users.md@Commands+for+Manipulating+the+History
+[commands for changing text]:            rdoc-ref:for_users.md@Commands+for+Changing+Text
+[commands for killing and yanking]:      rdoc-ref:for_users.md@Commands+for+Killing+and+Yanking
+[specifying numeric arguments]:          rdoc-ref:for_users.md@Specifying+Numeric+Arguments
+[commands for word completion]:          rdoc-ref:for_users.md@Commands+for+Word+Completion
+[other commands]:                        rdoc-ref:for_users.md@Other+Commands
+
 [alt key]: https://en.wikipedia.org/wiki/Alt_key
 [ansi escape codes]: https://en.wikipedia.org/wiki/ANSI_escape_code
 [arrow keys]: https://en.wikipedia.org/wiki/Arrow_keys
 [backspace key]: https://en.wikipedia.org/wiki/Backspace
-[command completion]: https://en.wikipedia.org/wiki/Command-line_completion
-[command history]: https://en.wikipedia.org/wiki/Command_history
+[command completion]: rdoc-ref:for_users.md@Command+Completion
+[command history]: rdoc-ref:for_users.md@Command+History
 [console application]: https://en.wikipedia.org/wiki/Console_application
 [control key]: https://en.wikipedia.org/wiki/Control_key
 [debug]: https://github.com/ruby/debug

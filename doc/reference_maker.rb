@@ -154,12 +154,12 @@ STYLE
   ]
   Notes = {
     'reline' => {
-      'end-of-file' => 'Exits application when the command-line is empty.',
-      'delete-char' => 'Deletes character when command line is not empty.',
+      'end-of-file' => 'Exits application when the command-line is empty; ' +
+        'deletes character when command-line is not empty.'
     },
     'irb' => {
-      'end-of-file' => 'Exits application when the command-line is empty.',
-      'delete-char' => 'Deletes character when command line is not empty.',
+      'end-of-file' => 'Exits application when the command-line is empty; ' +
+        'deletes character when command-line is not empty.'
     },
     'ri' => {
 
