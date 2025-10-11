@@ -13,7 +13,7 @@ Each table in this section summarizes some Reline commands:
 - *Undo?*: whether the action may be undone.
 - *Action*: the action to be taken.
 
-[Moving the cursor][commands for moving]:
+[Moving the cursor][commands for  the cursor]:
 
 |    Command     | Repeat? | Undo? | Action                       |
 |:--------------:|:-------:|:-----:|------------------------------|
@@ -127,17 +127,17 @@ A _Reline application_ is a Ruby
 that uses module Reline.
 
 Such an application typically implements a [REPL][repl]
-(a read-evaluate-print loop)
+(Read-Evaluate-Print Loop)
 that allows you to type a command, get a response,
 type another command, get another response, and so on.
 
 A Reline application by default supports:
 
-- Commands for moving the cursor.
-- Commands for changing text.
-- Commands for killing and yanking.
-- Numeric arguments for certain commands (to specify repetition).
-- Certain miscellaneous commands.
+- [Commands for moving the cursor][commands for moving the cursor].
+- [Commands for changing text][commands for changing text].
+- [Commands for killing and yanking][commands for killing and yanking].
+- [Numeric arguments][specifying numeric arguments] for certain commands (to specify repetition).
+- [Certain other commands][other commands].
 
 A Reline application may support:
 
@@ -202,7 +202,7 @@ Almost any character can have "meta" version:
 
 ## Command-Line Editing
 
-### Commands for Moving
+### Commands for Moving the Cursor
 
 #### `C-a`: Beginning of Line
 
@@ -1015,7 +1015,7 @@ another initialization file:
     # ...
     ```
 
-[commands for moving]:                   rdoc-ref:for_users.md@Commands+for+Moving
+[commands for moving the cursor]:        rdoc-ref:for_users.md@Commands+for+Moving+the+Cursor
 [commands for manipulating the history]: rdoc-ref:for_users.md@Commands+for+Manipulating+the+History
 [commands for changing text]:            rdoc-ref:for_users.md@Commands+for+Changing+Text
 [commands for killing and yanking]:      rdoc-ref:for_users.md@Commands+for+Killing+and+Yanking
