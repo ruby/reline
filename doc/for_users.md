@@ -5,12 +5,14 @@ For other usages, see [Your Reline][your reline].
 
 ## In Brief
 
-Each table in this section summarizes a group or related Reline commands:
+Each table in this section summarizes a group of related Reline commands:
 
 - *Command*: the keys for the command.
-- *Repeat?*: whether a [repeat count][specifying numeric arguments] may be given.
+- *Repeat?*: whether a [repeat count][repeat count] may be given.
 - *Undo?*: whether the action may be [undone][undo command].
 - *Action*: the action to be taken.
+
+Details for the commands are at the links.
 
 [Moving the cursor][commands for moving the cursor]:
 
@@ -78,7 +80,7 @@ Each table in this section summarizes a group or related Reline commands:
 ## Reline Defaults
 
 Note that this page describes the _default_ usages for Reline,
-with [command history][command history] and [command completion][command completion] enabled,
+with both [command history][command history] and [command completion][command completion] enabled,
 as in this simple "echo" program:
 
 ```
@@ -136,7 +138,7 @@ A Reline application by default supports:
 - [Commands for moving the cursor][commands for moving the cursor].
 - [Commands for changing text][commands for changing text].
 - [Commands for killing and yanking][commands for killing and yanking].
-- [Numeric arguments][specifying numeric arguments] for certain commands (to specify repetition).
+- [Numeric arguments][repeat count] for certain commands (to specify repetition).
 - [Certain other commands][other commands].
 
 A Reline application may support:
@@ -203,44 +205,67 @@ Almost any character can have "meta" version:
 
 ### Commands for Moving the Cursor
 
-#### `C-a`: Beginning of Line
-
-Move the cursor to the beginning of the line, if not already there.
-
-#### `C-e`: End of Line
-
-Move the cursor to the end of the line, if not already there.
-
 #### `C-f` or `→`: Character Forward
 
 Move the cursor forward one character, if not already at end-of-line.
+
+- Repeat count?: [Yes][repeat count].
+- Undo?: No ([undoes previous editing][undo command]).
 
 #### `C-b` or `←`: Character Backward
 
 Move the cursor backward one character, if not already at beginning-of-line.
 
+- Repeat count?: [Yes][repeat count].
+- Undo?: No ([undoes previous editing][undo command]).
+
 #### `M-f`: Word Forward
 
-Move the cursor forward one word, if not already at end-of-line:
+Move the cursor forward one word, if not already at end-of-line.
 
-- If cursor is in a word, move to the end of that word.
-- If cursor is not in a word (at a space, for example), move to the end of the next word.
+If cursor is in a word, move to the end of that word;
+otherwise (cursor at a space, for example), move to the end of the next word on the right.
+
+- Repeat count?: [Yes][repeat count].
+- Undo?: No ([undoes previous editing][undo command]).
 
 #### `M-b`: Word Backward
 
-Move the cursor backward one word, if not already at beginning-of-line:
+Move the cursor backward one word, if not already at beginning-of-line.
 
-- If cursor is in a word, move to the beginning of that word.
-- If cursor is not in a word (at a space, for example), move to the beginning of the next word on the left.
+If cursor is in a word, move to the beginning of that word.
+otherwise (cursor at a space, for example), move to the beginning of the next word on the left.
+
+- Repeat count?: [Yes][repeat count].
+- Undo?: No ([undoes previous editing][undo command]).
+
+#### `C-a`: Beginning of Line
+
+Move the cursor to the beginning of the line, if not already there:
+
+- Repeat count?: No.
+- Undo?: No ([undoes previous editing][undo command]).
+
+#### `C-e`: End of Line
+
+Move the cursor to the end of the line, if not already there.
+
+- Repeat count?: No.
+- Undo?: No ([undoes previous editing][undo command]).
 
 #### `C-l`: Clear Screen
 
-Clear the screen, then redraw the current line, leaving the current line at the top of the screen;
-if given a numeric argument, this refreshes the current line without clearing the screen.
+Clear the screen, then redraw the current line, leaving the current line at the top of the screen.
+
+- Repeat count?: No.
+- Undo?: No ([undoes previous editing][undo command]).
 
 #### `M-C-l`: Clear Display
 
-Like 'C-l', but also clear the terminal’s scrollback buffer if possible.
+Like `C-l`, but also clear the terminal’s scrollback buffer if possible.
+
+- Repeat count?: No.
+- Undo?: No ([undoes previous editing][undo command]).
 
 ### Commands for Manipulating the History
 
@@ -286,7 +311,7 @@ Like 'C-l', but also clear the terminal’s scrollback buffer if possible.
 
 #### `C-y`: Yank
 
-### Specifying Numeric Arguments
+### Repeat Count
 
 #### `M-`_digit_: Repetition
 
@@ -1018,7 +1043,7 @@ another initialization file:
 [commands for manipulating the history]: rdoc-ref:for_users.md@Commands+for+Manipulating+the+History
 [commands for changing text]:            rdoc-ref:for_users.md@Commands+for+Changing+Text
 [commands for killing and yanking]:      rdoc-ref:for_users.md@Commands+for+Killing+and+Yanking
-[specifying numeric arguments]:          rdoc-ref:for_users.md@Specifying+Numeric+Arguments
+[repeat count]:                          rdoc-ref:for_users.md@Repeat+Count
 [commands for word completion]:          rdoc-ref:for_users.md@Commands+for+Word+Completion
 [other commands]:                        rdoc-ref:for_users.md@Other+Commands
 
