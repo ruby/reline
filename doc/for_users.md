@@ -44,8 +44,8 @@ Details for the commands are at the links.
 |:------------------------:|:-------:|:-----:|----------------------------------------------------|
 | Any printable character. |   No.   | Yes.  | Insert character.                                  |
 |       <tt>Del</tt>       |   No.   | Yes.  | Delete character forward.                          |
-|      <tt>C-d</tt>        |   No.   | Yes.  | Delete character forward (only if line non-empty). |
-|     <tt>Rubout</tt>      |  Yes.   | Yes.  | Delete character backward.                         |
+|       <tt>C-d</tt>       |   No.   | Yes.  | Delete character forward (only if line non-empty). |
+|    <tt>Backspace</tt>    |  Yes.   | Yes.  | Delete character backward.                         |
 |       <tt>C-t</tt>       |   No.   | Yes.  | Transpose characters.                              |
 |       <tt>M-t</tt>       |  Yes.   | Yes.  | Transpose words.                                   |
 |       <tt>M-u</tt>       |  Yes.   | Yes.  | Upcase word.                                       |
@@ -268,31 +268,53 @@ Like `C-l`, but also clear the terminal’s scrollback buffer if possible.
 - Repeat count?: No.
 - Undo?: No ([undoes previous editing][undo command]).
 
-### Commands for Manipulating the History
-
-####  `Enter`: Accept Line
-
-#### `C-p` or `↑`: Previous History
-
-#### `C-n` or `↓`: Next History
-
-#### `C-r`: Reverse Search History
-
-#### `M-p`: Non-Incremental Reverse Search History
-
-#### `M-n`: Non-Incremental Forward Search History
-
 ### Commands for Changing Text
 
-#### Any Printable Character
+#### Any Printable Character: Insert Character
+
+Move trailing string (if any) one character width to the right, to "open a gap";
+insert the character at the cursor;
+place the cursor immediately after the inserted character.
+
+- Repeat count?: No.
+- Undo?: [Yes][undo command].
 
 #### `C-d`: Delete Character Forward
 
+If at end-of-line: do nothing.
+
+Otherwise: delete the character at the cursor;
+move trailing string (if any) one character to the left, to "close the gap";
+leave the cursor in place.
+
+- Repeat count?: No.
+- Undo?: [Yes][undo command].
+
 #### `Backspace`: Delete Character Backward
+
+If at beginning-of-line: do nothing.
+
+Otherwise: delete the character before the cursor;
+move the cursor and the trailing string (if any) one character to the left, to "close the gap."
+
+- Repeat count?: No.
+- Undo?: [Yes][undo command].
 
 #### `C-t`: Transpose Characters
 
+If at beginning-of-line, or at the end of a 1-character line, do nothing.
+
+Otherwise, if at end-of-line, transpose the last two characters; leave the cursor in place.
+
+Otherwise, transpose the single characters before and after the cursor;
+move the cursor to the end of the transposed pair.
+
+- Repeat count?: No.
+- Undo?: [Yes][undo command].
+
 #### `M-t`: Transpose Words
+
+If at the beginning-of-line, or if there is only one word, do nothing.
 
 #### `M-u`: Upcase Word
 
@@ -301,40 +323,6 @@ Like `C-l`, but also clear the terminal’s scrollback buffer if possible.
 #### `M-c`: Capitalize Word
 
 ### Commands for Killing and Yanking
-
-#### `C-k`: Kill Line
-
-#### `C-u`: Unix Discard Line
-
-#### `M-d`: Kill Word
-
-#### `C-w`: Unix Word Rubout
-
-#### `C-y`: Yank
-
-### Repeat Count
-
-#### `M-`_digit_: Repetition
-
-### Commands for Word Completion
-
-#### `Tab`: Complete Word
-
-#### `Tab Tab`: Show Completions
-
-### Other Commands
-
-#### `Esc`: Meta Prefix
-
-#### `C-_` or `C-x C-u`: Undo
-
-#### `C-d': Exit Application
-
-#### `Enter': Exit Application
-
---------------------------------
-
-## Killing and Yanking
 
 _Killing_ means deleting text from the current line
 and saving it for potential later use.
@@ -386,7 +374,21 @@ the cursor is moved forward to the end of the inserted text.
   Effective only if the immediately preceding command was `C-y` or another `M-y`;
   otherwise, does nothing.
 
-## Command History
+#### `C-k`: Kill Line
+
+#### `C-u`: Unix Discard Line
+
+#### `M-d`: Kill Word
+
+#### `C-w`: Unix Word Rubout
+
+#### `C-y`: Yank
+
+### Repeat Count
+
+#### `M-`_digit_: Repetition
+
+### Commands for Manipulating the History
 
 A Reline application may support command history.
 
@@ -395,15 +397,19 @@ An easy way to find out whether it does is (after entering one or more commands)
 - Yes, if you now see the most recently entered command; read on.
 - No, if you see no change; this section does not apply.
 
-You can browse the history:
+####  `Enter`: Accept Line
 
-- `↑`: scroll upward in history (if not already at the earliest history).
-- `↓`: scroll downward in history (if not already at the current line).
+#### `C-p` or `↑`: Previous History
 
-You can search the history using these commands:
+#### `C-n` or `↓`: Next History
 
-- `C-r`: Initiate reverse search.
-- `C-g` or `C-j`: Abort search.
+#### `C-r`: Reverse Search History
+
+#### `M-p`: Non-Incremental Reverse Search History
+
+#### `M-n`: Non-Incremental Forward Search History
+
+#### History in Action
 
 To see history searching in action,
 begin an [IRB][irb] session:
@@ -415,34 +421,31 @@ $ irb
 'xy'
 # => "xy"
 'x'
-# => "x"
+`# => "x"
 ```
 
 In the table below:
 
-- Each input character is incremental (no intervening characters)
+- Each command is incremental (no intervening characters)
   and is all on one editing line (does not generate a newline).
 - Each result (still on that same line) is the immediate effect of that input.
 
-|    Input     | Result                                | Details                             |
-|:------------:|---------------------------------------|-------------------------------------|
-| <tt>C-r</tt> | <tt>(reverse-i-search)`':</tt>        | New backward search.                |
-| <tt>'x'</tt> | <tt>(reverse-i-search)`x''x'</tt>     | First command matching <tt>'x'</tt> |
-| <tt>'y'</tt> | <tt>(reverse-i-search)`xy''xy'</tt>   | First command matching <tt>'y'</tt> |
-| <tt>'z'</tt> | <tt>(reverse-i-search)`xyz''xyz'</tt> | First command matching <tt>'z'</tt> |
-| <tt>C-j</tt> | <tt>'xyz'</tt>                        | Search aborted.                     |
-| <tt>C-r</tt> | <tt>(reverse-i-search)`':</tt>        | New backward search.                |
-| <tt>'y'</tt> | <tt>(reverse-i-search)`y''xy'</tt>    | First command matching <tt>'y'</tt> |
+|    Command     | Result                                | Details                             |
+|:--------------:|---------------------------------------|-------------------------------------|
+|  <tt>C-r</tt>  | <tt>(reverse-i-search)`':</tt>        | New backward search.                |
+|  <tt>'x'</tt>  | <tt>(reverse-i-search)`x''x'</tt>     | First command matching <tt>'x'</tt> |
+|  <tt>'y'</tt>  | <tt>(reverse-i-search)`xy''xy'</tt>   | First command matching <tt>'y'</tt> |
+|  <tt>'z'</tt>  | <tt>(reverse-i-search)`xyz''xyz'</tt> | First command matching <tt>'z'</tt> |
+|  <tt>C-j</tt>  | <tt>'xyz'</tt>                        | Search aborted.                     |
+|  <tt>C-r</tt>  | <tt>(reverse-i-search)`':</tt>        | New backward search.                |
+|  <tt>'y'</tt>  | <tt>(reverse-i-search)`y''xy'</tt>    | First command matching <tt>'y'</tt> |
 | <tt>Enter</tt> | <tt>'xy'</tt>                         | Command <tt>'xy'</tt> ready.        |
 
 In the last instance, command `xy` is displayed on the edit line,
 and is ready for execution (via `Enter`),
 or for editing (via cursor movement, insertion, deletion, killing, yanking).
 
-TODO: C-p;  C-n;  C-s;  C-o;
-TODO: M->;  M-<;  M-p;  M-n;  M-C-y;  M-.;  M-_;  M-Tab;  M-t;  M-u;  M-l;  M-c;  
-
-## Command Completion
+### Commands for Word Completion
 
 A Reline application may support command completion,
 which is implemented as responses to the `Tab` command,
@@ -518,6 +521,20 @@ Note that when the command line is empty, or when the typing so far does not mat
 `Tab` has no effect.
 
 TODO:  M-?;  M-*;
+
+#### `Tab`: Complete Word
+
+#### `Tab Tab`: Show Completions
+
+### Other Commands
+
+#### `Esc`: Meta Prefix
+
+#### `C-_` or `C-x C-u`: Undo
+
+#### `C-d': Exit Application
+
+#### `Enter': Exit Application
 
 ## Initialization File
 
