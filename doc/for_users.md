@@ -29,28 +29,28 @@ Details for the commands are at the links.
 
 [Manipulating history][commands for manipulating the history]:
 
-|          Command           | Repeat? | Undo? | Action                          |
-|:--------------------------:|:-------:|:-----:|---------------------------------|
-|       <tt>Enter</tt>       |   No.   |  No.  | Accept the line.                |
-| <tt>C-p</tt> or <tt>↑</tt> |  Yes.   | Yes.  | Move to previous command.       |
-| <tt>C-n</tt> or <tt>↓</tt> |  Yes.   | Yes.  | Move to next command.           |
-|        <tt>C-r</tt>        |   No.   |  No.  | Reverse search of history.      |
-|        <tt>M-p</tt>        |   No.   |  No.  | Non-incremental reverse search. |
-|        <tt>M-n</tt>        |   No.   |  No.  | Non-incremental forward search. |
+|          Command           | Repeat? | Undo? | Action                                |
+|:--------------------------:|:-------:|:-----:|---------------------------------------|
+|       <tt>Enter</tt>       |   No.   |  No.  | Accept line (only if line non-empty). |
+| <tt>C-p</tt> or <tt>↑</tt> |  Yes.   | Yes.  | Move to previous command.             |
+| <tt>C-n</tt> or <tt>↓</tt> |  Yes.   | Yes.  | Move to next command.                 |
+|        <tt>C-r</tt>        |   No.   |  No.  | Reverse search of history.            |
+|        <tt>M-p</tt>        |   No.   |  No.  | Non-incremental reverse search.       |
+|        <tt>M-n</tt>        |   No.   |  No.  | Non-incremental forward search.       |
 
 [Changing text][commands for changing text]:
 
-|           Command            | Repeat? | Undo? | Action                                        |
-|:----------------------------:|:-------:|:-----:|-----------------------------------------------|
-|   Any printable character.   |   No.   | Yes.  | Insert the character.                         |
-| <tt>C-d</tt> or <tt>Del</tt> |   No.   | Yes.  | Delete character forward (if line non-empty). |
-|         <tt>C-d</tt>         |   No.   |  No.  | Exit application (if line empty).             |
-|       <tt>Rubout</tt>        |  Yes.   | Yes.  | Delete character backward.                    |
-|         <tt>C-t</tt>         |   No.   | Yes.  | Transpose characters.                         |
-|         <tt>M-t</tt>         |  Yes.   | Yes.  | Transpose words.                              |
-|         <tt>M-u</tt>         |  Yes.   | Yes.  | Upcase word.                                  |
-|         <tt>M-l</tt>         |  Yes.   | Yes.  | Downcase word.                                |
-|         <tt>M-c</tt>         |   No.   | Yes.  | Capitalize word.                              |
+|         Command          | Repeat? | Undo? | Action                                             |
+|:------------------------:|:-------:|:-----:|----------------------------------------------------|
+| Any printable character. |   No.   | Yes.  | Insert character.                                  |
+|       <tt>Del</tt>       |   No.   | Yes.  | Delete character forward.                          |
+|      <tt>C-d</tt>        |   No.   | Yes.  | Delete character forward (only if line non-empty). |
+|     <tt>Rubout</tt>      |  Yes.   | Yes.  | Delete character backward.                         |
+|       <tt>C-t</tt>       |   No.   | Yes.  | Transpose characters.                              |
+|       <tt>M-t</tt>       |  Yes.   | Yes.  | Transpose words.                                   |
+|       <tt>M-u</tt>       |  Yes.   | Yes.  | Upcase word.                                       |
+|       <tt>M-l</tt>       |  Yes.   | Yes.  | Downcase word.                                     |
+|       <tt>M-c</tt>       |   No.   | Yes.  | Capitalize word.                                   |
 
 [Killing and yanking][commands for killing and yanking]:
 
@@ -71,11 +71,12 @@ Details for the commands are at the links.
 
 [Other commands][other commands]:
 
-|   Command    | Repeat? | Undo? | Action                                 |
-|:------------:|:-------:|:-----:|----------------------------------------|
-| <tt>Esc</tt> |   No.   |  No.  | Meta prefix.                           |
-| <tt>C-_</tt> |   No.   |  No.  | Undo.                                  |
-| <tt>C-d</tt> |   No.   |  No.  | Exit application (only if line empty). |
+|    Command     | Repeat? | Undo? | Action                                 |
+|:--------------:|:-------:|:-----:|----------------------------------------|
+|  <tt>Esc</tt>  |   No.   |  No.  | Meta prefix.                           |
+|  <tt>C-_</tt>  |   No.   |  No.  | Undo.                                  |
+|  <tt>C-d</tt>  |   No.   |  No.  | Exit application (only if line empty). |
+| <tt>Enter</tt> |   No.   |  No.  | Exit application (only if line empty). |
 
 ## Reline Defaults
 
@@ -283,11 +284,11 @@ Like `C-l`, but also clear the terminal’s scrollback buffer if possible.
 
 ### Commands for Changing Text
 
-#### `C-d`: Delete Character Forward or Exit Application
+#### Any Printable Character
+
+#### `C-d`: Delete Character Forward
 
 #### `Backspace`: Delete Character Backward
-
-#### Printable Character
 
 #### `C-t`: Transpose Characters
 
@@ -327,71 +328,11 @@ Like `C-l`, but also clear the terminal’s scrollback buffer if possible.
 
 #### `C-_` or `C-x C-u`: Undo
 
+#### `C-d': Exit Application
+
+#### `Enter': Exit Application
 
 --------------------------------
-
-## Reline Basics
-
-Reline lets you edit typed command-line text.
-
-### Cursor-Movement Commands
-
-Character-by-character:
-
-- `←` or `C-b`: backward one character.
-- `→` or `C-f`: forward one character.
-
-Word-by-word:
-
-- `M-b`: backward to the beginning of a word.
-- `M-f`: forward to the end of a word.
-
-Whole line:
-
-- `Home` or `C-a`: backward to the beginning of the line.
-- `End` or `C-e`: forward to the end of the line.
-
-Clear screen:
-
-- 'C-l': Clear the screen, then redraw the current line, leaving the current line at the top of the screen.
-  If given a numeric argument, this refreshes the current line without clearing the screen.
-- 'M-C-l': Like 'C-l', but if possible also clear the terminal’s scrollback buffer. 
-
-### Commands for Changing Text
-
-Character deletion commands:
-
-- `Del`: remove the character to the right the cursor if there is one.
-- `C-d`: (only if the line is non-empty) remove the character to the right the cursor if there is one.
-- `Backspace`: remove the character to the left the cursor.
-
-If a character is removed, existing characters to the right of the cursor are move leftward
-to "close the gap."
-
-Text insertion commands:
-
-- Any printable character: insert the character at the cursor;
-  existing characters to the right of the cursor are move rightward to "make room."
-
-Transposing commands:
-
-- 'C-t': transpose characters.
-- 'M-t': transpose words.
-
-Casing commands:
-
-- 'M-u': upcase word.
-- 'M-l': downcase word.
-- 'M-c': capitalize word.
-- 
-### Other Commands
-
-- `C-_`: undo the last editing command;
-  may be repeated until the original (unedited) line is restored.
-- `C-l`: clear the screen and reprint the current line at the top.
-- `C-d`: (only if the line is empty) exit the application.
-
-TODO: C-q;  C-v;  C-t;  C-_;  C-x C-u;  C-@;  C-x C-x;  C-];
 
 ## Killing and Yanking
 
@@ -444,32 +385,6 @@ the cursor is moved forward to the end of the inserted text.
 - `M-y`: Rotate the kill ring, and yank from the new top.
   Effective only if the immediately preceding command was `C-y` or another `M-y`;
   otherwise, does nothing.
-
-## Keyboard Macros
-
-TODO: C-x (;  C-x );  C-x e;
-
-## Miscellaneous Commands
-
-TODO:  C-x C-r;
-TODO:  M-A;  M-r;  M-~;  M-C-];  M-#;  M-x;  M-C-j
-
-## Quantifiers
-
-Some Reline commands accept quantifiers.
-
-A quantifier is a positive integer repeat count `n`
-that tells Reline to execute the command `n` times.
-
-The quantifier precedes the command,
-and is typed as numeric characters in range `('0'..'9')` while holding down the `Alt` key.
-
-Examples:
-
-- `M-4` `←` moves the cursor four characters to the left.
-- `M-1` `M-4` `←` moves the cursor fourteen characters to the left.
-
-TODO:  M-0;  
 
 ## Command History
 
