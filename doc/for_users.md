@@ -5,51 +5,50 @@ For other usages, see [Your Reline][your reline].
 
 ## In Brief
 
-Each table in this section summarizes some Reline commands:
+Each table in this section summarizes a group or related Reline commands:
 
 - *Command*: the keys for the command.
-- *Repeat?*: whether a repeat count may be given;
-  see [Specifying Numeric Arguments][specifying numeric arguments].
-- *Undo?*: whether the action may be undone.
+- *Repeat?*: whether a [repeat count][specifying numeric arguments] may be given.
+- *Undo?*: whether the action may be [undone][undo command].
 - *Action*: the action to be taken.
 
-[Moving the cursor][commands for  the cursor]:
+[Moving the cursor][commands for moving the cursor]:
 
-|    Command     | Repeat? | Undo? | Action                       |
-|:--------------:|:-------:|:-----:|------------------------------|
-|  <tt>C-f</tt>  | Yes.    |  No.  | Move forward one character.  |
-|  <tt>C-b</tt>  |  Yes.   |  No.  | Move backward one character. |
-|  <tt>M-f</tt>  |  Yes.   |  No.  | Move forward one word.       |
-|  <tt>M-b</tt>  |  Yes.   |  No.  | Move backward one word.      |
-|  <tt>C-a</tt>  |   No.   |  No.  | Move to beginning of line.   |
-|  <tt>C-e</tt>  |   No.   |  No.  | Move to end of line.         |
-|  <tt>C-l</tt>  |   No.   |  No.  | Clear screen.                |
-| <tt>M-C-l</tt> |   No.   |  No.  | Clear display.               |
+|            Command            | Repeat? | Undo? | Action                       |
+|:-----------------------------:|:-------:|:-----:|------------------------------|
+|  <tt>C-f</tt> or <tt>→</tt>   | Yes.    |  No.  | Move forward one character.  |
+|  <tt>C-b</tt> or <tt>←</tt>   |  Yes.   |  No.  | Move backward one character. |
+|         <tt>M-f</tt>          |  Yes.   |  No.  | Move forward one word.       |
+|         <tt>M-b</tt>          |  Yes.   |  No.  | Move backward one word.      |
+| <tt>C-a</tt> or <tt>Home</tt> |   No.   |  No.  | Move to beginning of line.   |
+| <tt>C-e</tt> or <tt>End</tt>  |   No.   |  No.  | Move to end of line.         |
+|         <tt>C-l</tt>          |   No.   |  No.  | Clear screen.                |
+|        <tt>M-C-l</tt>         |   No.   |  No.  | Clear display.               |
 
 [Manipulating history][commands for manipulating the history]:
 
-|    Command     | Repeat? | Undo? | Action                          |
-|:--------------:|:-------:|:-----:|---------------------------------|
-| <tt>Enter</tt> |   No.   |  No.  | Accept the line.                |
-|  <tt>C-p</tt>  |  Yes.   | Yes.  | Move to previous command.       |
-|  <tt>C-n</tt>  |  Yes.   | Yes.  | Move to next command.           |
-|  <tt>C-r</tt>  |   No.   |  No.  | Reverse search of history.      |
-|  <tt>M-p</tt>  |   No.   |  No.  | Non-incremental reverse search. |
-|  <tt>M-n</tt>  |   No.   |  No.  | Non-incremental forward search. |
+|          Command           | Repeat? | Undo? | Action                          |
+|:--------------------------:|:-------:|:-----:|---------------------------------|
+|       <tt>Enter</tt>       |   No.   |  No.  | Accept the line.                |
+| <tt>C-p</tt> or <tt>↑</tt> |  Yes.   | Yes.  | Move to previous command.       |
+| <tt>C-n</tt> or <tt>↓</tt> |  Yes.   | Yes.  | Move to next command.           |
+|        <tt>C-r</tt>        |   No.   |  No.  | Reverse search of history.      |
+|        <tt>M-p</tt>        |   No.   |  No.  | Non-incremental reverse search. |
+|        <tt>M-n</tt>        |   No.   |  No.  | Non-incremental forward search. |
 
 [Changing text][commands for changing text]:
 
-|         Command          | Repeat? | Undo? | Action                                        |
-|:------------------------:|:-------:|:-----:|-----------------------------------------------|
-|       <tt>C-d</tt>       |   No.   | Yes.  | Delete character forward (if line non-empty). |
-|       <tt>C-d</tt>       |   No.   |  No.  | Exit application (if line empty).             |
-|     <tt>Rubout</tt>      |  Yes.   | Yes.  | Delete character backward.                    |
-| Any printable character. |   No.   | Yes.  | Insert the character.                         |
-|       <tt>C-t</tt>       |   No.   | Yes.  | Transpose characters.                         |
-|       <tt>M-t</tt>       |  Yes.   | Yes.  | Transpose words.                              |
-|       <tt>M-u</tt>       |  Yes.   | Yes.  | Upcase word.                                  |
-|       <tt>M-l</tt>       |  Yes.   | Yes.  | Downcase word.                                |
-|       <tt>M-c</tt>       |   No.   | Yes.  | Capitalize word.                              |
+|           Command            | Repeat? | Undo? | Action                                        |
+|:----------------------------:|:-------:|:-----:|-----------------------------------------------|
+|   Any printable character.   |   No.   | Yes.  | Insert the character.                         |
+| <tt>C-d</tt> or <tt>Del</tt> |   No.   | Yes.  | Delete character forward (if line non-empty). |
+|         <tt>C-d</tt>         |   No.   |  No.  | Exit application (if line empty).             |
+|       <tt>Rubout</tt>        |  Yes.   | Yes.  | Delete character backward.                    |
+|         <tt>C-t</tt>         |   No.   | Yes.  | Transpose characters.                         |
+|         <tt>M-t</tt>         |  Yes.   | Yes.  | Transpose words.                              |
+|         <tt>M-u</tt>         |  Yes.   | Yes.  | Upcase word.                                  |
+|         <tt>M-l</tt>         |  Yes.   | Yes.  | Downcase word.                                |
+|         <tt>M-c</tt>         |   No.   | Yes.  | Capitalize word.                              |
 
 [Killing and yanking][commands for killing and yanking]:
 
@@ -70,10 +69,11 @@ Each table in this section summarizes some Reline commands:
 
 [Other commands][other commands]:
 
-|    Command    | Repeat? | Undo? | Action       |
-|:-------------:|:-------:|:-----:|--------------|
-| <tt>Esc</tt>  |   No.   |  No.  | Meta prefix. |
-| <tt>C-_</tt>  |   No.   |  No.  |       Undo.  |
+|   Command    | Repeat? | Undo? | Action                                 |
+|:------------:|:-------:|:-----:|----------------------------------------|
+| <tt>Esc</tt> |   No.   |  No.  | Meta prefix.                           |
+| <tt>C-_</tt> |   No.   |  No.  | Undo.                                  |
+| <tt>C-d</tt> |   No.   |  No.  | Exit application (only if line empty). |
 
 ## Reline Defaults
 
@@ -162,29 +162,28 @@ we use certain notations.
 
 ### Keys
 
-[Arrow Keys][arrow keys]:
+Arrow keys:
 
 - `←` denotes the left-arrow key.
 - `→` denotes the right-arrow key.
 - `↑` denotes the up-arrow key.
 - `↓` denotes the down-arrow key.
   
-Other Keys
+Other keys:
 
-- `Alt` denotes the [Alt key][alt key]
-- `Bsp` denotes the [Backspace key][backspace key]
-- `Ctrl` denotes the [Control key][control key]
-- `Del` denotes the [Delete key][delete key]
-- `End` denotes the [End key][end key]
-- `Ent` denotes the [Enter key][enter key]
-- `Esc` denotes the [Escape key][escape key]
-- `Home` denotes the [Home key][home key]
-- `Spc` denotes the [Space bar][space bar]
-- `Tab` denotes the [Tab key][tab key]
+- `Alt` denotes the Alt key.
+- `Backspace` denotes the Backspace key.
+- `Ctrl` denotes the Control key.
+- `Del` denotes the Delete key.
+- `End` denotes the End key.
+- `Enter` denotes the Enter key.
+- `Esc` denotes the Escape key.
+- `Home` denotes the Home key.
+- `Tab` denotes the Tab key.
 
 ### Control Characters
 
-`C-k` (read as "Control-k") denotes the input produced
+`C-k` (pronounced "Control-k") denotes the input produced
 when `Ctrl` is depressed (held down),
 then the `k` key is then pressed, and both are released.
 
@@ -193,7 +192,7 @@ Almost any character can have a "control" version:
 
 ### Meta Characters
 
-`M-k` (read as "Meta-k" or "Alt-k") denotes the input produced
+`M-k` (pronounced "Meta-k") denotes the input produced
 when the `Alt` is depressed (held down),
 then the `k` key is then pressed, and both are released.
 
@@ -212,11 +211,11 @@ Move the cursor to the beginning of the line, if not already there.
 
 Move the cursor to the end of the line, if not already there.
 
-#### `C-f`: Character Forward
+#### `C-f` or `→`: Character Forward
 
 Move the cursor forward one character, if not already at end-of-line.
 
-#### `C-b`: Character Backward
+#### `C-b` or `←`: Character Backward
 
 Move the cursor backward one character, if not already at beginning-of-line.
 
@@ -245,11 +244,11 @@ Like 'C-l', but also clear the terminal’s scrollback buffer if possible.
 
 ### Commands for Manipulating the History
 
-####  `Ent`: Accept Line
+####  `Enter`: Accept Line
 
-#### `C-p`: Previous History
+#### `C-p` or `↑`: Previous History
 
-#### `C-n`: Next History
+#### `C-n` or `↓`: Next History
 
 #### `C-r`: Reverse Search History
 
@@ -261,7 +260,7 @@ Like 'C-l', but also clear the terminal’s scrollback buffer if possible.
 
 #### `C-d`: Delete Character Forward or Exit Application
 
-#### `Bsp`: Delete Character Backward
+#### `Backspace`: Delete Character Backward
 
 #### Printable Character
 
@@ -338,9 +337,8 @@ Clear screen:
 Character deletion commands:
 
 - `Del`: remove the character to the right the cursor if there is one.
-- `C-d`: remove the character to the right the cursor if there is one.
-  Note: if the command-line is empty, exit the application.
-- `Bsp` or 'Rubout': remove the character to the left the cursor.
+- `C-d`: (only if the line is non-empty) remove the character to the right the cursor if there is one.
+- `Backspace`: remove the character to the left the cursor.
 
 If a character is removed, existing characters to the right of the cursor are move leftward
 to "close the gap."
@@ -366,6 +364,7 @@ Casing commands:
 - `C-_`: undo the last editing command;
   may be repeated until the original (unedited) line is restored.
 - `C-l`: clear the screen and reprint the current line at the top.
+- `C-d`: (only if the line is empty) exit the application.
 
 TODO: C-q;  C-v;  C-t;  C-_;  C-x C-u;  C-@;  C-x C-x;  C-];
 
@@ -408,7 +407,7 @@ Kill backward; the cursor moves leftward to "close the gap":
 - `C-w`: Kill from the cursor to the previous whitespace;
   this is different from `M-Del` because the word boundaries are different.
 
-TODO: C-x Rubout;  C-u;  M-y;
+TODO: C-x Backspace;  C-u;  M-y;
 
 ### Yank Commands
 
@@ -494,10 +493,10 @@ In the table below:
 | <tt>C-j</tt> | <tt>'xyz'</tt>                        | Search aborted.                     |
 | <tt>C-r</tt> | <tt>(reverse-i-search)`':</tt>        | New backward search.                |
 | <tt>'y'</tt> | <tt>(reverse-i-search)`y''xy'</tt>    | First command matching <tt>'y'</tt> |
-| <tt>Ent</tt> | <tt>'xy'</tt>                         | Command <tt>'xy'</tt> ready.        |
+| <tt>Enter</tt> | <tt>'xy'</tt>                         | Command <tt>'xy'</tt> ready.        |
 
 In the last instance, command `xy` is displayed on the edit line,
-and is ready for execution (via `Ent`),
+and is ready for execution (via `Enter`),
 or for editing (via cursor movement, insertion, deletion, killing, yanking).
 
 TODO: C-p;  C-n;  C-s;  C-o;
@@ -538,7 +537,7 @@ echo> qux
 That's because the only possible command word beginning with `'q'` is `'qux'`.
 Then typing `'f'` does not do much; we just see the one character typed:
 
-Adding `Ent` executes the command:
+Adding `Enter` executes the command:
 
 ```
 echo> qux
@@ -567,7 +566,7 @@ echo> foo_
 foo_bar foo_baz foo_foo
 ```
 
-Now typing `'f'`, `Tab`, and `Ent` completes and enters the command:
+Now typing `'f'`, `Tab`, and `Enter` completes and enters the command:
 
 ```
 echo> foo_foo
@@ -1023,23 +1022,16 @@ another initialization file:
 [commands for word completion]:          rdoc-ref:for_users.md@Commands+for+Word+Completion
 [other commands]:                        rdoc-ref:for_users.md@Other+Commands
 
-[alt key]: https://en.wikipedia.org/wiki/Alt_key
+[undo command]:                          rdoc-ref:for_users.md@C-_+or+C-x+C-u-3A+Undo
+
 [ansi escape codes]: https://en.wikipedia.org/wiki/ANSI_escape_code
-[arrow keys]: https://en.wikipedia.org/wiki/Arrow_keys
-[backspace key]: https://en.wikipedia.org/wiki/Backspace
 [command completion]: rdoc-ref:for_users.md@Command+Completion
 [command history]: rdoc-ref:for_users.md@Command+History
 [console application]: https://en.wikipedia.org/wiki/Console_application
-[control key]: https://en.wikipedia.org/wiki/Control_key
 [debug]: https://github.com/ruby/debug
-[delete key]: https://en.wikipedia.org/wiki/Delete_key
 [directives]: rdoc-ref:for_users.md@Directives
 [editing-mode]: rdoc-ref:for_users.md@editing-mode
 [emacs-mode-string]: rdoc-ref:for_users.md@emacs-mode-string
-[end key]: https://en.wikipedia.org/wiki/End_key
-[enter key]: https://en.wikipedia.org/wiki/Enter_key
-[escape key]: https://en.wikipedia.org/wiki/Esc_key
-[home key]: https://en.wikipedia.org/wiki/Home_key
 [irb]: https://ruby.github.io/irb/index.html
 [key bindings]: rdoc-ref:for_users.md@Key+Bindings
 [macro]: https://en.wikipedia.org/wiki/Macro_(computer_science)
@@ -1049,7 +1041,6 @@ another initialization file:
 [show-mode-in-prompt]: rdoc-ref:for_users.md@show-mode-in-prompt
 [space bar]: https://en.wikipedia.org/wiki/Space_bar
 [stack]: https://en.wikipedia.org/wiki/Stack_(abstract_data_type)
-[tab key]: https://en.wikipedia.org/wiki/Tab_key
 [variables]: rdoc-ref:for_users.md@Variables
 [vi-cmd-mode-string]: rdoc-ref:for_users.md@vi-cmd-mode-string
 [vi-ins-mode-string]: rdoc-ref:for_users.md@vi-ins-mode-string
