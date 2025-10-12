@@ -167,17 +167,6 @@ class Reline::ANSI < Reline::IO
     @buf.unshift(c)
   end
 
-  def retrieve_keybuffer
-    begin
-      return unless @input.wait_readable(0.001)
-      str = @input.read_nonblock(1024)
-      str.bytes.each do |c|
-        @buf.push(c)
-      end
-    rescue EOFError
-    end
-  end
-
   def get_screen_size
     s = @input.winsize
     return s if s[0] > 0 && s[1] > 0
@@ -309,7 +298,6 @@ class Reline::ANSI < Reline::IO
   def prep
     # Enable bracketed paste
     write "\e[?2004h" if Reline.core.config.enable_bracketed_paste && both_tty?
-    retrieve_keybuffer
     nil
   end
 
