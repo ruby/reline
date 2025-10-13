@@ -21,15 +21,6 @@ module HTTPS_DL
     ["ruby/readline-ext/master/test/readline", "test/ext/readline" , "helper.rb"                ],
     ["ruby/readline-ext/master/test/readline", "test/ext/readline" , "test_readline.rb"         ],
     ["ruby/readline-ext/master/test/readline", "test/ext/readline" , "test_readline_history.rb" ],
-    ["ruby/ruby/master/tool/lib"             , "tool/lib"          , "colorize.rb"              ],
-    ["ruby/ruby/master/tool/lib"             , "tool/lib"          , "core_assertions.rb"       ],
-    ["ruby/ruby/master/tool/lib"             , "tool/lib"          , "envutil.rb"               ],
-    ["ruby/ruby/master/tool/lib"             , "tool/lib"          , "find_executable.rb"       ],
-    ["ruby/ruby/master/tool/lib"             , "tool/lib"          , "leakchecker.rb"           ],
-    ["ruby/ruby/master/tool/lib/test"        , "tool/lib/test"     , "unit.rb"                  ],
-    ["ruby/ruby/master/tool/lib/test/unit"   , "tool/lib/test/unit", "assertions.rb"            ],
-    ["ruby/ruby/master/tool/lib/test/unit"   , "tool/lib/test/unit", "parallel.rb"              ],
-    ["ruby/ruby/master/tool/lib/test/unit"   , "tool/lib/test/unit", "testcase.rb"              ]
   ]
 
   class << self
