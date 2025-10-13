@@ -13,6 +13,7 @@ gem 'bundler'
 gem 'rdoc'
 gem 'rake'
 gem 'test-unit'
+gem 'test-unit-ruby-core'
 
 # Only used in ci to run readline-ext test using Reline as Readline
 gem 'readline'
