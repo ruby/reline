@@ -211,7 +211,7 @@ on the _current_ command line;
 nothing is ever undone in an already-entered line.
 
 Some commands can be undone; others cannot.
-See the "In Brief" tables above.
+See the tables in [In Brief][in brief].
 
 #### Immediate Undo
 
@@ -233,7 +233,7 @@ A command may be prefixed by an integer argument
 that specifies the number of times the command is to be executed.
 
 Some commands support repetition; others do not.
-See the "In Brief" tables above.
+See the tables in [In Brief][in brief].
 
 If repetition for the command is supported and a repetition value of `n` is given,
 the command is executed `n` times.
@@ -1014,6 +1014,7 @@ another initialization file:
 [commands for word completion]:          rdoc-ref:for_users.md@Commands+for+Word+Completion
 [other commands]:                        rdoc-ref:for_users.md@Other+Commands
 
+[in brief]:                              rdoc-ref:for_users.md@In+Brief
 [immediate undo]:                        rdoc-ref:for_users.md@Immediate+Undo
 [fall-through undo]:                     rdoc-ref:for_users.md@22Fall-Through-22+Undo
 [about repetition]:                      rdoc-ref:for_users.md@About+Repetition
