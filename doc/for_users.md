@@ -240,6 +240,27 @@ the command is executed `n` times.
 
 It the repetition is for the command is not supported, the repetition prefix is ignored.
 
+### About Killing and Yanking
+
+_Killing_ means deleting text from the current line
+and saving it for potential later use (by _yanking_).
+
+_Yanking_ means inserting previously-killed text into the current line.
+Yanked text is, depending on the command used, copied from or popped from the kill ring.
+
+
+Killed text is put onto the _kill ring_
+(a last-in, first-out [stack][stack]):
+
+- For a kill command that is preceded by another kill command,
+  the killed text is appended to the entry already at the top of the kill ring.
+  Thus, any number of consecutive kills save killed text as a single string.
+- For a kill command that is _not_ preceded by another kill command,
+  the killed text is pushed onto the kill ring as a new entry.
+
+The kill ring is not associated with particular command lines;
+text killed from a the current line is available for yanking into later command lines.
+
 ### Commands for Moving the Cursor
 
 #### `C-f` or `→`: Character Forward
@@ -398,56 +419,6 @@ It the repetition is for the command is not supported, the repetition prefix is 
     - If at the end of a word, upcase the first character of the next word and move cursor to the end of that word.
 
 ### Commands for Killing and Yanking
-
-_Killing_ means deleting text from the current line
-and saving it for potential later use.
-Killed text is pushed onto the _kill ring_
-(a last-in, first-out [stack][stack]).
-
-_Yanking_ means inserting previously-killed text into the current line.
-Yanked text is popped from the kill ring.
-
-For a kill command that is preceded by another kill command,
-the killed text is appended to the text already at the top of the kill ring.
-Thus, any number of consecutive kills save text as one string.
-
-For a kill command that is _not_ preceded by another kill command,
-the killed text is pushed onto the kill ring as a new entry.
-
-The kill ring is not line specific;
-text killed from a the current line is available for yanking into a new, later, current line.
-
-### Kill Commands
-
-Each kill command pushes the removed text onto the kill ring.
-
-Kill forward; the cursor does not move:
-
-- `C-k`: Kill from the cursor position to the end of the line.
-- `M-d`: Kill from the cursor to the end of the current word,
-  or, if between words, to the end of the next word;
-  word boundaries are the same as those used by M-f.
-
-Kill backward; the cursor moves leftward to "close the gap":
-
-- `M-Del`: Kill from the cursor to the start of the current word,
-  or, if between words, to the start of the previous word;
-  word boundaries are the same as those used by M-b.
-- `C-w`: Kill from the cursor to the previous whitespace;
-  this is different from `M-Del` because the word boundaries are different.
-
-TODO: C-x Backspace;  C-u;  M-y;
-
-### Yank Commands
-
-Each yank command pops text from the kill ring
-and inserts it at the cursor;
-the cursor is moved forward to the end of the inserted text.
-
-- `C-y`: Yank the most recently killed text at the cursor.
-- `M-y`: Rotate the kill ring, and yank from the new top.
-  Effective only if the immediately preceding command was `C-y` or another `M-y`;
-  otherwise, does nothing.
 
 #### `C-k`: Kill Line
 
