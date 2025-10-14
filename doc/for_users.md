@@ -7,10 +7,10 @@ For other usages, see [Your Reline][your reline].
 
 Each table in this section summarizes a group of related Reline commands:
 
-- *Command*: the keys for the command.
-- *Repetition?*: whether a [repetition prefix][about repetition] may be given.
-- *Undoable?*: whether the action may be [undone][undo command].
-- *Action*: the action to be taken.
+- **Command:** the keys for the command.
+- **Repetition?:** whether a [repetition prefix][about repetition] may be given.
+- **Undoable?:** whether the action may be [undone][undo command].
+- **Action:** the action to be taken.
 
 Details for the commands are at the links.
 
@@ -244,119 +244,158 @@ It the repetition is for the command is not supported, the repetition prefix is 
 
 #### `C-f` or `→`: Character Forward
 
-Move the cursor forward one character, if not already at end-of-line.
-
-- Repetition?: [Yes][about repetition].
-- Undoable?: No; attempts [fall-through undo][fall-through undo].
+- **Action:** Move the cursor forward one character.
+- **Repetition?:** [Yes][about repetition].
+- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Details:** Do nothing if already at end-of-line.
 
 #### `C-b` or `←`: Character Backward
 
-Move the cursor backward one character, if not already at beginning-of-line.
-
-- Repetition?: [Yes][about repetition].
-- Undoable?: No; attempts [fall-through undo][fall-through undo].
+- **Action:** Move the cursor backward one character.
+- **Repetition?:** [Yes][about repetition].
+- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Details:** Do nothing if already at beginning-of-line.
 
 #### `M-f`: Word Forward
 
-Move the cursor forward one word, if not already at end-of-line.
+- **Action:** Move the cursor forward one word.
+- **Repetition?:** [Yes][about repetition].
+- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Details:**
 
-If cursor is in a word, move to the end of that word;
-otherwise (cursor at a space, for example), move to the end of the next word on the right.
-
-- Repetition?: [Yes][about repetition].
-- Undoable?: No; attempts [fall-through undo][fall-through undo].
+    - If the cursor is in a word, move to the end of that word;
+    - Otherwise (cursor at a space, for example), move to the end of the next word on the right.
 
 #### `M-b`: Word Backward
 
-Move the cursor backward one word, if not already at beginning-of-line.
+- **Action:** Move the cursor backward one word.
+- **Repetition?:** [Yes][about repetition].
+- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Details:**
 
-If cursor is in a word, move to the beginning of that word.
-otherwise (cursor at a space, for example), move to the beginning of the next word on the left.
-
-- Repetition?: [Yes][about repetition].
-- Undoable?: No; attempts [fall-through undo][fall-through undo].
+    - If the cursor is in a word, move to the beginning of that word.
+    - Otherwise (cursor at a space, for example), move to the beginning of the next word on the left.
 
 #### `C-a`: Beginning of Line
 
-Move the cursor to the beginning of the line, if not already there:
-
-- Repetition?: [No][about repetition].
-- Undoable?: No; attempts [fall-through undo][fall-through undo].
-
+- **Action:**: Move the cursor to the beginning of the line.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Details:** Do nothing if already at beginning-of-line.
+- 
 #### `C-e`: End of Line
 
-Move the cursor to the end of the line, if not already there.
-
-- Repetition?: [No][about repetition].
-- Undoable?: No; attempts [fall-through undo][fall-through undo].
-
+- **Action:** Move the cursor to the end of the line.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Details:** Do nothing if already at end-of-line.
+- 
 #### `C-l`: Clear Screen
 
-Clear the screen, then redraw the current line, leaving the current line at the top of the screen.
-
-- Repetition?: [No][about repetition].
-- Undoable?: No; attempts [fall-through undo][fall-through undo].
+- **Action:** Clear the screen, then redraw the current line,
+  leaving the current line at the top of the screen.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
 
 #### `M-C-l`: Clear Display
 
-Like `C-l`, but also clear the terminal’s scrollback buffer if possible.
-
-- Repetition?: [No][about repetition].
-- Undoable?: No; attempts [fall-through undo][fall-through undo].
+- **Action:** Like `C-l`, but also clear the terminal’s scrollback buffer if possible.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
 
 ### Commands for Changing Text
 
 #### Any Printable Character: Insert Character
 
-Move trailing string (if any) one character width to the right, to "open a gap";
-insert the character at the cursor;
-place the cursor immediately after the inserted character.
-
-- Repetition?: [No][about repetition].
-- Undoable?: Yes; executes [immediate undo].
+- **Action:** Insert the character at the cursor position. 
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:** Move the trailing string (if any) one character width to the right, to "open a gap";
+  place the cursor immediately after the inserted character.
 
 #### `C-d`: Delete Character Forward
 
-If at end-of-line: do nothing.
+- **Action:** Delete the character at the cursor.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**
 
-Otherwise: delete the character at the cursor;
-move trailing string (if any) one character to the left, to "close the gap";
-leave the cursor in place.
-
-- Repetition?: [No][about repetition].
-- Undoable?: Yes; executes [immediate undo].
+    - If at end-of-line: do nothing.
+    - Otherwise, delete the character at the cursor,
+      move the trailing string (if any) one character to the left, to "close the gap",
+      and leave the cursor in place.
 
 #### `Backspace`: Delete Character Backward
 
-If at beginning-of-line: do nothing.
+- **Action:** Delete the character before the cursor.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**
 
-Otherwise: delete the character before the cursor;
-move the cursor and the trailing string (if any) one character to the left, to "close the gap."
-
-- Repetition?: [No][about repetition].
-- Undoable?: Yes; executes [immediate undo].
+    - If at beginning-of-line: do nothing.
+    - Otherwise, move the cursor and the trailing string (if any) one character to the left,
+      to "close the gap."
 
 #### `C-t`: Transpose Characters
 
-If at beginning-of-line, or at the end of a 1-character line, do nothing.
+- **Action:** Transpose two characters (by exchanging their positions).
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**
 
-Otherwise, if at end-of-line, transpose the last two characters; leave the cursor in place.
-
-Otherwise, transpose the single characters before and after the cursor;
-move the cursor to the end of the transposed pair.
-
-- Repetition?: [No][about repetition].
-- Undoable?: Yes; executes [immediate undo].
+    - If at beginning-of-line, or if there is only one character, do nothing.
+    - Otherwise, if at end-of-line, transpose the last two characters; leave the cursor in place.
+    - Otherwise, transpose the single characters before and after the cursor
+      and move the cursor to the end of the transposed pair.
 
 #### `M-t`: Transpose Words
 
-If at the beginning-of-line, or if there is only one word, do nothing.
+- **Action:**: Transpose two words (by exchanging their positions).
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**:
 
+    - If at the beginning-of-line, or if in the first word, or if there is only one word, do nothing.
+    - If in a non-first word, or at the beginning or end of the last word,
+      transpose that word and the preceding word and move the cursor to the end of the word pair.
+    - If at the end of a non-last word,
+      transpose that word and the following word and move the cursor to the end of the word pair.
+  
 #### `M-u`: Upcase Word
+
+- **Action:**: Change word to uppercase.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**:
+
+    - If at end-of-line, do nothing.
+    - If at the beginning of a word, upcase the entire word and move cursor to the end of that word.
+    - If in a word, upcase the rightward part of the word and move cursor to the end of that word.
+    - If at the end of a word, upcase the next word and move cursor to the end of that word.
 
 #### `M-l`: Downcase Word
 
+- **Action:**: Change word to lowercase.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**:
+
+    - If at end-of-line, do nothing.
+    - If at the beginning of a word, downcase the entire word and move cursor to the end of that word.
+    - If in a word, downcase the rightward part of the word and move cursor to the end of that word.
+    - If at the end of a word, downcase the next word and move cursor to the end of that word.
+
 #### `M-c`: Capitalize Word
+
+- **Action:**: Capitalize word.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**:
+
+    - If at end-of-line, do nothing.
+    - If at the beginning of a word, upcase its first character and move cursor to the end of that word.
+    - If in a word, upcase the next character and move cursor to the end of that word.
+    - If at the end of a word, upcase the first character of the next word and move cursor to the end of that word.
 
 ### Commands for Killing and Yanking
 
