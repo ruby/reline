@@ -8,7 +8,7 @@ For other usages, see [Your Reline][your reline].
 Each table in this section summarizes a group of related Reline commands:
 
 - *Command*: the keys for the command.
-- *Repetition?*: whether a [repeat count][repeat count] may be given.
+- *Repetition?*: whether a [repetition prefix][about repetition] may be given.
 - *Undoable?*: whether the action may be [undone][undo command].
 - *Action*: the action to be taken.
 
@@ -139,7 +139,7 @@ A Reline application by default supports:
 - [Commands for moving the cursor][commands for moving the cursor].
 - [Commands for changing text][commands for changing text].
 - [Commands for killing and yanking][commands for killing and yanking].
-- [Numeric arguments][repeat count] for certain commands (to specify repetition).
+- [Repetition prefixes][repetition prefixes].
 - [Certain other commands][other commands].
 
 A Reline application may support:
@@ -227,7 +227,18 @@ Reline searches backward through the most recent commands for the current line:
 - When an undoable command is found, that command is undone, and the search ends.
 - If no such command is found, the undo command is ignored.
 
-### About Repeat Counts
+### About Repetition
+
+A command may be prefixed by an integer argument
+that specifies the number of times the command is to be executed.
+
+Some commands support repetition; others do not.
+See the "In Brief" tables above.
+
+If repetition for the command is supported and a repetition value of `n` is given,
+the command is executed `n` times.
+
+It the repetition is for the command is not supported, the repetition prefix is ignored.
 
 ### Commands for Moving the Cursor
 
@@ -235,14 +246,14 @@ Reline searches backward through the most recent commands for the current line:
 
 Move the cursor forward one character, if not already at end-of-line.
 
-- Repeat count?: [Yes][repeat count].
+- Repetition?: [Yes][about repetition].
 - Undoable?: No; attempts [fall-through undo][fall-through undo].
 
 #### `C-b` or `←`: Character Backward
 
 Move the cursor backward one character, if not already at beginning-of-line.
 
-- Repeat count?: [Yes][repeat count].
+- Repetition?: [Yes][about repetition].
 - Undoable?: No; attempts [fall-through undo][fall-through undo].
 
 #### `M-f`: Word Forward
@@ -252,7 +263,7 @@ Move the cursor forward one word, if not already at end-of-line.
 If cursor is in a word, move to the end of that word;
 otherwise (cursor at a space, for example), move to the end of the next word on the right.
 
-- Repeat count?: [Yes][repeat count].
+- Repetition?: [Yes][about repetition].
 - Undoable?: No; attempts [fall-through undo][fall-through undo].
 
 #### `M-b`: Word Backward
@@ -262,35 +273,35 @@ Move the cursor backward one word, if not already at beginning-of-line.
 If cursor is in a word, move to the beginning of that word.
 otherwise (cursor at a space, for example), move to the beginning of the next word on the left.
 
-- Repeat count?: [Yes][repeat count].
+- Repetition?: [Yes][about repetition].
 - Undoable?: No; attempts [fall-through undo][fall-through undo].
 
 #### `C-a`: Beginning of Line
 
 Move the cursor to the beginning of the line, if not already there:
 
-- Repeat count?: No.
+- Repetition?: [No][about repetition].
 - Undoable?: No; attempts [fall-through undo][fall-through undo].
 
 #### `C-e`: End of Line
 
 Move the cursor to the end of the line, if not already there.
 
-- Repeat count?: No.
+- Repetition?: [No][about repetition].
 - Undoable?: No; attempts [fall-through undo][fall-through undo].
 
 #### `C-l`: Clear Screen
 
 Clear the screen, then redraw the current line, leaving the current line at the top of the screen.
 
-- Repeat count?: No.
+- Repetition?: [No][about repetition].
 - Undoable?: No; attempts [fall-through undo][fall-through undo].
 
 #### `M-C-l`: Clear Display
 
 Like `C-l`, but also clear the terminal’s scrollback buffer if possible.
 
-- Repeat count?: No.
+- Repetition?: [No][about repetition].
 - Undoable?: No; attempts [fall-through undo][fall-through undo].
 
 ### Commands for Changing Text
@@ -301,7 +312,7 @@ Move trailing string (if any) one character width to the right, to "open a gap";
 insert the character at the cursor;
 place the cursor immediately after the inserted character.
 
-- Repeat count?: No.
+- Repetition?: [No][about repetition].
 - Undoable?: Yes; executes [immediate undo].
 
 #### `C-d`: Delete Character Forward
@@ -312,7 +323,7 @@ Otherwise: delete the character at the cursor;
 move trailing string (if any) one character to the left, to "close the gap";
 leave the cursor in place.
 
-- Repeat count?: No.
+- Repetition?: [No][about repetition].
 - Undoable?: Yes; executes [immediate undo].
 
 #### `Backspace`: Delete Character Backward
@@ -322,7 +333,7 @@ If at beginning-of-line: do nothing.
 Otherwise: delete the character before the cursor;
 move the cursor and the trailing string (if any) one character to the left, to "close the gap."
 
-- Repeat count?: No.
+- Repetition?: [No][about repetition].
 - Undoable?: Yes; executes [immediate undo].
 
 #### `C-t`: Transpose Characters
@@ -334,7 +345,7 @@ Otherwise, if at end-of-line, transpose the last two characters; leave the curso
 Otherwise, transpose the single characters before and after the cursor;
 move the cursor to the end of the transposed pair.
 
-- Repeat count?: No.
+- Repetition?: [No][about repetition].
 - Undoable?: Yes; executes [immediate undo].
 
 #### `M-t`: Transpose Words
@@ -409,7 +420,7 @@ the cursor is moved forward to the end of the inserted text.
 
 #### `C-y`: Yank
 
-### Repeat Count
+### Repetition Prefixes
 
 #### `M-`_digit_: Repetition
 
@@ -555,7 +566,7 @@ TODO:  M-?;  M-*;
 
 #### `Esc`: Meta Prefix
 
-#### `C-_` or `C-x C-u`: Undo
+#### `C-_`: Undo
 
 #### `C-d': Exit Application
 
@@ -999,12 +1010,13 @@ another initialization file:
 [commands for manipulating the history]: rdoc-ref:for_users.md@Commands+for+Manipulating+the+History
 [commands for changing text]:            rdoc-ref:for_users.md@Commands+for+Changing+Text
 [commands for killing and yanking]:      rdoc-ref:for_users.md@Commands+for+Killing+and+Yanking
-[repeat count]:                          rdoc-ref:for_users.md@Repeat+Count
+[repetition prefixes]:                   rdoc-ref:for_users.md@Repetition+Prefixes
 [commands for word completion]:          rdoc-ref:for_users.md@Commands+for+Word+Completion
 [other commands]:                        rdoc-ref:for_users.md@Other+Commands
 
 [immediate undo]:                        rdoc-ref:for_users.md@Immediate+Undo
 [fall-through undo]:                     rdoc-ref:for_users.md@22Fall-Through-22+Undo
+[about repetition]:                      rdoc-ref:for_users.md@About+Repetition
 
 [ansi escape codes]: https://en.wikipedia.org/wiki/ANSI_escape_code
 [command completion]: rdoc-ref:for_users.md@Command+Completion
