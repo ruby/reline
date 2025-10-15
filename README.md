@@ -1,94 +1,60 @@
 [![Gem Version](https://badge.fury.io/rb/reline.svg)](https://badge.fury.io/rb/reline)
 [![CI](https://github.com/ruby/reline/actions/workflows/reline.yml/badge.svg)](https://github.com/ruby/reline/actions/workflows/reline.yml)
 
-This is a screen capture of *IRB improved by Reline*.
-
-![IRB improved by Reline](https://raw.githubusercontent.com/wiki/ruby/reline/images/irb_improved_by_reline.gif)
-
 # Reline
 
-Reline is compatible with the API of Ruby's stdlib 'readline', GNU Readline and Editline by pure Ruby implementation.
+Module Reline is the Ruby library that supports:
 
-## Usage
+- Editing text on the command line:
 
-### Single line editing mode
+    - Use Left-Arrow and Right-Arrow keys (`←` and `→`) to move the cursor within the text you've typed.
+    - Use Delete and Backspace keys to remove characters from the typed text.
+    - Type to insert text at the cursor.
+    - Use Tab key to invoke auto-completion.
 
-It's compatible with the readline standard library.
+- Reviewing and re-using command-line history:
 
-See [the document of readline stdlib](https://ruby-doc.org/stdlib/exts/readline/Readline.html) or [bin/example](https://github.com/ruby/reline/blob/master/bin/example).
+    - Use Up-Arrow and Down-Arrow keys (`↑` and `↓`) to scroll among previously typed commands.
+    - Use history index numbers to select and invoke commands from history.
 
-### Multi-line editing mode
+## Your Reline
 
-```ruby
-require "reline"
+If you are the _user_ of a console application that uses Reline
+(such as [IRB](https://ruby.github.io/irb/index.html)),
+see [For Users](for_users.md);
+see also [Reline in Action](rdoc-ref:README.md@Reline+in+Action) below.
 
-prompt = 'prompt> '
-use_history = true
+If you are the _developer_ of a console application that uses (or will use) Reline,
+see [For Developers](for_developers.md).
 
-begin
-  while true
-    text = Reline.readmultiline(prompt, use_history) do |multiline_input|
-      # Accept the input until `end` is entered
-      multiline_input.split.last == "end"
-    end
+If you want to _contribute_ to Reline code or documentation
+(enhancements or bug fixes),
+see [For Contributors](for_contributors.md).
 
-    puts 'You entered:'
-    puts text
-  end
-# If you want to exit, type Ctrl-C
-rescue Interrupt
-  puts '^C'
-  exit 0
-end
-```
+If you want to _report_ a bug in Reline code or documentation,
+see [Reporting Bugs](reporting_bugs.md).
 
-```bash
-$ ruby example.rb
-prompt> aaa
-prompt> bbb
-prompt> end
-You entered:
-aaa
-bbb
-end
-```
+## Reline in Action
 
-See also: [test/reline/yamatanooroti/multiline_repl](https://github.com/ruby/reline/blob/master/test/reline/yamatanooroti/multiline_repl)
+Below is a screen capture of a brief session
+in [IRB](https://ruby.github.io/irb/index.html) (Interactive Ruby),
+which uses Reline:
 
-## Documentation
+- The dark gray area of the window at the upper-right shows the keys that are being typed.
+- The main part of the window shows the result of the typing.
 
-### Reline::Face
-
-You can modify the text color and text decorations in your terminal emulator.
-See [doc/reline/face.md](./doc/reline/face.md)
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/ruby/reline.
-
-### Run tests
-
-> **Note**
-> Please make sure you have `libvterm` installed for `yamatanooroti` tests (integration tests).
-
-If you use Homebrew, you can install it by running `brew install libvterm`.
-
-```bash
-WITH_VTERM=1 bundle install
-WITH_VTERM=1 bundle exec rake test test_yamatanooroti
-```
-
-## Releasing
-
-```bash
-rake release
-gh release create vX.Y.Z --generate-notes
-```
+![IRB improved by Reline](https://raw.githubusercontent.com/wiki/ruby/reline/images/irb_improved_by_reline.gif)
 
 ## License
 
 The gem is available as open source under the terms of the [Ruby License](https://www.ruby-lang.org/en/about/license.txt).
 
-## Acknowledgments for [rb-readline](https://github.com/ConnorAtherton/rb-readline)
+## Acknowledgment
 
-In developing Reline, we have used some of the rb-readline implementation, so this library includes [copyright notice, list of conditions and the disclaimer](license_of_rb-readline) under the 3-Clause BSD License. Reline would never have been developed without rb-readline. Thank you for the tremendous accomplishments.
+In developing Reline, we have used some of the implementation
+of [rb-readline](https://github.com/ConnorAtherton/rb-readline),
+so this library includes
+[copyright notice, list of conditions and the disclaimer](../license_of_rb-readline)
+under the 3-Clause BSD License.
+Reline would never have been developed without rb-readline.
+Thank you for the tremendous accomplishments.
