@@ -248,7 +248,6 @@ and saving it for potential later use (by _yanking_).
 _Yanking_ means inserting previously-killed text into the current line.
 Yanked text is, depending on the command used, copied from or popped from the kill ring.
 
-
 Killed text is put onto the _kill ring_
 (a last-in, first-out [stack][stack]):
 
@@ -260,6 +259,43 @@ Killed text is put onto the _kill ring_
 
 The kill ring is not associated with particular command lines;
 text killed from a the current line is available for yanking into later command lines.
+
+### About Word Completion
+
+A Reline application may support command word completion,
+which is implemented via the `Tab` command.
+
+The example [echo program][reline defaults] has loaded a collection of words
+that it uses for word completion.
+
+In the example echo program, typing `prof` followed by `Tab`
+lets the program do a partial word completion, adding `ess` to form `profess`.
+
+The program can add the partial completion `ess`
+because all the available words that begin with `prof` also begin with `profess`.
+
+But it can't complete the word because there are multiple words that begin with `profess`.
+
+If we add `o` and `Tab`, the program can add `r` to form the complete word `professor`,
+because that's the only word that begins `professo`.
+
+To see the completion possibilities, type `Tab` twice;
+this example types `profess` followed by two `Tab`s:
+
+```
+echo> profess
+profession     professional   professionals  professor
+```
+
+Word completion works on the last word in the line,
+which may not be the only word;
+this example types `differential equ` followed by two `Tab`s
+to get the possible completions:
+
+```ruby
+echo> differential equ
+equations    equilibrium  equipment    equivalent
+```
 
 ### Commands for Moving the Cursor
 
@@ -492,81 +528,6 @@ and is ready for execution (via `Enter`),
 or for editing (via cursor movement, insertion, deletion, killing, yanking).
 
 ### Commands for Word Completion
-
-A Reline application may support command completion,
-which is implemented as responses to the `Tab` command,
-by providing a list of command words.
-
-Suppose an application just echoes whatever is typed to its prompt:
-
-```
-$ruby
-echo> Hi!
-You typed: 'Hi!'.
-```
-
-And suppose further that it has these command words:
-
-```
-['foo_foo', 'foo_bar', 'foo_baz', 'qux']
-```
-
-Then typing a single character `'q'` does not do much; we just see the one typed character:
-
-```
-echo> q
-```
-
-Pressing `Tab` requests command completion; we see the complete word:
-
-```
-echo> qux
-```
-
-That's because the only possible command word beginning with `'q'` is `'qux'`.
-Then typing `'f'` does not do much; we just see the one character typed:
-
-Adding `Enter` executes the command:
-
-```
-echo> qux
-You typed: 'qux'.
-echo>  
-```
-
-Typing the single character `'f'`, as before, does not do much:
-```
-echo> f
-```
-
-Pressing `Tab`, as before, requests command completion.
-Because there are multiple command words starting with `'f'`, Reline cannot complete the command;
-but because all command words starting with `'f'` also start with `'foo_'`,
-Reline can partially complete the command:
-
-```
-echo> foo_
-```
-
-Pressing `Tab` a second time requests possible completions:
-
-```
-echo> foo_               
-foo_bar foo_baz foo_foo
-```
-
-Now typing `'f'`, `Tab`, and `Enter` completes and enters the command:
-
-```
-echo> foo_foo
-You typed: 'foo_foo'.
-echo>     
-```
-
-Note that when the command line is empty, or when the typing so far does not match any command word,
-`Tab` has no effect.
-
-TODO:  M-?;  M-*;
 
 #### `Tab`: Complete Word
 
@@ -1025,6 +986,7 @@ another initialization file:
 [other commands]:                        rdoc-ref:for_users.md@Other+Commands
 
 [in brief]:                              rdoc-ref:for_users.md@In+Brief
+[reline defaults]:                       rdoc-ref:for_users.md@Reline+Defaults
 [immediate undo]:                        rdoc-ref:for_users.md@Immediate+Undo
 [fall-through undo]:                     rdoc-ref:for_users.md@22Fall-Through-22+Undo
 [about repetition]:                      rdoc-ref:for_users.md@About+Repetition
