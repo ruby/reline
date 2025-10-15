@@ -242,21 +242,20 @@ Reline searches backward through the most recent commands for the current line:
 ### Killing and Yanking
 
 _Killing_ means deleting text from the current line
-and saving it for potential later use (by _yanking_).
+and saving it in a kill buffer for potential later use (by _yanking_).
 
 _Yanking_ means inserting previously-killed text into the current line.
-Yanked text is, depending on the command used, copied from or popped from the kill ring.
+Yanked text is copied from the kill buffer.
 
-Killed text is put onto the _kill ring_
-(a last-in, first-out [stack][stack]):
+Killed text is put onto the _kill buffer_:
 
 - For a kill command that is preceded by another kill command,
-  the killed text is appended to the entry already at the top of the kill ring.
+  the killed text is appended to the text already in the kill buffer.
   Thus, any number of consecutive kills save killed text as a single string.
 - For a kill command that is _not_ preceded by another kill command,
-  the killed text is pushed onto the kill ring as a new entry.
+  the killed text replaces the text in the kill buffer.
 
-The kill ring is not associated with particular command lines;
+The kill buffer is not associated with a particular command line;
 text killed from a the current line is available for yanking into later command lines.
 
 ### Word Completion
@@ -455,15 +454,50 @@ equations    equilibrium  equipment    equivalent
 
 ### Commands for Killing and Yanking
 
-#### `C-k`: Kill Line
+#### `C-k`: Kill Line Forward
 
-#### `C-u`: Unix Discard Line
+- **Action:**: Kill from cursor to end-of-line and place cursor at end-of-line.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**: If at end-of-line, do nothing.
 
-#### `M-d`: Kill Word
+#### `C-u`: Kill Line Backward
 
-#### `C-w`: Unix Word Rubout
+- **Action:**: Kill from cursor to beginning-of-line and place cursor at beginning-of-line.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**: If at beginning-of-line, do nothing.
+
+#### `M-d`: Kill Word Forward
+
+- **Action:**: Kill line from cursor to end-of-word.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**:
+
+    - If at end-of-line, do nothing.
+    - If at the beginning of a word, kill the word and leave the cursor in place.
+    - If in a word, kill the rest of the word and leave the cursor in place.
+    - If at the end of a word, kill the next word and leave the cursor in place.
+
+#### `C-w`: Kill Word Backward
+
+- **Action:**: Kill line from cursor to beginning-of-word.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**:
+
+    - If at beginning-of-line, do nothing.
+    - If at the beginning of a word, kill the previous word and place the cursor at the left of the deletion.
+    - If in a word, kill the leftward part of the word and place the cursor at the left of the deletion.
+    - If at the end of a word, kill the word and place the cursor at the left of the deletion.
 
 #### `C-y`: Yank
+
+- **Action:**: Insert killed text at the cursor and place the cursor at the end of the inserted text.
+- **Repetition?:** [No][about repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**: Do nothing if the kill buffer is empty.
 
 ### Repetition Prefixes
 
@@ -1006,7 +1040,6 @@ another initialization file:
 [ri]: https://ruby.github.io/rdoc/RI_md.html
 [show-mode-in-prompt]: rdoc-ref:for_users.md@show-mode-in-prompt
 [space bar]: https://en.wikipedia.org/wiki/Space_bar
-[stack]: https://en.wikipedia.org/wiki/Stack_(abstract_data_type)
 [variables]: rdoc-ref:for_users.md@Variables
 [vi-cmd-mode-string]: rdoc-ref:for_users.md@vi-cmd-mode-string
 [vi-ins-mode-string]: rdoc-ref:for_users.md@vi-ins-mode-string
