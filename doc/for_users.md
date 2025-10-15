@@ -29,14 +29,13 @@ Details for the commands are at the links.
 
 [Manipulating history][commands for manipulating the history]:
 
-|          Command           | Repetition? | Undoable? | Action                                |
-|:--------------------------:|:-----------:|:---------:|---------------------------------------|
-|       <tt>Enter</tt>       |    No.      |   No.     | Accept line (only if line non-empty). |
-| <tt>C-p</tt> or <tt>↑</tt> |    Yes.     |   Yes.    | Move to previous command.             |
-| <tt>C-n</tt> or <tt>↓</tt> |    Yes.     |   Yes.    | Move to next command.                 |
-|        <tt>C-r</tt>        |     No.     |    No.    | Reverse search of history.            |
-|        <tt>M-p</tt>        |     No.     |    No.    | Non-incremental reverse search.       |
-|        <tt>M-n</tt>        |     No.     |    No.    | Non-incremental forward search.       |
+|          Command           | Repetition? | Undoable? | Action                          |
+|:--------------------------:|:-----------:|:---------:|---------------------------------|
+|       <tt>Enter</tt>       |     No.     |    No.    | Enter line.                     |
+| <tt>C-p</tt> or <tt>↑</tt> |    Yes.     |   Yes.    | Move to previous command.       |
+| <tt>C-n</tt> or <tt>↓</tt> |    Yes.     |   Yes.    | Move to next command.           |
+|        <tt>M-p</tt>        |     No.     |    No.    | Non-incremental reverse search. |
+|        <tt>M-n</tt>        |     No.     |    No.    | Non-incremental forward search. |
 
 [Changing text][commands for changing text]:
 
@@ -54,19 +53,19 @@ Details for the commands are at the links.
 
 [Killing and yanking][commands for killing and yanking]:
 
-|    Command     | Repetition? | Undoable? | Action              |
-|:--------------:|:-----------:|:---------:|---------------------|
-| <tt>C-k</tt>   |     No.     |   Yes.    | Kill line forward.  |
-|  <tt>C-u</tt>  |     No.     |           | Kill line backward. |
-|  <tt>M-d</tt>  |     No.     |   Yes.    | Kill word forward.  |
-|  <tt>C-w</tt>  |     No.     |   Yes.    | Kill word backward. |
-|  <tt>C-y</tt>  |     No.     |   Yes.    | Yank last kill.     |
+|   Command    | Repetition? | Undoable? | Action              |
+|:------------:|:-----------:|:---------:|---------------------|
+| <tt>C-k</tt> |     No.     |   Yes.    | Kill line forward.  |
+| <tt>C-u</tt> |     No.     |   Yes.    | Kill line backward. |
+| <tt>M-d</tt> |     No.     |   Yes.    | Kill word forward.  |
+| <tt>C-w</tt> |     No.     |   Yes.    | Kill word backward. |
+| <tt>C-y</tt> |     No.     |   Yes.    | Yank last kill.     |
 
 [Word completion][commands for word completion]:
 
 |   Command        | Repetition? | Undoable? | Action                     |
 |:----------------:|:-----------:|:---------:|----------------------------|
-|   <tt>Tab</tt>   |     No.     |    Yes.   | Complete word if possible. |
+|   <tt>Tab</tt>   |     No.     |   Yes.    | Complete word if possible. |
 | <tt>Tab Tab</tt> |     No.     |    No.    | Show possible completions. |
 
 [Other commands][other commands]:
@@ -89,7 +88,7 @@ require 'reline'
 require 'open-uri'
 
 # Get words for completion.
-words_url = 'https://raw.githubusercontent.com/first20hours/google-10000-english/refs/heads/master/google-10000-english.txt'
+words_url = 'https://raw.githubusercontent.com/first20hours/google-10000-english/refs/heads/master/google-10000-english-usa-no-swears-long.txt'
 words = []
 URI.open(words_url) do |file|
   while !file.eof?
@@ -202,9 +201,22 @@ then the `k` key is then pressed, and both are released.
 Almost any character can have "meta" version:
 `M-c`, `M->`, `M-#`, etc.
 
+## Repetition
+
+A command may be prefixed by an integer argument
+that specifies the number of times the command is to be executed.
+
+Some commands support repetition; others do not.
+See the tables in [In Brief][in brief].
+
+If repetition for the command is supported and a repetition value of `n` is given,
+the command is executed `n` times.
+
+It the repetition is for the command is not supported, the repetition prefix is ignored.
+
 ## Command-Line Editing
 
-### About Undo
+### Undo
 
 The undo command (`C-_`) "undoes" the action of a previous command (if any)
 on the _current_ command line;
@@ -227,20 +239,7 @@ Reline searches backward through the most recent commands for the current line:
 - When an undoable command is found, that command is undone, and the search ends.
 - If no such command is found, the undo command is ignored.
 
-### About Repetition
-
-A command may be prefixed by an integer argument
-that specifies the number of times the command is to be executed.
-
-Some commands support repetition; others do not.
-See the tables in [In Brief][in brief].
-
-If repetition for the command is supported and a repetition value of `n` is given,
-the command is executed `n` times.
-
-It the repetition is for the command is not supported, the repetition prefix is ignored.
-
-### About Killing and Yanking
+### Killing and Yanking
 
 _Killing_ means deleting text from the current line
 and saving it for potential later use (by _yanking_).
@@ -260,7 +259,7 @@ Killed text is put onto the _kill ring_
 The kill ring is not associated with particular command lines;
 text killed from a the current line is available for yanking into later command lines.
 
-### About Word Completion
+### Word Completion
 
 A Reline application may support command word completion,
 which is implemented via the `Tab` command.
@@ -989,7 +988,7 @@ another initialization file:
 [reline defaults]:                       rdoc-ref:for_users.md@Reline+Defaults
 [immediate undo]:                        rdoc-ref:for_users.md@Immediate+Undo
 [fall-through undo]:                     rdoc-ref:for_users.md@22Fall-Through-22+Undo
-[about repetition]:                      rdoc-ref:for_users.md@About+Repetition
+[repetition]:                            rdoc-ref:for_users.md@Repetition
 
 [ansi escape codes]: https://en.wikipedia.org/wiki/ANSI_escape_code
 [command completion]: rdoc-ref:for_users.md@Command+Completion
