@@ -23,8 +23,8 @@ A Reline application by default supports:
 
 A Reline application may support:
 
-- [Command completion][command completion] (if enabled).
-- [Command history][command history] (if enabled).
+- [Word completion][word completion] (if enabled).
+- [Command history][history] (if enabled).
 
 ## Reline in Ruby
 
@@ -39,8 +39,8 @@ Ruby itself uses Reline in these applications:
 Each table in this section summarizes a group of related Reline commands:
 
 - **Command:** the keys for the command.
-- **Repetition?:** whether a [repetition prefix][about repetition] may be given.
-- **Undoable?:** whether the action may be [undone][undo command].
+- **Repetition?:** whether a [repetition prefix][repetition] may be given.
+- **Undoable?:** whether the action may be [undone][undo].
 - **Action:** the action to be taken.
 
 Details for the commands are at the links.
@@ -111,7 +111,7 @@ Details for the commands are at the links.
 ## Reline Defaults
 
 Note that this page describes the _default_ usages for Reline,
-with both [command history][command history] and [command completion][command completion] enabled,
+with both [command history][history] and [word completion][word completion] enabled,
 as in this simple "echo" program:
 
 ```
@@ -294,7 +294,7 @@ echo> differential equ
 equations    equilibrium  equipment    equivalent
 ```
 
-### History
+### Command History
 
 A Reline application may support command history.
 
@@ -346,21 +346,21 @@ At that point you can:
 #### `C-f` or `→`: Character Forward
 
 - **Action:** Move the cursor forward one character.
-- **Repetition?:** [Yes][about repetition].
+- **Repetition?:** [Yes][repetition].
 - **Undoable?:** No; attempt [fall-through undo][fall-through undo].
 - **Details:** Do nothing if already at end-of-line.
 
 #### `C-b` or `←`: Character Backward
 
 - **Action:** Move the cursor backward one character.
-- **Repetition?:** [Yes][about repetition].
+- **Repetition?:** [Yes][repetition].
 - **Undoable?:** No; attempt [fall-through undo][fall-through undo].
 - **Details:** Do nothing if already at beginning-of-line.
 
 #### `M-f`: Word Forward
 
 - **Action:** Move the cursor forward one word.
-- **Repetition?:** [Yes][about repetition].
+- **Repetition?:** [Yes][repetition].
 - **Undoable?:** No; attempt [fall-through undo][fall-through undo].
 - **Details:**
 
@@ -370,7 +370,7 @@ At that point you can:
 #### `M-b`: Word Backward
 
 - **Action:** Move the cursor backward one word.
-- **Repetition?:** [Yes][about repetition].
+- **Repetition?:** [Yes][repetition].
 - **Undoable?:** No; attempt [fall-through undo][fall-through undo].
 - **Details:**
 
@@ -380,14 +380,14 @@ At that point you can:
 #### `C-a`: Beginning of Line
 
 - **Action:**: Move the cursor to the beginning of the line.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** No; attempt [fall-through undo][fall-through undo].
 - **Details:** Do nothing if already at beginning-of-line.
 - 
 #### `C-e`: End of Line
 
 - **Action:** Move the cursor to the end of the line.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** No; attempt [fall-through undo][fall-through undo].
 - **Details:** Do nothing if already at end-of-line.
 - 
@@ -395,13 +395,13 @@ At that point you can:
 
 - **Action:** Clear the screen, then redraw the current line,
   leaving the current line at the top of the screen.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** No; attempt [fall-through undo][fall-through undo].
 
 #### `M-C-l`: Clear Display
 
 - **Action:** Like `C-l`, but also clear the terminal’s scrollback buffer if possible.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** No; attempt [fall-through undo][fall-through undo].
 
 ### Commands for Changing Text
@@ -409,7 +409,7 @@ At that point you can:
 #### Any Printable Character: Insert Character
 
 - **Action:** Insert the character at the cursor position. 
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:** Move the trailing string (if any) one character width to the right, to "open a gap";
   place the cursor immediately after the inserted character.
@@ -417,7 +417,7 @@ At that point you can:
 #### `C-d`: Delete Character Forward
 
 - **Action:** Delete the character at the cursor.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**
 
@@ -429,7 +429,7 @@ At that point you can:
 #### `Backspace`: Delete Character Backward
 
 - **Action:** Delete the character before the cursor.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**
 
@@ -440,7 +440,7 @@ At that point you can:
 #### `C-t`: Transpose Characters
 
 - **Action:** Transpose two characters (by exchanging their positions).
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**
 
@@ -452,7 +452,7 @@ At that point you can:
 #### `M-t`: Transpose Words
 
 - **Action:**: Transpose two words (by exchanging their positions).
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**:
 
@@ -465,7 +465,7 @@ At that point you can:
 #### `M-u`: Upcase Word
 
 - **Action:**: Change word to uppercase.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**:
 
@@ -477,7 +477,7 @@ At that point you can:
 #### `M-l`: Downcase Word
 
 - **Action:**: Change word to lowercase.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**:
 
@@ -489,7 +489,7 @@ At that point you can:
 #### `M-c`: Capitalize Word
 
 - **Action:**: Capitalize word.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**:
 
@@ -503,21 +503,21 @@ At that point you can:
 #### `C-k`: Kill Line Forward
 
 - **Action:**: Kill from cursor to end-of-line and place cursor at end-of-line.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**: If at end-of-line, do nothing.
 
 #### `C-u`: Kill Line Backward
 
 - **Action:**: Kill from cursor to beginning-of-line and place cursor at beginning-of-line.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**: If at beginning-of-line, do nothing.
 
 #### `M-d`: Kill Word Forward
 
 - **Action:**: Kill line from cursor to end-of-word.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**:
 
@@ -529,7 +529,7 @@ At that point you can:
 #### `C-w`: Kill Word Backward
 
 - **Action:**: Kill line from cursor to beginning-of-word.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**:
 
@@ -541,7 +541,7 @@ At that point you can:
 #### `C-y`: Yank
 
 - **Action:**: Insert killed text at the cursor and place the cursor at the end of the inserted text.
-- **Repetition?:** [No][about repetition].
+- **Repetition?:** [No][repetition].
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**: Do nothing if the kill buffer is empty.
 
@@ -1027,10 +1027,11 @@ another initialization file:
 [fall-through undo]:                     rdoc-ref:for_users.md@22Fall-Through-22+Undo
 [repetition]:                            rdoc-ref:for_users.md@Repetition
 [command-line editing]:                  rdoc-ref:for_users.md@Command-Line+Editing
+[command history]:                       rdoc-ref:for_users.md@Command+History
+[word completion]:                       rdoc-ref:for_users.md@Word+Completion
+[undo]:                                  rdoc-ref:for_users.md@Undo
 
 [ansi escape codes]: https://en.wikipedia.org/wiki/ANSI_escape_code
-[command completion]: rdoc-ref:for_users.md@Command+Completion
-[command history]: rdoc-ref:for_users.md@Command+History
 [console application]: https://en.wikipedia.org/wiki/Console_application
 [debug]: https://github.com/ruby/debug
 [directives]: rdoc-ref:for_users.md@Directives
