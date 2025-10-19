@@ -37,7 +37,7 @@ class Reline::Unicode
 
   NON_PRINTING_START = "\1"
   NON_PRINTING_END = "\2"
-  CSI_REGEXP = /\e\[[\d;]*[ABCDEFGHJKSTfminsuhl]/
+  CSI_REGEXP = /\e\[[\x30-\x3f]*[\x20-\x2f]*[a-zA-Z]/
   OSC_REGEXP = /\e\]\d+(?:;[^;\a\e]+)*(?:\a|\e\\)/
   WIDTH_SCANNER = /\G(?:(#{NON_PRINTING_START})|(#{NON_PRINTING_END})|(#{CSI_REGEXP})|(#{OSC_REGEXP})|(\X))/o
 
