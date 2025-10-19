@@ -24,7 +24,7 @@ A Reline application by default supports:
 A Reline application may support:
 
 - [Word completion][word completion] (if enabled).
-- [Command history][history] (if enabled).
+- [Command history][command history] (if enabled).
 
 ## Reline in Ruby
 
@@ -111,7 +111,7 @@ Details for the commands are at the links.
 ## Reline Defaults
 
 Note that this page describes the _default_ usages for Reline,
-with both [command history][history] and [word completion][word completion] enabled,
+with both [command history][command history] and [word completion][word completion] enabled,
 as in this simple "echo" program:
 
 ```
@@ -319,7 +319,7 @@ Otherwise, You can edit the displayed command
 using the various Reline [editing tools][command-line editing] (including Undo),
 then `Enter` it when satisfied.
 
-#### Incremental Searching
+#### Searching History
 
 Use command `C-r` to search upward in the history.
 
@@ -329,17 +329,13 @@ When you give that command, Reline displays this:
 (reverse-i-search)`':
 ```
 
-The command is _incremental_ in the sense that if you type `a`,
+The command is interactive in the sense that if you type `a`,
 Reline displays the first found command that matches the `a`.
 
 At that point you can:
 
 - Give another `C-r` command; Reline searches upward for the next command matching `a`.
-- Type another character, say 'b'; Reline searches upward for a command matching `ab`.
-
-#### `M-p`: Non-Incremental Reverse Search History
-
-#### `M-n`: Non-Incremental Forward Search History
+- Type another character, say `b`; Reline searches upward for a command matching `ab`.
 
 ### Commands for Moving the Cursor
 
@@ -589,30 +585,16 @@ At that point you can:
 
 [in brief]:                              rdoc-ref:for_users.md@In+Brief
 [reline defaults]:                       rdoc-ref:for_users.md@Reline+Defaults
+[undo]:                                  rdoc-ref:for_users.md@Undo
 [immediate undo]:                        rdoc-ref:for_users.md@Immediate+Undo
 [fall-through undo]:                     rdoc-ref:for_users.md@22Fall-Through-22+Undo
 [repetition]:                            rdoc-ref:for_users.md@Repetition
 [command-line editing]:                  rdoc-ref:for_users.md@Command-Line+Editing
 [command history]:                       rdoc-ref:for_users.md@Command+History
 [word completion]:                       rdoc-ref:for_users.md@Word+Completion
-[undo]:                                  rdoc-ref:for_users.md@Undo
 
-[ansi escape codes]: https://en.wikipedia.org/wiki/ANSI_escape_code
 [console application]: https://en.wikipedia.org/wiki/Console_application
-[debug]: https://github.com/ruby/debug
-[editing-mode]: rdoc-ref:for_users.md@editing-mode
-[emacs-mode-string]: rdoc-ref:for_users.md@emacs-mode-string
-[irb]: https://ruby.github.io/irb/index.html
-[macro]: https://en.wikipedia.org/wiki/Macro_(computer_science)
-[mode strings]: rdoc-ref:for_users.md@Mode+Strings
-[repl]: https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop
-[ri]: https://ruby.github.io/rdoc/RI_md.html
-[show-mode-in-prompt]: rdoc-ref:for_users.md@show-mode-in-prompt
-[space bar]: https://en.wikipedia.org/wiki/Space_bar
-[vi-cmd-mode-string]: rdoc-ref:for_users.md@vi-cmd-mode-string
-[vi-ins-mode-string]: rdoc-ref:for_users.md@vi-ins-mode-string
-[your reline]: rdoc-ref:README.md@Your+Reline
-
-[TODO]
-
-- Multi-line editing.
+[debug]:               https://github.com/ruby/debug
+[irb]:                 https://ruby.github.io/irb/index.html
+[repl]:                https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop
+[ri]:                  https://ruby.github.io/rdoc/RI_md.html
