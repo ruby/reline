@@ -213,9 +213,7 @@ the command is executed `n` times.
 
 It the repetition is for the command is not supported, the repetition prefix is ignored.
 
-## Command-Line Editing
-
-### Undo
+## Undo
 
 The undo command (`C-_`) "undoes" the action of a previous command (if any)
 on the _current_ command line;
@@ -224,12 +222,12 @@ nothing is ever undone in an already-entered line.
 Some commands can be undone; others cannot.
 See the tables in [In Brief][in brief].
 
-#### Immediate Undo
+### Immediate Undo
 
 When the undo command is given and the immediately preceding command is undoable,
 that preceding command is undone.
 
-#### "Fall-Through" Undo
+### "Fall-Through" Undo
 
 When the undo command is given and the immediately preceding command is not undoable,
 the undo command "falls through" to commands given earlier.
@@ -237,6 +235,8 @@ Reline searches backward through the most recent commands for the current line:
 
 - When an undoable command is found, that command is undone, and the search ends.
 - If no such command is found, the undo command is ignored.
+
+## Command-Line Editing
 
 ### Killing and Yanking
 
