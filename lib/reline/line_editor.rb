@@ -948,7 +948,7 @@ class Reline::LineEditor
 
   def wrap_method_call(method_symbol, key, with_operator)
     if @waiting_proc
-      @waiting_proc.call(key)
+      @waiting_proc.call(key, method_symbol)
       return
     end
 
@@ -1434,21 +1434,24 @@ class Reline::LineEditor
   end
   alias_method :end_of_line, :ed_move_to_end
 
-  private def generate_searcher(search_key)
+  private def generate_searcher(direction)
     search_word = String.new(encoding: encoding)
     hit_pointer = nil
-    lambda do |key|
+    lambda do |key, key_symbol|
       search_again = false
-      case key
-      when "\C-h", "\C-?"
+      case key_symbol
+      when :em_delete_prev_char, :backward_delete_char
         grapheme_clusters = search_word.grapheme_clusters
         if grapheme_clusters.size > 0
           grapheme_clusters.pop
           search_word = grapheme_clusters.join
         end
-      when "\C-r", "\C-s"
-        search_again = true if search_key == key
-        search_key = key
+      when :reverse_search_history, :vi_search_prev
+        search_again = direction == :reverse
+        direction = :reverse
+      when :forward_search_history, :vi_search_next
+        search_again = direction == :forward
+        direction = :forward
       else
         search_word << key
       end
@@ -1462,11 +1465,11 @@ class Reline::LineEditor
             search_word = Reline.last_incremental_search
           end
           if @history_pointer
-            case search_key
-            when "\C-r"
+            case direction
+            when :reverse
               history_pointer_base = 0
               history = Reline::HISTORY[0..(@history_pointer - 1)]
-            when "\C-s"
+            when :forward
               history_pointer_base = @history_pointer + 1
               history = Reline::HISTORY[(@history_pointer + 1)..-1]
             end
@@ -1475,11 +1478,11 @@ class Reline::LineEditor
             history = Reline::HISTORY
           end
         elsif @history_pointer
-          case search_key
-          when "\C-r"
+          case direction
+          when :reverse
             history_pointer_base = 0
             history = Reline::HISTORY[0..@history_pointer]
-          when "\C-s"
+          when :forward
             history_pointer_base = @history_pointer
             history = Reline::HISTORY[@history_pointer..-1]
           end
@@ -1487,12 +1490,12 @@ class Reline::LineEditor
           history_pointer_base = 0
           history = Reline::HISTORY
         end
-        case search_key
-        when "\C-r"
+        case direction
+        when :reverse
           hit_index = history.rindex { |item|
             item.include?(search_word)
           }
-        when "\C-s"
+        when :forward
           hit_index = history.index { |item|
             item.include?(search_word)
           }
@@ -1502,31 +1505,28 @@ class Reline::LineEditor
           hit = Reline::HISTORY[hit_pointer]
         end
       end
-      case search_key
-      when "\C-r"
-        prompt_name = 'reverse-i-search'
-      when "\C-s"
-        prompt_name = 'i-search'
-      end
+      prompt_name = direction == :forward ? 'i-search' : 'reverse-i-search'
       prompt_name = "failed #{prompt_name}" unless hit
       [search_word, prompt_name, hit_pointer]
     end
   end
 
-  private def incremental_search_history(key)
+  private def incremental_search_history(direction)
     backup = @buffer_of_lines.dup, @line_index, @byte_pointer, @history_pointer, @line_backup_in_history
-    searcher = generate_searcher(key)
-    @searching_prompt = "(reverse-i-search)`': "
+    searcher = generate_searcher(direction)
+    prompt_name = direction == :forward ? 'i-search' : 'reverse-i-search'
+    @searching_prompt = "(#{prompt_name})`': "
     termination_keys = ["\C-j"]
     termination_keys.concat(@config.isearch_terminators.chars) if @config.isearch_terminators
-    @waiting_proc = ->(k) {
+    accept_key_syms = [:em_delete_prev_char, :backward_delete_char, :vi_search_prev, :vi_search_next, :reverse_search_history, :forward_search_history]
+    @waiting_proc = ->(k, key_symbol) {
       if k == "\C-g"
         # cancel search and restore buffer
         @buffer_of_lines, @line_index, @byte_pointer, @history_pointer, @line_backup_in_history = backup
         @searching_prompt = nil
         @waiting_proc = nil
-      elsif !termination_keys.include?(k) && (k.match?(/[[:print:]]/) || k == "\C-h" || k == "\C-?" || k == "\C-r" || k == "\C-s")
-        search_word, prompt_name, hit_pointer = searcher.call(k)
+      elsif !termination_keys.include?(k) && (k.match?(/[[:print:]]/) || accept_key_syms.include?(key_symbol))
+        search_word, prompt_name, hit_pointer = searcher.call(k, key_symbol)
         Reline.last_incremental_search = search_word
         @searching_prompt = "(%s)`%s'" % [prompt_name, search_word]
         @searching_prompt += ': ' unless @is_multiline
@@ -1541,12 +1541,12 @@ class Reline::LineEditor
   end
 
   private def vi_search_prev(key)
-    incremental_search_history(key)
+    incremental_search_history(:reverse)
   end
   alias_method :reverse_search_history, :vi_search_prev
 
   private def vi_search_next(key)
-    incremental_search_history(key)
+    incremental_search_history(:forward)
   end
   alias_method :forward_search_history, :vi_search_next
 
@@ -2182,7 +2182,7 @@ class Reline::LineEditor
   end
 
   private def vi_replace_char(key, arg: 1)
-    @waiting_proc = ->(k) {
+    @waiting_proc = ->(k, _sym) {
       if arg == 1
         byte_size = Reline::Unicode.get_next_mbchar_size(current_line, @byte_pointer)
         before = current_line.byteslice(0, @byte_pointer)
@@ -2206,11 +2206,11 @@ class Reline::LineEditor
   end
 
   private def vi_next_char(key, arg: 1, inclusive: false)
-    @waiting_proc = ->(key_for_proc) { search_next_char(key_for_proc, arg, inclusive: inclusive) }
+    @waiting_proc = ->(key_for_proc, _sym) { search_next_char(key_for_proc, arg, inclusive: inclusive) }
   end
 
   private def vi_to_next_char(key, arg: 1, inclusive: false)
-    @waiting_proc = ->(key_for_proc) { search_next_char(key_for_proc, arg, need_prev_char: true, inclusive: inclusive) }
+    @waiting_proc = ->(key_for_proc, _sym) { search_next_char(key_for_proc, arg, need_prev_char: true, inclusive: inclusive) }
   end
 
   private def search_next_char(key, arg, need_prev_char: false, inclusive: false)
@@ -2253,11 +2253,11 @@ class Reline::LineEditor
   end
 
   private def vi_prev_char(key, arg: 1)
-    @waiting_proc = ->(key_for_proc) { search_prev_char(key_for_proc, arg) }
+    @waiting_proc = ->(key_for_proc, _sym) { search_prev_char(key_for_proc, arg) }
   end
 
   private def vi_to_prev_char(key, arg: 1)
-    @waiting_proc = ->(key_for_proc) { search_prev_char(key_for_proc, arg, true) }
+    @waiting_proc = ->(key_for_proc, _sym) { search_prev_char(key_for_proc, arg, true) }
   end
 
   private def search_prev_char(key, arg, need_next_char = false)
