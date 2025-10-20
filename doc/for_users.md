@@ -45,16 +45,10 @@ details at the links.
 - `C-n` or `↓`: [Next command]     [next command].
 - `C-r`:        [Reverse search]   [reverse search].
 
-### Word Completion
+### Completing Words
 
 - `Tab': [Complete word][complete word].
 - `Tab Tab': [Show completions][show completions].
-
-### Other Commands
-
-- `Escape': [Meta prefix][meta prefix].
-- `C-_': [Undo][undo].
-- `C-d': [Exit application (empty line)][exit application (empty line)].
 
 ## Reline Application
 
@@ -72,7 +66,6 @@ A Reline application by default supports:
 - [Commands for moving the cursor][commands for moving the cursor].
 - [Commands for changing text][commands for changing text].
 - [Commands for killing and yanking][commands for killing and yanking].
-- [Certain other commands][other commands].
 
 A Reline application may support:
 
@@ -177,6 +170,9 @@ then the `k` key is then pressed, and both are released.
 Almost any character can have "meta" version:
 `M-c`, `M->`, `M-#`, etc.
 
+An alternative to using the `Alt` key is the `Escape` key:
+press the `Escape` key _before_ the character key.
+
 ## Repetition
 
 A command may be prefixed by an integer argument
@@ -240,7 +236,7 @@ A Reline application may support command word completion,
 which is implemented via the `Tab` command.
 
 The example [echo program][reline defaults] has loaded a collection of words
-that it uses for word completion.
+that it uses for completing words.
 
 In the example echo program, typing `prof` followed by `Tab`
 lets the program do a partial word completion, adding `ess` to form `profess`.
@@ -261,7 +257,7 @@ echo> profess
 profession     professional   professionals  professor
 ```
 
-Word completion works on the last word in the line,
+Word completion works on the current word in the line,
 which may not be the only word;
 this example types `differential equ` followed by two `Tab`s
 to get the possible completions:
@@ -280,6 +276,8 @@ after entering one or more commands, press key `↑`:
 
 - Yes, if you now see the most recently entered command; read on.
 - No, if you see no change; this section does not apply.
+
+#### Traversing History
 
 Use any number of `C-p` or `↑` commands to move upward in the command history;
 the first such command displays the most recent command,
@@ -313,6 +311,10 @@ At that point you can:
 
 - Give another `C-r` command; Reline searches upward for the next command matching `a`.
 - Type another character, say `b`; Reline searches upward for a command matching `ab`.
+
+### Exiting the Application
+
+To exit the application, use command `C-d` on an empty command line.
 
 ## Command Line Commands
 
@@ -404,7 +406,7 @@ At that point you can:
 #### `C-d`: Delete Character Forward (Non-Empty Line)
 
 Like `Delete` if line non-empty;
-otherwise, exit application.
+otherwise, [exit the application][exiting the application].
 
 #### `Backspace`: Delete Character Backward
 
@@ -529,42 +531,69 @@ otherwise, exit application.
 
 ####  `Enter`: Enter Command
 
+- **Action:**: Enter the command on the line.
+- **Repetition?:** [No][repetition].
+- **Undoable?:** No.
+- **Details:**:
+
+    - The command line may be empty or contain only whitespace.
+    - The cursor need not be at the end-of-line.
+
 #### `C-p` or `↑`: Previous Command
+
+- **Action:**: Display the immediately preceding command.
+- **Repetition?:** [No][repetition].
+- **Undoable?:** No.
+- **Details:**: See [Traversing History][traversing history].
 
 #### `C-n` or `↓`: Next Command
 
+- **Action:**: Display the immediately following command.
+- **Repetition?:** [No][repetition].
+- **Undoable?:** No.
+- **Details:**: See [Traversing History][traversing history].
+
 #### `C-r`: Reverse Search
 
-### Commands for Word Completion
+- **Action:**: Search upward in history.
+- **Repetition?:** [No][repetition].
+- **Undoable?:** No.
+- **Details:**: See [Searching History][searching history].
+
+### Commands for Completing Words
 
 #### `Tab`: Complete Word
 
+- **Action:**: Complete word.
+- **Repetition?:** [No][repetition].
+- **Undoable?:** Yes; execute [immediate undo].
+- **Details:**: See [Word Completion][word completion].
+
 #### `Tab Tab`: Show Completions
 
-### Other Commands
-
-#### `Escape`: Meta Prefix
-
-#### `C-_`: Undo
-
-#### `C-d': Exit Application (Empty Line)
+- **Action:**: Show completions.
+- **Repetition?:** [No][repetition].
+- **Undoable?:** No.
+- **Details:**: See [Word Completion][word completion].
 
 [commands for moving the cursor]:        rdoc-ref:@Commands+for+Moving+the+Cursor
 [commands for manipulating the history]: rdoc-ref:@Commands+for+Manipulating+the+History
 [commands for changing text]:            rdoc-ref:@Commands+for+Changing+Text
 [commands for killing and yanking]:      rdoc-ref:@Commands+for+Killing+and+Yanking
-[commands for word completion]:          rdoc-ref:@Commands+for+Word+Completion
-[other commands]:                        rdoc-ref:@Other+Commands
+[commands for completing words]:         rdoc-ref:@Commands+for+Word+Completion
 
-[in brief]:             rdoc-ref:@In+Brief
-[reline defaults]:      rdoc-ref:@Reline+Defaults
-[undo]:                 rdoc-ref:@Undo
-[immediate undo]:       rdoc-ref:@Immediate+Undo
-[fall-through undo]:    rdoc-ref:@22Fall-Through-22+Undo
-[repetition]:           rdoc-ref:@Repetition
-[command-line editing]: rdoc-ref:@Command-Line+Editing
-[command history]:      rdoc-ref:@Command+History
-[word completion]:      rdoc-ref:@Word+Completion
+[in brief]:                rdoc-ref:@In+Brief
+[reline defaults]:         rdoc-ref:@Reline+Defaults
+[undo]:                    rdoc-ref:@Undo
+[immediate undo]:          rdoc-ref:@Immediate+Undo
+[fall-through undo]:       rdoc-ref:@22Fall-Through-22+Undo
+[repetition]:              rdoc-ref:@Repetition
+[command-line editing]:    rdoc-ref:@Command-Line+Editing
+[command history]:         rdoc-ref:@Command+History
+[traversing history]:      rdoc-ref:@Traversing+History
+[searching history]:       rdoc-ref:@Searching+History
+[word completion]:         rdoc-ref:@Word+Completion
+[exiting the application]: rdoc-ref:@Exiting+the+Application
 
 [console application]: https://en.wikipedia.org/wiki/Console_application
 [debug]:               https://github.com/ruby/debug
@@ -604,7 +633,3 @@ otherwise, exit application.
 
 [complete word]:    rdoc-ref:@Tab-3A+Complete+Word
 [show completions]: rdoc-ref:@Tab+Tab-3A+Show+Completions
-
-[meta prefix]:                   rdoc-ref:@Escape-3A+Meta+Prefix
-[undo]:                          rdoc-ref:@C-_-3A+Undo
-[exit application (empty line)]: rdoc-ref:@60C-d-27-3A+Exit+Application+-28Empty+Line-29
