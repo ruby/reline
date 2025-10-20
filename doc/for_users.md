@@ -72,7 +72,6 @@ A Reline application by default supports:
 - [Commands for moving the cursor][commands for moving the cursor].
 - [Commands for changing text][commands for changing text].
 - [Commands for killing and yanking][commands for killing and yanking].
-- [Repetition prefixes][repetition prefixes].
 - [Certain other commands][other commands].
 
 A Reline application may support:
@@ -315,6 +314,8 @@ At that point you can:
 - Give another `C-r` command; Reline searches upward for the next command matching `a`.
 - Type another character, say `b`; Reline searches upward for a command matching `ab`.
 
+## Command Line Commands
+
 ### Commands for Moving the Cursor
 
 #### `C-f` or `→`: Character Forward
@@ -524,10 +525,6 @@ otherwise, exit application.
 - **Undoable?:** Yes; execute [immediate undo].
 - **Details:**: Do nothing if the kill buffer is empty.
 
-### Repetition Prefixes
-
-#### `M-`_digit_: Repetition
-
 ### Commands for Manipulating the History
 
 ####  `Enter`: Enter Command
@@ -556,7 +553,6 @@ otherwise, exit application.
 [commands for manipulating the history]: rdoc-ref:@Commands+for+Manipulating+the+History
 [commands for changing text]:            rdoc-ref:@Commands+for+Changing+Text
 [commands for killing and yanking]:      rdoc-ref:@Commands+for+Killing+and+Yanking
-[repetition prefixes]:                   rdoc-ref:@Repetition+Prefixes
 [commands for word completion]:          rdoc-ref:@Commands+for+Word+Completion
 [other commands]:                        rdoc-ref:@Other+Commands
 
