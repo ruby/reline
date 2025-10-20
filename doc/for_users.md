@@ -2,41 +2,10 @@
 
 This page is for the user of a Reline application.
 
-## Reline Application
-
-A _Reline application_ is a Ruby
-[console application][console application]
-that uses module Reline.
-
-Such an application typically implements a [REPL][repl]
-(Read-Evaluate-Print Loop)
-that allows you to type a command, get a response,
-type another command, get another response, and so on.
-
-A Reline application by default supports:
-
-- [Commands for moving the cursor][commands for moving the cursor].
-- [Commands for changing text][commands for changing text].
-- [Commands for killing and yanking][commands for killing and yanking].
-- [Repetition prefixes][repetition prefixes].
-- [Certain other commands][other commands].
-
-A Reline application may support:
-
-- [Word completion][word completion] (if enabled).
-- [Command history][command history] (if enabled).
-
-## Reline in Ruby
-
-Ruby itself includes these Reline applications:
-
-- [irb][irb]: Interactive Ruby.
-- [debug][debug]: Ruby debugger.
-- [ri][ri]: Ruby information.
-
 ## In Brief
 
-Details for the commands are at the links.
+This section is a quick reference for the Reline commands;
+details at the links.
 
 ### Moving the Cursor
 
@@ -86,6 +55,38 @@ Details for the commands are at the links.
 - `Escape': [Meta prefix][meta prefix].
 - `C-_': [Undo][undo].
 - `C-d': [Exit application (empty line)][exit application (empty line)].
+
+## Reline Application
+
+A _Reline application_ is a Ruby
+[console application][console application]
+that uses module Reline.
+
+Such an application typically implements a [REPL][repl]
+(Read-Evaluate-Print Loop)
+that allows you to type a command, get a response,
+type another command, get another response, and so on.
+
+A Reline application by default supports:
+
+- [Commands for moving the cursor][commands for moving the cursor].
+- [Commands for changing text][commands for changing text].
+- [Commands for killing and yanking][commands for killing and yanking].
+- [Repetition prefixes][repetition prefixes].
+- [Certain other commands][other commands].
+
+A Reline application may support:
+
+- [Word completion][word completion] (if enabled).
+- [Command history][command history] (if enabled).
+
+## Reline in Ruby
+
+Ruby itself includes these Reline applications:
+
+- [irb][irb]: Interactive Ruby.
+- [debug][debug]: Ruby debugger.
+- [ri][ri]: Ruby information.
 
 ## Reline Defaults
 
@@ -183,7 +184,7 @@ A command may be prefixed by an integer argument
 that specifies the number of times the command is to be executed.
 
 Some commands support repetition; others do not.
-See the tables in [In Brief][in brief].
+See individual commands.
 
 If repetition for the command is supported and a repetition value of `n` is given,
 the command is executed `n` times.
@@ -197,7 +198,7 @@ on the _current_ command line;
 nothing is ever undone in an already-entered line.
 
 Some commands can be undone; others cannot.
-See the tables in [In Brief][in brief].
+See individual commands.
 
 ### Immediate Undo
 
