@@ -18,13 +18,6 @@ details at the links.
 - `C-l`:           [Clear screen]       [clear screen].
 - `M-C-l`:         [Clear display]      [clear display].
 
-### Manipulating History
-
-- `Enter`:      [Enter command]    [enter command].
-- `C-p` or `↑`: [Previous command] [previous command].
-- `C-n` or `↓`: [Next command]     [next command].
-- `C-r`:        [Reverse search]   [reverse search].
-
 ### Changing Text
 
 - Any printable character: [Insert character][insert character].
@@ -44,6 +37,13 @@ details at the links.
 - `M-d': [Kill word forward][kill word forward].
 - `C-w': [Kill word backward][kill word backward].
 - `C-y': [Yank last kill][yank last kill].
+
+### Manipulating History
+
+- `Enter`:      [Enter command]    [enter command].
+- `C-p` or `↑`: [Previous command] [previous command].
+- `C-n` or `↓`: [Next command]     [next command].
+- `C-r`:        [Reverse search]   [reverse search].
 
 ### Word Completion
 
@@ -357,14 +357,14 @@ At that point you can:
 - **Repetition?:** [No][repetition].
 - **Undoable?:** No; attempt [fall-through undo][fall-through undo].
 - **Details:** Do nothing if already at beginning-of-line.
-- 
+
 #### `C-e`: End of Line
 
 - **Action:** Move the cursor to the end of the line.
 - **Repetition?:** [No][repetition].
 - **Undoable?:** No; attempt [fall-through undo][fall-through undo].
 - **Details:** Do nothing if already at end-of-line.
-- 
+
 #### `C-l`: Clear Screen
 
 - **Action:** Clear the screen, then redraw the current line,
