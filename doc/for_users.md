@@ -551,25 +551,23 @@ otherwise, exit application.
 
 #### `C-d': Exit Application
 
-#### `Enter': Exit Application
+[commands for moving the cursor]:        rdoc-ref:@Commands+for+Moving+the+Cursor
+[commands for manipulating the history]: rdoc-ref:@Commands+for+Manipulating+the+History
+[commands for changing text]:            rdoc-ref:@Commands+for+Changing+Text
+[commands for killing and yanking]:      rdoc-ref:@Commands+for+Killing+and+Yanking
+[repetition prefixes]:                   rdoc-ref:@Repetition+Prefixes
+[commands for word completion]:          rdoc-ref:@Commands+for+Word+Completion
+[other commands]:                        rdoc-ref:@Other+Commands
 
-[commands for moving the cursor]:        rdoc-ref:for_users.md@Commands+for+Moving+the+Cursor
-[commands for manipulating the history]: rdoc-ref:for_users.md@Commands+for+Manipulating+the+History
-[commands for changing text]:            rdoc-ref:for_users.md@Commands+for+Changing+Text
-[commands for killing and yanking]:      rdoc-ref:for_users.md@Commands+for+Killing+and+Yanking
-[repetition prefixes]:                   rdoc-ref:for_users.md@Repetition+Prefixes
-[commands for word completion]:          rdoc-ref:for_users.md@Commands+for+Word+Completion
-[other commands]:                        rdoc-ref:for_users.md@Other+Commands
-
-[in brief]:                              rdoc-ref:for_users.md@In+Brief
-[reline defaults]:                       rdoc-ref:for_users.md@Reline+Defaults
-[undo]:                                  rdoc-ref:for_users.md@Undo
-[immediate undo]:                        rdoc-ref:for_users.md@Immediate+Undo
-[fall-through undo]:                     rdoc-ref:for_users.md@22Fall-Through-22+Undo
-[repetition]:                            rdoc-ref:for_users.md@Repetition
-[command-line editing]:                  rdoc-ref:for_users.md@Command-Line+Editing
-[command history]:                       rdoc-ref:for_users.md@Command+History
-[word completion]:                       rdoc-ref:for_users.md@Word+Completion
+[in brief]:             rdoc-ref:@In+Brief
+[reline defaults]:      rdoc-ref:@Reline+Defaults
+[undo]:                 rdoc-ref:@Undo
+[immediate undo]:       rdoc-ref:@Immediate+Undo
+[fall-through undo]:    rdoc-ref:@22Fall-Through-22+Undo
+[repetition]:           rdoc-ref:@Repetition
+[command-line editing]: rdoc-ref:@Command-Line+Editing
+[command history]:      rdoc-ref:@Command+History
+[word completion]:      rdoc-ref:@Word+Completion
 
 [console application]: https://en.wikipedia.org/wiki/Console_application
 [debug]:               https://github.com/ruby/debug
@@ -577,39 +575,39 @@ otherwise, exit application.
 [repl]:                https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop
 [ri]:                  https://ruby.github.io/rdoc/RI_md.html
 
-[character forward]: rdoc-ref:@C-f+or+-E2-86-92-3A+Character+Forward
+[character forward]:  rdoc-ref:@C-f+or+-E2-86-92-3A+Character+Forward
 [character backward]: rdoc-ref:@C-b+or+-E2-86-90-3A+Character+Backward
-[word forward]: rdoc-ref:@M-f-3A+Word+Forward
-[word backward]: rdoc-ref:@M-b-3A+Word+Backward
-[beginning of line]: rdoc-ref:@C-a-3A+Beginning+of+Line
-[end of line]: rdoc-ref:@C-e-3A+End+of+Line
-[clear screen]: rdoc-ref:@C-l-3A+Clear+Screen
-[clear display]: rdoc-ref:@M-C-l-3A+Clear+Display
+[word forward]:       rdoc-ref:@M-f-3A+Word+Forward
+[word backward]:      rdoc-ref:@M-b-3A+Word+Backward
+[beginning of line]:  rdoc-ref:@C-a-3A+Beginning+of+Line
+[end of line]:        rdoc-ref:@C-e-3A+End+of+Line
+[clear screen]:       rdoc-ref:@C-l-3A+Clear+Screen
+[clear display]:      rdoc-ref:@M-C-l-3A+Clear+Display
 
-[enter command]: rdoc-ref:@Enter-3A+Enter+Command
+[enter command]:    rdoc-ref:@Enter-3A+Enter+Command
 [previous command]: rdoc-ref:@C-p+or+-E2-86-91-3A+Previous+Command
-[next command]: rdoc-ref:@C-n+or+-E2-86-93-3A+Next+Command
-[reverse search]: rdoc-ref:@C-r-3A+Reverse+Search
+[next command]:     rdoc-ref:@C-n+or+-E2-86-93-3A+Next+Command
+[reverse search]:   rdoc-ref:@C-r-3A+Reverse+Search
 
-[insert character]: rdoc-ref:@Any+Printable+Character-3A+Insert+Character
-[delete character forward]: rdoc-ref:@Delete-3A+Delete+Character+Forward
+[insert character]:                          rdoc-ref:@Any+Printable+Character-3A+Insert+Character
+[delete character forward]:                  rdoc-ref:@Delete-3A+Delete+Character+Forward
 [delete character forward (non-empty line)]: rdoc-ref:@C-d-3A+Delete+Character+Forward+-28Non-Empty+Line-29
-[delete character backward]: rdoc-ref:@Backspace-3A+Delete+Character+Backward
-[transpose characters]: rdoc-ref:@C-t-3A+Transpose+Characters
-[transpose words]: rdoc-ref:@M-t-3A+Transpose+Words
-[upcase word]: rdoc-ref:@M-u-3A+Upcase+Word
-[downcase word]: rdoc-ref:@M-l-3A+Downcase+Word
-[capitalize word]: rdoc-ref:@M-c-3A+Capitalize+Word
+[delete character backward]:                 rdoc-ref:@Backspace-3A+Delete+Character+Backward
+[transpose characters]:                      rdoc-ref:@C-t-3A+Transpose+Characters
+[transpose words]:                           rdoc-ref:@M-t-3A+Transpose+Words
+[upcase word]:                               rdoc-ref:@M-u-3A+Upcase+Word
+[downcase word]:                             rdoc-ref:@M-l-3A+Downcase+Word
+[capitalize word]:                           rdoc-ref:@M-c-3A+Capitalize+Word
 
-[kill line forward]: rdoc-ref:@C-k-3A+Kill+Line+Forward
+[kill line forward]:  rdoc-ref:@C-k-3A+Kill+Line+Forward
 [kill line backward]: rdoc-ref:@C-u-3A+Kill+Line+Backward
-[kill word forward]: rdoc-ref:@M-d-3A+Kill+Word+Forward
+[kill word forward]:  rdoc-ref:@M-d-3A+Kill+Word+Forward
 [kill word backward]: rdoc-ref:@C-w-3A+Kill+Word+Backward
-[yank last kill]: rdoc-ref:@C-y-3A+Yank+Last+Kill
+[yank last kill]:     rdoc-ref:@C-y-3A+Yank+Last+Kill
 
-[complete word]: rdoc-ref:@Tab-3A+Complete+Word
+[complete word]:    rdoc-ref:@Tab-3A+Complete+Word
 [show completions]: rdoc-ref:@Tab+Tab-3A+Show+Completions
 
-[meta prefix]: rdoc-ref:@Escape-3A+Meta+Prefix
-[undo]: rdoc-ref:@C-_-3A+Undo
+[meta prefix]:                   rdoc-ref:@Escape-3A+Meta+Prefix
+[undo]:                          rdoc-ref:@C-_-3A+Undo
 [exit application (empty line)]: rdoc-ref:@60C-d-27-3A+Exit+Application
