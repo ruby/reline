@@ -17,6 +17,5 @@ puts 'Welcome to the Echo program!'
 puts '  To exit, type Ctrl-d in empty line.'
 # REPL (Read-Evaluate-Print Loop)
 while line = Reline.readline(prompt = 'echo> ', history = true)
-  line.chomp!
-  puts "You typed: '#{line}'."
+  puts "You typed: '#{line.chomp}'."
 end

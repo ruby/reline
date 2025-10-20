@@ -36,77 +36,56 @@ Ruby itself includes these Reline applications:
 
 ## In Brief
 
-Each table in this section summarizes a group of related Reline commands:
-
-- **Command:** the keys for the command.
-- **Repetition?:** whether a [repetition prefix][repetition] may be given.
-- **Undoable?:** whether the action may be [undone][undo].
-- **Action:** the action to be taken.
-
 Details for the commands are at the links.
 
-[Moving the cursor][commands for moving the cursor]:
+### Moving the Cursor
 
-|            Command            | Repetition? | Undoable? | Action                  |
-|:-----------------------------:|:-----------:|:-----:|-----------------------------|
-|  <tt>C-f</tt> or <tt>→</tt>   |   Yes.      |  No.  | Move forward one character. |
-|  <tt>C-b</tt> or <tt>←</tt>   |    Yes.     |  No.  |                             |
-|         <tt>M-f</tt>          |    Yes.     |  No.  | Move forward one word.      |
-|         <tt>M-b</tt>          |    Yes.     |  No.  | Move backward one word.     |
-| <tt>C-a</tt> or <tt>Home</tt> |     No.     |  No.  | Move to beginning of line.  |
-| <tt>C-e</tt> or <tt>End</tt>  |     No.     |  No.  | Move to end of line.        |
-|         <tt>C-l</tt>          |     No.     |  No.  | Clear screen.               |
-|        <tt>M-C-l</tt>         |     No.     |  No.  | Clear display.              |
+- `C-f` or `→`:    [Character forward]  [character forward].
+- `C-b` or `←`:    [Character backward] [character backward].
+- `M-f`:           [Word forward]       [word forward].
+- `M-b`:           [Word backward]      [word backward].
+- `C-a` or `Home`: [Beginning of line]  [beginning of line]
+- `C-e` or `End`:  [End of line]        [end of line]
+- `C-l`:           [Clear screen]       [clear screen].
+- `M-C-l`:         [Clear display]      [clear display].
 
-[Manipulating history][commands for manipulating the history]:
+### Manipulating History
 
-|          Command           | Repetition? | Undoable? | Action                          |
-|:--------------------------:|:-----------:|:---------:|---------------------------------|
-|       <tt>Enter</tt>       |     No.     |    No.    | Accept line.                    |
-| <tt>C-p</tt> or <tt>↑</tt> |    Yes.     |   Yes.    | Move to previous command.       |
-| <tt>C-n</tt> or <tt>↓</tt> |    Yes.     |   Yes.    | Move to next command.           |
-|        <tt>M-p</tt>        |     No.     |    No.    | Non-incremental reverse search. |
-|        <tt>M-n</tt>        |     No.     |    No.    | Non-incremental forward search. |
+- `Enter`:      [Enter command]    [enter command].
+- `C-p` or `↑`: [Previous command] [previous command].
+- `C-n` or `↓`: [Next command]     [next command].
+- `C-r`:        [Reverse search]   [reverse search].
 
-[Changing text][commands for changing text]:
+### Changing Text
 
-|         Command          | Repetition? | Undoable? | Action                                         |
-|:------------------------:|:-------:|:---------:|----------------------------------------------------|
-| Any printable character. |   No.   |   Yes.    | Insert character.                                  |
-|       <tt>Del</tt>       |   No.   |   Yes.    | Delete character forward.                          |
-|       <tt>C-d</tt>       |   No.   |   Yes.    | Delete character forward (only if line non-empty). |
-|    <tt>Backspace</tt>    |  Yes.   |   Yes.    | Delete character backward.                         |
-|       <tt>C-t</tt>       |   No.   |   Yes.    | Transpose characters.                              |
-|       <tt>M-t</tt>       |  Yes.   |   Yes.    | Transpose words.                                   |
-|       <tt>M-u</tt>       |  Yes.   |   Yes.    | Upcase word.                                       |
-|       <tt>M-l</tt>       |  Yes.   |   Yes.    | Downcase word.                                     |
-|       <tt>M-c</tt>       |   No.   |   Yes.    | Capitalize word.                                   |
+- Any printable character: [Insert character][insert character].
+- `Delete`: [Delete character forward][delete character forward].
+- `C-d`: [Delete character forward (non-empty line)][delete character forward (non-empty line)].
+- `Backspace`: [Delete character backward][delete character backward].
+- `C-t`: [Transpose characters][transpose characters].
+- `M-t`: [Transpose words][transpose words].
+- `M-u`: [Upcase word][upcase word].
+- `M-l`: [Downcase word][downcase word].
+- `M-c`: [Capitalize word][capitalize word].
 
-[Killing and yanking][commands for killing and yanking]:
+### Killing and Yanking
 
-|   Command    | Repetition? | Undoable? | Action              |
-|:------------:|:-----------:|:---------:|---------------------|
-| <tt>C-k</tt> |     No.     |   Yes.    | Kill line forward.  |
-| <tt>C-u</tt> |     No.     |   Yes.    | Kill line backward. |
-| <tt>M-d</tt> |     No.     |   Yes.    | Kill word forward.  |
-| <tt>C-w</tt> |     No.     |   Yes.    | Kill word backward. |
-| <tt>C-y</tt> |     No.     |   Yes.    | Yank last kill.     |
+- `C-k': [Kill line forward][kill line forward].
+- `C-u': [Kill line backward][kill line backward].
+- `M-d': [Kill word forward][kill word forward].
+- `C-w': [Kill word backward][kill word backward].
+- `C-y': [Yank last kill][yank last kill].
 
-[Word completion][commands for word completion]:
+### Word Completion
 
-|   Command        | Repetition? | Undoable? | Action                     |
-|:----------------:|:-----------:|:---------:|----------------------------|
-|   <tt>Tab</tt>   |     No.     |   Yes.    | Complete word if possible. |
-| <tt>Tab Tab</tt> |     No.     |    No.    | Show possible completions. |
+- `Tab': [Complete word][complete word].
+- `Tab Tab': [Show completions][show completions].
 
-[Other commands][other commands]:
+### Other Commands
 
-|    Command     | Repetition? | Undoable? | Action                                 |
-|:--------------:|:-----------:|:---------:|----------------------------------------|
-|  <tt>Esc</tt>  |     No.     |    No.    | Meta prefix.                           |
-|  <tt>C-_</tt>  |     No.     |    No.    | Undo.                                  |
-|  <tt>C-d</tt>  |     No.     |    No.    | Exit application (only if line empty). |
-| <tt>Enter</tt> |     No.     |    No.    | Exit application (only if line empty). |
+- `Escape': [Meta prefix][meta prefix].
+- `C-_': [Undo][undo].
+- `C-d': [Exit application (empty line)][exit application (empty line)].
 
 ## Reline Defaults
 
@@ -134,9 +113,7 @@ Reline.completion_proc = proc { |word|
 prompt = 'echo> '
 history = true
 while line = Reline.readline(prompt, history)
-  line.chomp!
-  exit 0 if line.empty?
-  puts "You typed: '#{line}'."
+  puts "You typed: '#{line.chomp}'."
 end
 ```
 
@@ -175,10 +152,10 @@ Other keys:
 - `Alt` denotes the Alt key.
 - `Backspace` denotes the Backspace key.
 - `Ctrl` denotes the Control key.
-- `Del` denotes the Delete key.
+- `Delete` denotes the Delete key.
 - `End` denotes the End key.
 - `Enter` denotes the Enter key.
-- `Esc` denotes the Escape key.
+- `Escape` denotes the Escape key.
 - `Home` denotes the Home key.
 - `Tab` denotes the Tab key.
 
@@ -410,7 +387,7 @@ At that point you can:
 - **Details:** Move the trailing string (if any) one character width to the right, to "open a gap";
   place the cursor immediately after the inserted character.
 
-#### `C-d`: Delete Character Forward
+#### `Delete`: Delete Character Forward
 
 - **Action:** Delete the character at the cursor.
 - **Repetition?:** [No][repetition].
@@ -421,6 +398,11 @@ At that point you can:
     - Otherwise, delete the character at the cursor,
       move the trailing string (if any) one character to the left, to "close the gap",
       and leave the cursor in place.
+
+#### `C-d`: Delete Character Forward (Non-Empty Line)
+
+Like `Delete` if line non-empty;
+otherwise, exit application.
 
 #### `Backspace`: Delete Character Backward
 
@@ -534,7 +516,7 @@ At that point you can:
     - If in a word, kill the leftward part of the word and place the cursor at the left of the deletion.
     - If at the end of a word, kill the word and place the cursor at the left of the deletion.
 
-#### `C-y`: Yank
+#### `C-y`: Yank Last Kill
 
 - **Action:**: Insert killed text at the cursor and place the cursor at the end of the inserted text.
 - **Repetition?:** [No][repetition].
@@ -547,17 +529,13 @@ At that point you can:
 
 ### Commands for Manipulating the History
 
-####  `Enter`: Accept Line
+####  `Enter`: Enter Command
 
-#### `C-p` or `↑`: Previous History
+#### `C-p` or `↑`: Previous Command
 
-#### `C-n` or `↓`: Next History
+#### `C-n` or `↓`: Next Command
 
-#### `C-r`: Reverse Search History
-
-#### `M-p`: Non-Incremental Reverse Search History
-
-#### `M-n`: Non-Incremental Forward Search History
+#### `C-r`: Reverse Search
 
 ### Commands for Word Completion
 
@@ -567,7 +545,7 @@ At that point you can:
 
 ### Other Commands
 
-#### `Esc`: Meta Prefix
+#### `Escape`: Meta Prefix
 
 #### `C-_`: Undo
 
@@ -598,3 +576,40 @@ At that point you can:
 [irb]:                 https://ruby.github.io/irb/index.html
 [repl]:                https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop
 [ri]:                  https://ruby.github.io/rdoc/RI_md.html
+
+[character forward]: rdoc-ref:@C-f+or+-E2-86-92-3A+Character+Forward
+[character backward]: rdoc-ref:@C-b+or+-E2-86-90-3A+Character+Backward
+[word forward]: rdoc-ref:@M-f-3A+Word+Forward
+[word backward]: rdoc-ref:@M-b-3A+Word+Backward
+[beginning of line]: rdoc-ref:@C-a-3A+Beginning+of+Line
+[end of line]: rdoc-ref:@C-e-3A+End+of+Line
+[clear screen]: rdoc-ref:@C-l-3A+Clear+Screen
+[clear display]: rdoc-ref:@M-C-l-3A+Clear+Display
+
+[enter command]: rdoc-ref:@Enter-3A+Enter+Command
+[previous command]: rdoc-ref:@C-p+or+-E2-86-91-3A+Previous+Command
+[next command]: rdoc-ref:@C-n+or+-E2-86-93-3A+Next+Command
+[reverse search]: rdoc-ref:@C-r-3A+Reverse+Search
+
+[insert character]: rdoc-ref:@Any+Printable+Character-3A+Insert+Character
+[delete character forward]: rdoc-ref:@Delete-3A+Delete+Character+Forward
+[delete character forward (non-empty line)]: rdoc-ref:@C-d-3A+Delete+Character+Forward+-28Non-Empty+Line-29
+[delete character backward]: rdoc-ref:@Backspace-3A+Delete+Character+Backward
+[transpose characters]: rdoc-ref:@C-t-3A+Transpose+Characters
+[transpose words]: rdoc-ref:@M-t-3A+Transpose+Words
+[upcase word]: rdoc-ref:@M-u-3A+Upcase+Word
+[downcase word]: rdoc-ref:@M-l-3A+Downcase+Word
+[capitalize word]: rdoc-ref:@M-c-3A+Capitalize+Word
+
+[kill line forward]: rdoc-ref:@C-k-3A+Kill+Line+Forward
+[kill line backward]: rdoc-ref:@C-u-3A+Kill+Line+Backward
+[kill word forward]: rdoc-ref:@M-d-3A+Kill+Word+Forward
+[kill word backward]: rdoc-ref:@C-w-3A+Kill+Word+Backward
+[yank last kill]: rdoc-ref:@C-y-3A+Yank+Last+Kill
+
+[complete word]: rdoc-ref:@Tab-3A+Complete+Word
+[show completions]: rdoc-ref:@Tab+Tab-3A+Show+Completions
+
+[meta prefix]: rdoc-ref:@Escape-3A+Meta+Prefix
+[undo]: rdoc-ref:@C-_-3A+Undo
+[exit application (empty line)]: rdoc-ref:@60C-d-27-3A+Exit+Application
