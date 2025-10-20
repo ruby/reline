@@ -547,7 +547,7 @@ otherwise, exit application.
 
 #### `C-_`: Undo
 
-#### `C-d': Exit Application
+#### `C-d': Exit Application (Empty Line)
 
 [commands for moving the cursor]:        rdoc-ref:@Commands+for+Moving+the+Cursor
 [commands for manipulating the history]: rdoc-ref:@Commands+for+Manipulating+the+History
@@ -607,4 +607,4 @@ otherwise, exit application.
 
 [meta prefix]:                   rdoc-ref:@Escape-3A+Meta+Prefix
 [undo]:                          rdoc-ref:@C-_-3A+Undo
-[exit application (empty line)]: rdoc-ref:@60C-d-27-3A+Exit+Application
+[exit application (empty line)]: rdoc-ref:@60C-d-27-3A+Exit+Application+-28Empty+Line-29
