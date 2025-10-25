@@ -178,7 +178,7 @@ on the _current_ command line;
 nothing is ever undone in an already-entered line.
 
 In general, an "undoable" command is one that moved the cursor or modified text.
-Other commands are not undoable, but instead "fall-through" the command to earlier commands;
+Other commands are not undoable, but instead "passes through" the command to earlier commands;
 see below.
 
 ### Immediate Undo
@@ -186,10 +186,10 @@ see below.
 When the undo command is given and the immediately preceding command is undoable,
 that preceding command is undone.
 
-### "Fall-Through" Undo
+### "Pass-Through" Undo
 
 When the undo command is given and the immediately preceding command is not undoable,
-the undo command "falls through" to commands given earlier.
+the undo command "passes through" to commands given earlier.
 Reline searches backward through the most recent commands for the current line:
 
 - When an undoable command is found, that command is undone, and the search ends.
@@ -315,21 +315,21 @@ To exit the application, use command `C-d` on an empty command line.
 
 - **Action:** Move the cursor forward one character.
 - **Repetition?:** [Yes][repetition].
-- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
 - **Details:** Do nothing if already at end-of-line.
 
 #### `C-b` or `←`: Character Backward
 
 - **Action:** Move the cursor backward one character.
 - **Repetition?:** [Yes][repetition].
-- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
 - **Details:** Do nothing if already at beginning-of-line.
 
 #### `M-f`: Word Forward
 
 - **Action:** Move the cursor forward one word.
 - **Repetition?:** [Yes][repetition].
-- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
 - **Details:**
 
     - If the cursor is in a word, move to the end of that word;
@@ -339,7 +339,7 @@ To exit the application, use command `C-d` on an empty command line.
 
 - **Action:** Move the cursor backward one word.
 - **Repetition?:** [Yes][repetition].
-- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
 - **Details:**
 
     - If the cursor is in a word, move to the beginning of that word.
@@ -349,14 +349,14 @@ To exit the application, use command `C-d` on an empty command line.
 
 - **Action:**: Move the cursor to the beginning of the line.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
 - **Details:** Do nothing if already at beginning-of-line.
 
 #### `C-e`: End of Line
 
 - **Action:** Move the cursor to the end of the line.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
 - **Details:** Do nothing if already at end-of-line.
 
 #### `C-l`: Clear Screen
@@ -364,13 +364,13 @@ To exit the application, use command `C-d` on an empty command line.
 - **Action:** Clear the screen, then redraw the current line,
   leaving the current line at the top of the screen.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
 
 #### `M-C-l`: Clear Display
 
 - **Action:** Like `C-l`, but also clear the terminal’s scrollback buffer if possible.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No; attempt [fall-through undo][fall-through undo].
+- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
 
 ### Commands for Changing Text
 
@@ -577,7 +577,7 @@ otherwise, [exit the application][exiting the application].
 [reline defaults]:         rdoc-ref:@Reline+Defaults
 [undo]:                    rdoc-ref:@Undo
 [immediate undo]:          rdoc-ref:@Immediate+Undo
-[fall-through undo]:       rdoc-ref:@22Fall-Through-22+Undo
+[pass-through undo]:       rdoc-ref:@22Pass-Through-22+Undo
 [repetition]:              rdoc-ref:@Repetition
 [command-line editing]:    rdoc-ref:@Command-Line+Editing
 [command history]:         rdoc-ref:@Command+History
