@@ -40,8 +40,8 @@ details at the links.
 
 ### Manipulating History
 
-- `Enter`:      [Accept line]    [accept line].
-- `C-p` or `↑`: [Previous command] [previous command].
+- `Enter`:      [Accept line]      [accept line].
+- `C-p` or `↑`: [Previous history] [previous history].
 - `C-n` or `↓`: [Next command]     [next command].
 - `C-r`:        [Reverse search]   [reverse search].
 
@@ -530,7 +530,7 @@ otherwise, [exit the application][exiting the application].
     - The command line may be empty or contain only whitespace.
     - The cursor need not be at the end-of-line.
 
-#### `C-p` or `↑`: Previous Command
+#### `C-p` or `↑`: Previous History
 
 - **Action:**: Display the immediately preceding command.
 - **Repetition?:** [No][repetition].
@@ -601,8 +601,8 @@ otherwise, [exit the application][exiting the application].
 [clear screen]:       rdoc-ref:@C-l-3A+Clear+Screen
 [clear display]:      rdoc-ref:@M-C-l-3A+Clear+Display
 
-[accept line]:    rdoc-ref:@Enter-3A+Accept+Line
-[previous command]: rdoc-ref:@C-p+or+-E2-86-91-3A+Previous+Command
+[accept line]:      rdoc-ref:@Enter-3A+Accept+Line
+[previous history]: rdoc-ref:@C-p+or+-E2-86-91-3A+Previous+History
 [next command]:     rdoc-ref:@C-n+or+-E2-86-93-3A+Next+Command
 [reverse search]:   rdoc-ref:@C-r-3A+Reverse+Search
 
