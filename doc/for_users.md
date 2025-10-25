@@ -169,7 +169,7 @@ See individual commands.
 If repetition for the command is supported and a repetition value of `n` is given,
 the command is executed `n` times.
 
-It the repetition is for the command is not supported, the repetition prefix is ignored.
+It the repetition for the command is not supported, the repetition prefix is ignored.
 
 ## Undo
 
