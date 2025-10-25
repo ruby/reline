@@ -235,27 +235,28 @@ Words = %w[ foo_foo foo_bar foo_baz qux ]
 
 ```
 
-In the echo program, typing `f` followed by `Tab`
-lets the program do a partial word completion, adding `oo_` to form `foo_`.
+In the echo program, typing `'f'` followed by `Tab`
+lets the program do a partial word completion, adding `'oo_'` to form `'foo_'`.
 
-The program can add the partial completion `oo_`
-because all the available words that begin with `f` also begin with `foo_`.
+The program can add the partial completion `'oo_'`
+because all the available words that begin with `'f'` also begin with `'foo_'`.
 
-But it can't complete the word because there are multiple words that begin with `foo_`.
+But it can't complete the word because there are multiple words that begin with `'foo_'`.
 
-If we add `b` and `Tab`, the program can add `bar` to form the complete word `foo_bar`,
-because that's the only word that begins `foo_b`.
+If we add `'b'` and `Tab`, the program can add `'bar'` to form the complete word `'foo_bar'`,
+because that's the only word that begins `'foo_b'`.
 
 To see the completion possibilities, type `Tab` twice;
 this example types `f` followed by two `Tab`s:
 
 ```
 echo> foo_
-foo_bar  foo_baz  foo_foo```
+foo_bar  foo_baz  foo_foo
+```
 
 Word completion works on the current word in the line,
 which may not be the only word;
-this example types `xyzzy f` followed by two `Tab`s
+this example types `'xyzzy f'` followed by two `Tab`s
 to get the possible completions:
 
 ```ruby
