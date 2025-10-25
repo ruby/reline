@@ -40,7 +40,7 @@ details at the links.
 
 ### Manipulating History
 
-- `Enter`:      [Enter command]    [enter command].
+- `Enter`:      [Accept line]    [accept line].
 - `C-p` or `↑`: [Previous command] [previous command].
 - `C-n` or `↓`: [Next command]     [next command].
 - `C-r`:        [Reverse search]   [reverse search].
@@ -520,7 +520,7 @@ otherwise, [exit the application][exiting the application].
 
 ### Commands for Manipulating the History
 
-####  `Enter`: Enter Command
+####  `Enter`: Accept Line
 
 - **Action:**: Enter the command on the line.
 - **Repetition?:** [No][repetition].
@@ -601,7 +601,7 @@ otherwise, [exit the application][exiting the application].
 [clear screen]:       rdoc-ref:@C-l-3A+Clear+Screen
 [clear display]:      rdoc-ref:@M-C-l-3A+Clear+Display
 
-[enter command]:    rdoc-ref:@Enter-3A+Enter+Command
+[accept line]:    rdoc-ref:@Enter-3A+Accept+Line
 [previous command]: rdoc-ref:@C-p+or+-E2-86-91-3A+Previous+Command
 [next command]:     rdoc-ref:@C-n+or+-E2-86-93-3A+Next+Command
 [reverse search]:   rdoc-ref:@C-r-3A+Reverse+Search
