@@ -88,24 +88,16 @@ as in this simple "echo" program:
 
 ```
 require 'reline'
-require 'open-uri'
 
-# Get words for completion.
-words_url = 'https://raw.githubusercontent.com/first20hours/google-10000-english/refs/heads/master/google-10000-english-usa-no-swears-long.txt'
-words = []
-URI.open(words_url) do |file|
-  while !file.eof?
-    words.push(file.readline.chomp)
-  end
-end
-# Install completion proc.
-Reline.completion_proc = proc { |word|
-  words
-}
-# REPL (Read-Evaluate-Print Loop)
-prompt = 'echo> '
-history = true
-while line = Reline.readline(prompt, history)
+puts 'Welcome to the Echo program!'
+puts '  To exit, type Ctrl-d in empty line.'
+
+# Words for completion.
+Words = %w[ foo_foo foo_bar foo_baz qux ]
+Reline.completion_proc = proc { |word| Words }
+
+# REPL (Read-Evaluate-Print Loop).
+while line = Reline.readline(prompt = 'echo> ', history = true)
   puts "You typed: '#{line.chomp}'."
 end
 ```
@@ -236,35 +228,39 @@ A Reline application may support command word completion,
 which is implemented via the `Tab` command.
 
 The example [echo program][reline defaults] has loaded a collection of words
-that it uses for completing words.
+that it uses for completing words:
 
-In the example echo program, typing `prof` followed by `Tab`
-lets the program do a partial word completion, adding `ess` to form `profess`.
+```ruby
+Words = %w[ foo_foo foo_bar foo_baz qux ]
 
-The program can add the partial completion `ess`
-because all the available words that begin with `prof` also begin with `profess`.
+```
 
-But it can't complete the word because there are multiple words that begin with `profess`.
+In the echo program, typing `f` followed by `Tab`
+lets the program do a partial word completion, adding `oo_` to form `foo_`.
 
-If we add `o` and `Tab`, the program can add `r` to form the complete word `professor`,
-because that's the only word that begins `professo`.
+The program can add the partial completion `oo_`
+because all the available words that begin with `f` also begin with `foo_`.
+
+But it can't complete the word because there are multiple words that begin with `foo_`.
+
+If we add `b` and `Tab`, the program can add `bar` to form the complete word `foo_bar`,
+because that's the only word that begins `foo_b`.
 
 To see the completion possibilities, type `Tab` twice;
-this example types `profess` followed by two `Tab`s:
+this example types `f` followed by two `Tab`s:
 
 ```
-echo> profess
-profession     professional   professionals  professor
-```
+echo> foo_
+foo_bar  foo_baz  foo_foo```
 
 Word completion works on the current word in the line,
 which may not be the only word;
-this example types `differential equ` followed by two `Tab`s
+this example types `xyzzy f` followed by two `Tab`s
 to get the possible completions:
 
 ```ruby
-echo> differential equ
-equations    equilibrium  equipment    equivalent
+echo> xyzzy foo_
+foo_bar  foo_baz  foo_foo
 ```
 
 ### Command History
