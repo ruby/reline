@@ -108,13 +108,6 @@ Other console applications that use module Reline may have implemented different
 
 Examples on this page are derived from the echo program above.
 
-In an example where cursor position is important,
-we use the character `'ˇ'` to denote its position, thus:
-
-```
-'abcˇdef' # Denotes 6-character string 'abcdef' with cursor between 'c' and 'd'.
-```
-
 ## Notations
 
 Reline is basically a domain-specific language,
