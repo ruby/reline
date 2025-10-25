@@ -42,7 +42,7 @@ details at the links.
 
 - `Enter`:      [Accept line]      [accept line].
 - `C-p` or `↑`: [Previous history] [previous history].
-- `C-n` or `↓`: [Next command]     [next command].
+- `C-n` or `↓`: [Next history]     [next history].
 - `C-r`:        [Reverse search]   [reverse search].
 
 ### Completing Words
@@ -537,7 +537,7 @@ otherwise, [exit the application][exiting the application].
 - **Undoable?:** No.
 - **Details:**: See [Traversing History][traversing history].
 
-#### `C-n` or `↓`: Next Command
+#### `C-n` or `↓`: Next History
 
 - **Action:**: Display the immediately following command.
 - **Repetition?:** [No][repetition].
@@ -603,7 +603,7 @@ otherwise, [exit the application][exiting the application].
 
 [accept line]:      rdoc-ref:@Enter-3A+Accept+Line
 [previous history]: rdoc-ref:@C-p+or+-E2-86-91-3A+Previous+History
-[next command]:     rdoc-ref:@C-n+or+-E2-86-93-3A+Next+Command
+[next history]:     rdoc-ref:@C-n+or+-E2-86-93-3A+Next+History
 [reverse search]:   rdoc-ref:@C-r-3A+Reverse+Search
 
 [insert character]:                          rdoc-ref:@Any+Printable+Character-3A+Insert+Character
