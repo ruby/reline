@@ -177,8 +177,9 @@ The undo command (`C-_`) "undoes" the action of a previous command (if any)
 on the _current_ command line;
 nothing is ever undone in an already-entered line.
 
-Some commands can be undone; others cannot.
-See individual commands.
+In general, an "undoable" command is one that moved the cursor or modified text.
+Other commands are not undoable, but instead "fall-through" the command to earlier commands;
+see below.
 
 ### Immediate Undo
 
