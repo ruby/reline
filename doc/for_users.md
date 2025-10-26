@@ -30,6 +30,11 @@ details at the links.
 - `M-l`: [Downcase word][downcase word].
 - `M-c`: [Capitalize word][capitalize word].
 
+### Undoing and Redoing
+
+- `C-_`: [Undo previous command][undo previous command].
+- `M-_`: [Redo previous undo][redo previous undo].
+
 ### Killing and Yanking
 
 - `C-k': [Kill line forward][kill line forward].
@@ -171,22 +176,29 @@ the command is executed `n` times.
 
 It the repetition for the command is not supported, the repetition prefix is ignored.
 
-## Undo
+## Undo and Redo
 
 The undo command (`C-_`) "undoes" the action of a previous command (if any)
-on the _current_ command line;
-nothing is ever undone in an already-entered line.
+on the _current_ command line.
 
-In general, an "undoable" command is one that moved the cursor or modified text.
-Other commands are not undoable, but instead "passes through" the command to earlier commands;
+The redo command(`M-_`) "redoes" the action of a previous undo
+on the _current_ command line.
+
+Nothing is ever undone or redone in an already-entered line.
+
+In general, an "undoable" or "redoable" command is one that moved the cursor or modified text.
+Other commands are not undoable or redoable, but instead "pass through" the command to earlier commands;
 see below.
 
-### Immediate Undo
+### Immediate Undo and Redo
 
 When the undo command is given and the immediately preceding command is undoable,
 that preceding command is undone.
 
-### "Pass-Through" Undo
+When the redo command is given and the immediately preceding undo is redoable,
+that preceding command is redone.
+
+### "Pass-Through" Undo and Redo
 
 When the undo command is given and the immediately preceding command is not undoable,
 the undo command "passes through" to commands given earlier.
@@ -194,6 +206,13 @@ Reline searches backward through the most recent commands for the current line:
 
 - When an undoable command is found, that command is undone, and the search ends.
 - If no such command is found, the undo command is ignored.
+
+When the redo command is given and the immediately preceding undo is not redoable,
+the redo command "passes through" to commands given earlier.
+Reline searches backward through the most recent commands for the current line:
+
+- When an redoable undo command is found, that command is redone, and the search ends.
+- If no such command is found, the redo command is ignored.
 
 ## Command-Line Editing
 
@@ -315,21 +334,21 @@ To exit the application, use command `C-d` on an empty command line.
 
 - **Action:** Move the cursor forward one character.
 - **Repetition?:** [Yes][repetition].
-- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
+- **Undoable/Redoable?:** No; attempt [pass-through undo or redo][pass-through undo and redo].
 - **Details:** Do nothing if already at end-of-line.
 
 #### `C-b` or `←`: Character Backward
 
 - **Action:** Move the cursor backward one character.
 - **Repetition?:** [Yes][repetition].
-- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
+- **Undoable/Redoable?:** No; attempt [pass-through undo or redo][pass-through undo and redo].
 - **Details:** Do nothing if already at beginning-of-line.
 
 #### `M-f`: Word Forward
 
 - **Action:** Move the cursor forward one word.
 - **Repetition?:** [Yes][repetition].
-- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
+- **Undoable/Redoable?:** No; attempt [pass-through undo or redo][pass-through undo and redo].
 - **Details:**
 
     - If the cursor is in a word, move to the end of that word;
@@ -339,7 +358,7 @@ To exit the application, use command `C-d` on an empty command line.
 
 - **Action:** Move the cursor backward one word.
 - **Repetition?:** [Yes][repetition].
-- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
+- **Undoable/Redoable?:** No; attempt [pass-through undo or redo][pass-through undo and redo].
 - **Details:**
 
     - If the cursor is in a word, move to the beginning of that word.
@@ -349,14 +368,14 @@ To exit the application, use command `C-d` on an empty command line.
 
 - **Action:**: Move the cursor to the beginning of the line.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
+- **Undoable/Redoable?:** No; attempt [pass-through undo or redo][pass-through undo and redo].
 - **Details:** Do nothing if already at beginning-of-line.
 
 #### `C-e`: End of Line
 
 - **Action:** Move the cursor to the end of the line.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
+- **Undoable/Redoable?:** No; attempt [pass-through undo or redo][pass-through undo and redo].
 - **Details:** Do nothing if already at end-of-line.
 
 #### `C-l`: Clear Screen
@@ -364,21 +383,21 @@ To exit the application, use command `C-d` on an empty command line.
 - **Action:** Clear the screen, then redraw the current line,
   leaving the current line at the top of the screen.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
+- **Undoable/Redoable?:** No; attempt [pass-through undo or redo][pass-through undo and redo].
 
 #### `M-C-l`: Clear Display
 
 - **Action:** Like `C-l`, but also clear the terminal’s scrollback buffer if possible.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No; attempt [pass-through undo][pass-through undo].
+- **Undoable/Redoable?:** No; attempt [pass-through undo or redo][pass-through undo and redo].
 
 ### Commands for Changing Text
 
 #### Any Printable Character: Insert Character
 
-- **Action:** Insert the character at the cursor position. 
+- **Action:** Insert the character at the cursor position.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:** Move the trailing string (if any) one character width to the right, to "open a gap";
   place the cursor immediately after the inserted character.
 
@@ -386,7 +405,7 @@ To exit the application, use command `C-d` on an empty command line.
 
 - **Action:** Delete the character at the cursor.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**
 
     - If at end-of-line: do nothing.
@@ -403,7 +422,7 @@ otherwise, [exit the application][exiting the application].
 
 - **Action:** Delete the character before the cursor.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**
 
     - If at beginning-of-line: do nothing.
@@ -414,7 +433,7 @@ otherwise, [exit the application][exiting the application].
 
 - **Action:** Transpose two characters (by exchanging their positions).
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**
 
     - If at beginning-of-line, or if there is only one character, do nothing.
@@ -426,7 +445,7 @@ otherwise, [exit the application][exiting the application].
 
 - **Action:**: Transpose two words (by exchanging their positions).
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**:
 
     - If at the beginning-of-line, or if in the first word, or if there is only one word, do nothing.
@@ -439,7 +458,7 @@ otherwise, [exit the application][exiting the application].
 
 - **Action:**: Change word to uppercase.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**:
 
     - If at end-of-line, do nothing.
@@ -451,7 +470,7 @@ otherwise, [exit the application][exiting the application].
 
 - **Action:**: Change word to lowercase.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**:
 
     - If at end-of-line, do nothing.
@@ -463,7 +482,7 @@ otherwise, [exit the application][exiting the application].
 
 - **Action:**: Capitalize word.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**:
 
     - If at end-of-line, do nothing.
@@ -471,27 +490,43 @@ otherwise, [exit the application][exiting the application].
     - If in a word, upcase the next character and move cursor to the end of that word.
     - If at the end of a word, upcase the first character of the next word and move cursor to the end of that word.
 
+### Commands for Undoing and Redoing
+
+#### Undo Previous Command
+
+- **Action:** Undo the previous text editing or cursor-movement command.
+- **Repetition?:** [No][repetition].
+- **Redoable?:** Yes; execute [immediate redo][immediate undo and redo].
+- **Details:** Place the cursor immediately before or after the undone text or cursor movement.
+
+#### Redo Previous Undo
+
+- **Action:** Redo the previous undone command.
+- **Repetition?:** [No][repetition].
+- **Undoable?:** Yes; execute [immediate undo][immediate undo and redo].
+- **Details:** Place the cursor immediately before or after the redone text or cursor movement.
+
 ### Commands for Killing and Yanking
 
 #### `C-k`: Kill Line Forward
 
 - **Action:**: Kill from cursor to end-of-line and place cursor at end-of-line.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**: If at end-of-line, do nothing.
 
 #### `C-u`: Kill Line Backward
 
 - **Action:**: Kill from cursor to beginning-of-line and place cursor at beginning-of-line.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**: If at beginning-of-line, do nothing.
 
 #### `M-d`: Kill Word Forward
 
 - **Action:**: Kill line from cursor to end-of-word.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**:
 
     - If at end-of-line, do nothing.
@@ -503,7 +538,7 @@ otherwise, [exit the application][exiting the application].
 
 - **Action:**: Kill line from cursor to beginning-of-word.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**:
 
     - If at beginning-of-line, do nothing.
@@ -515,7 +550,7 @@ otherwise, [exit the application][exiting the application].
 
 - **Action:**: Insert killed text at the cursor and place the cursor at the end of the inserted text.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**: Do nothing if the kill buffer is empty.
 
 ### Commands for Manipulating the History
@@ -524,7 +559,7 @@ otherwise, [exit the application][exiting the application].
 
 - **Action:**: Enter the command on the line.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No.
+- **Undoable/Redoable?:** No.
 - **Details:**:
 
     - The command line may be empty or contain only whitespace.
@@ -534,21 +569,21 @@ otherwise, [exit the application][exiting the application].
 
 - **Action:**: Display the immediately preceding command.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No.
+- **Undoable/Redoable?:** No.
 - **Details:**: See [Traversing History][traversing history].
 
 #### `C-n` or `↓`: Next History
 
 - **Action:**: Display the immediately following command.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No.
+- **Undoable/Redoable?:** No.
 - **Details:**: See [Traversing History][traversing history].
 
 #### `C-r`: Reverse Search
 
 - **Action:**: Search upward in history.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No.
+- **Undoable/Redoable?:** No.
 - **Details:**: See [Searching History][searching history].
 
 ### Commands for Completing Words
@@ -557,14 +592,14 @@ otherwise, [exit the application][exiting the application].
 
 - **Action:**: Complete word.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** Yes; execute [immediate undo].
+- **Undoable/Redoable?:** Yes; execute [immediate undo or redo][immediate undo and redo].
 - **Details:**: See [Word Completion][word completion].
 
 #### `Tab Tab`: Show Completions
 
 - **Action:**: Show completions.
 - **Repetition?:** [No][repetition].
-- **Undoable?:** No.
+- **Undoable/Redoable?:** No.
 - **Details:**: See [Word Completion][word completion].
 
 [commands for moving the cursor]:        rdoc-ref:@Commands+for+Moving+the+Cursor
@@ -573,18 +608,18 @@ otherwise, [exit the application][exiting the application].
 [commands for killing and yanking]:      rdoc-ref:@Commands+for+Killing+and+Yanking
 [commands for completing words]:         rdoc-ref:@Commands+for+Word+Completion
 
-[in brief]:                rdoc-ref:@In+Brief
-[reline defaults]:         rdoc-ref:@Reline+Defaults
-[undo]:                    rdoc-ref:@Undo
-[immediate undo]:          rdoc-ref:@Immediate+Undo
-[pass-through undo]:       rdoc-ref:@22Pass-Through-22+Undo
-[repetition]:              rdoc-ref:@Repetition
-[command-line editing]:    rdoc-ref:@Command-Line+Editing
-[command history]:         rdoc-ref:@Command+History
-[traversing history]:      rdoc-ref:@Traversing+History
-[searching history]:       rdoc-ref:@Searching+History
-[word completion]:         rdoc-ref:@Word+Completion
-[exiting the application]: rdoc-ref:@Exiting+the+Application
+[in brief]:                   rdoc-ref:@In+Brief
+[reline defaults]:            rdoc-ref:@Reline+Defaults
+[undo]:                       rdoc-ref:@Undo
+[immediate undo and redo]:    rdoc-ref:@Immediate+Undo+and+Redo
+[pass-through undo and redo]: rdoc-ref:@22Pass-Through-22+Undo+and+Redo
+[repetition]:                 rdoc-ref:@Repetition
+[command-line editing]:       rdoc-ref:@Command-Line+Editing
+[command history]:            rdoc-ref:@Command+History
+[traversing history]:         rdoc-ref:@Traversing+History
+[searching history]:          rdoc-ref:@Searching+History
+[word completion]:            rdoc-ref:@Word+Completion
+[exiting the application]:    rdoc-ref:@Exiting+the+Application
 
 [console application]: https://en.wikipedia.org/wiki/Console_application
 [debug]:               https://github.com/ruby/debug
@@ -607,6 +642,8 @@ otherwise, [exit the application][exiting the application].
 [reverse search]:   rdoc-ref:@C-r-3A+Reverse+Search
 
 [insert character]:                          rdoc-ref:@Any+Printable+Character-3A+Insert+Character
+[undo previous command]:                     rdoc-ref:@Undo+and+Redo
+[redo previous undo]:                        rdoc-ref:@Undo+and+Redo
 [delete character forward]:                  rdoc-ref:@Delete-3A+Delete+Character+Forward
 [delete character forward (non-empty line)]: rdoc-ref:@C-d-3A+Delete+Character+Forward+-28Non-Empty+Line-29
 [delete character backward]:                 rdoc-ref:@Backspace-3A+Delete+Character+Backward
