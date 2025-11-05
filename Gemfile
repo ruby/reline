@@ -14,6 +14,7 @@ gem 'rdoc'
 gem 'rake'
 gem 'test-unit'
 gem 'test-unit-ruby-core'
+gem "power_assert", "~> 2.0" if RUBY_VERSION < '3.0' # https://github.com/ruby/power_assert/pull/61
 
 # Only used in ci to run readline-ext test using Reline as Readline
 gem 'readline'
