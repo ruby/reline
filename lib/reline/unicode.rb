@@ -51,7 +51,7 @@ class Reline::Unicode
       else
         EscapedPairs[gr.ord] || gr
       end
-    }.join
+    }.join('')
   end
 
   def self.safe_encode(str, encoding)
