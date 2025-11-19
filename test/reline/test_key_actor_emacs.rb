@@ -1469,13 +1469,13 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
     assert_line_around_cursor('', '')
     input_keys("\C-y")
     assert_line_around_cursor('def ', '')
-    input_keys("\e\C-y")
+    input_keys("\ey")
     assert_line_around_cursor('hoge', '')
-    input_keys("\e\C-y")
+    input_keys("\ey")
     assert_line_around_cursor('def ', '')
     # Moving arrows aborts yank-pop
     input_keys("\C-b\C-f")
-    input_keys("\e\C-y")
+    input_keys("\ey")
     assert_line_around_cursor('def ', '')
   end
 
