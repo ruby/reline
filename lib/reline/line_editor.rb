@@ -43,7 +43,6 @@ class Reline::LineEditor
   RenderedScreen = Struct.new(:base_y, :lines, :cursor_y, keyword_init: true)
 
   CompletionJourneyState = Struct.new(:line_index, :pre, :target, :post, :list, :pointer)
-  NullActionState = [nil, nil].freeze
 
   class MenuInfo
     attr_reader :list
@@ -253,8 +252,8 @@ class Reline::LineEditor
     @undo_redo_history = [[[""], 0, 0]]
     @undo_redo_index = 0
     @restoring = false
-    @prev_action_state = NullActionState
-    @next_action_state = NullActionState
+    @prev_action_state = {}
+    @next_action_state = {}
     reset_line
   end
 
@@ -1022,7 +1021,7 @@ class Reline::LineEditor
       @byte_pointer -= byte_size
     end
 
-    @prev_action_state, @next_action_state = @next_action_state, NullActionState
+    @prev_action_state, @next_action_state = @next_action_state, {}
 
     unless @completion_occurs
       @completion_state = CompletionState::NORMAL
@@ -1779,17 +1778,24 @@ class Reline::LineEditor
 
   private def em_yank(key)
     yanked = @kill_ring.yank
-    insert_text(yanked) if yanked
+    return unless yanked
+
+    before_cursor = current_line.byteslice(0, @byte_pointer)
+    after_cursor = current_line.byteslice(@byte_pointer, current_line.bytesize)
+    set_current_line(before_cursor + yanked + after_cursor, before_cursor.bytesize + yanked.bytesize)
+    set_next_action_state(:em_yank_line, [before_cursor, after_cursor])
   end
   alias_method :yank, :em_yank
 
   private def em_yank_pop(key)
-    yanked, prev_yank = @kill_ring.yank_pop
-    if yanked
-      line, = byteslice!(current_line, @byte_pointer - prev_yank.bytesize, prev_yank.bytesize)
-      set_current_line(line, @byte_pointer - prev_yank.bytesize)
-      insert_text(yanked)
-    end
+    before_cursor, after_cursor = prev_action_state_value(:em_yank_line)
+    return unless before_cursor and after_cursor
+
+    yanked, = @kill_ring.yank_pop
+    return unless yanked
+
+    set_current_line(before_cursor + yanked + after_cursor, before_cursor.bytesize + yanked.bytesize)
+    set_next_action_state(:em_yank_line, [before_cursor, after_cursor])
   end
   alias_method :yank_pop, :em_yank_pop
 
@@ -2343,11 +2349,11 @@ class Reline::LineEditor
   end
 
   private def prev_action_state_value(type)
-    @prev_action_state[0] == type ? @prev_action_state[1] : nil
+    @prev_action_state[type]
   end
 
   private def set_next_action_state(type, value)
-    @next_action_state = [type, value]
+    @next_action_state[type] = value
   end
 
   private def re_read_init_file(_key)
