@@ -180,7 +180,7 @@ The ANSI escape codes must be preceded by escape `\1` and followed by escape `\2
 Example (turns the mode string green):
 
 ```
-"\1\e[32mabcd \e[0m\2"
+"\1\e[32m\2abcd \1\e[0m\2"
 ```
 
 ### Key Bindings
@@ -189,16 +189,16 @@ In brief:
 
 ```
 "\C-x\M-r":  "Ruby!"          # Key sequence bound to text.
-"\C-x\M-c":  ed_clear_screen  # Key sequence bound to method.
+"\C-x\M-c":  ed-clear-screen  # Key sequence bound to function.
 Meta-l:      " | less"        # Key name bound to text.
-Control-b:   ed_clear_screen  # Key name bound method.
+Control-b:   ed-clear-screen  # Key name bound to function.
 ```
 
 A key or key sequence may be bound to:
 
 - Text to be inserted when the key or key sequence is typed in:
   in effect a [macro][macro].
-- A Reline method that is to be called when the key or key sequence is typed in:
+- A Reline function that is to be called when the key or key sequence is typed in:
   in effect an alias.
 
 #### Key Sequences
@@ -255,114 +255,114 @@ More examples:
 "\x02": "Ctrl-b" # Hexadecimal number; begins with "\x".
 ```
 
-You can bind a key sequence to a Reline method,
-so that the method is called when the key sequence is typed as input.
-See [Methods][methods].
+You can bind a key sequence to a Reline function,
+so that the function is called when the key sequence is typed as input.
+See [Functions][functions].
 
-This example binds a key sequence to the method `ed_clear_screen`,
+This example binds a key sequence to the function `ed-clear-screen`,
 which means that in the application pressing `Alt-x` clears the screen
 and reprints the prompt at the top:
 
 ```
-"\M-x": ed_clear_screen
+"\M-x": ed-clear-screen
 ```
 
 This binding is the same as the default binding for `C-l`.
 Note that this new binding would override the old one, if any, for that key,
-but does not disturb other bindings (`C-l` is still bound to `ed_clear_screen`).
+but does not disturb other bindings (`C-l` is still bound to `ed-clear-screen`).
 
 #### Key Names
 
-You can bind a single key to text or a method using its _key name_
+You can bind a single key to text or a function using its _key name_
 (instead of the key sequence notation):
 
 ```
-Control-b: ed_clear_screen
+Control-b: ed-clear-screen
 Meta-L: " | less"
 ```
 
-#### Methods
+#### Functions
 
-These are the methods available for binding by a key or key sequence:
+These are the functions available for binding by a key or key sequence:
 
-- `ed_argument_digit(key)`
-- `ed_beginning_of_history(key)`
-- `ed_clear_screen(key)`
-- `ed_delete_next_char(key, arg: 1)`
-- `ed_delete_prev_char(key, arg: 1)`
-- `ed_delete_prev_word(key)`
-- `ed_digit(key)`
-- `ed_end_of_history(key)`
-- `ed_kill_line(key)`
-- `ed_move_to_beg(key)`
-- `ed_move_to_end(key)`
-- `ed_newline(key)`
-- `ed_next_char(key, arg: 1)`
-- `ed_next_history(key, arg: 1)`
-- `ed_prev_char(key, arg: 1)`
-- `ed_prev_history(key, arg: 1)`
-- `ed_prev_word(key)`
-- `ed_search_next_history(key, arg: 1)`
-- `ed_search_prev_history(key, arg: 1)`
-- `ed_transpose_chars(key)`
-- `ed_transpose_words(key)`
-- `ed_unassigned(key) end # do nothing`
-- `em_capitol_case(key)`
-- `em_delete(key)`
-- `em_delete_next_word(key)`
-- `em_delete_or_list(key)`
-- `em_delete_prev_char(key, arg: 1)`
-- `em_exchange_mark(key)`
-- `em_kill_line(key)`
-- `em_kill_region(key)`
-- `em_lower_case(key)`
-- `em_next_word(key)`
-- `em_set_mark(key)`
-- `em_upper_case(key)`
-- `em_yank(key)`
-- `em_yank_pop(key)`
-- `emacs_editing_mode(key)`
-- `incremental_search_history(key)`
-- `key_delete(key)`
-- `key_newline(key)`
-- `process_key(key, method_symbol)`
-- `run_for_operators(key, method_symbol)`
-- `search_next_char(key, arg, need_prev_char: false, inclusive: false)`
-- `search_prev_char(key, arg, need_next_char = false)`
-- `vi_add(key)`
-- `vi_add_at_eol(key)`
-- `vi_change_meta(key, arg: nil)`
-- `vi_change_to_eol(key)`
-- `vi_command_mode(key)`
-- `vi_delete_meta(key, arg: nil)`
-- `vi_delete_prev_char(key)`
-- `vi_editing_mode(key)`
-- `vi_end_big_word(key, arg: 1, inclusive: false)`
-- `vi_end_word(key, arg: 1, inclusive: false)`
-- `vi_first_print(key)`
-- `vi_histedit(key)`
-- `vi_insert(key)`
-- `vi_insert_at_bol(key)`
-- `vi_join_lines(key, arg: 1)`
-- `vi_kill_line_prev(key)`
-- `vi_list_or_eof(key)`
-- `vi_next_big_word(key, arg: 1)`
-- `vi_next_char(key, arg: 1, inclusive: false)`
-- `vi_next_word(key, arg: 1)`
-- `vi_paste_next(key, arg: 1)`
-- `vi_paste_prev(key, arg: 1)`
-- `vi_prev_big_word(key, arg: 1)`
-- `vi_prev_char(key, arg: 1)`
-- `vi_prev_word(key, arg: 1)`
-- `vi_replace_char(key, arg: 1)`
-- `vi_search_next(key)`
-- `vi_search_prev(key)`
-- `vi_to_column(key, arg: 0)`
-- `vi_to_history_line(key)`
-- `vi_to_next_char(key, arg: 1, inclusive: false)`
-- `vi_to_prev_char(key, arg: 1)`
-- `vi_yank(key, arg: nil)`
-- `vi_zero(key)`
+- `ed-argument-digit`
+- `ed-beginning-of-history`
+- `ed-clear-screen`
+- `ed-delete-next-char`
+- `ed-delete-prev-char`
+- `ed-delete-prev-word`
+- `ed-digit`
+- `ed-end-of-history`
+- `ed-kill-line`
+- `ed-move-to-beg`
+- `ed-move-to-end`
+- `ed-newline`
+- `ed-next-char`
+- `ed-next-history`
+- `ed-prev-char`
+- `ed-prev-history`
+- `ed-prev-word`
+- `ed-search-next-history`
+- `ed-search-prev-history`
+- `ed-transpose-chars`
+- `ed-transpose-words`
+- `ed-unassigned end # do nothing`
+- `em-capitol-case`
+- `em-delete`
+- `em-delete-next-word`
+- `em-delete-or-list`
+- `em-delete-prev-char`
+- `em-exchange-mark`
+- `em-kill-line`
+- `em-kill-region`
+- `em-lower-case`
+- `em-next-word`
+- `em-set-mark`
+- `em-upper-case`
+- `em-yank`
+- `em-yank-pop`
+- `emacs-editing-mode`
+- `incremental-search-history`
+- `key-delete`
+- `key-newline`
+- `process-key`
+- `run-for-operators`
+- `search-next-char`
+- `search-prev-char`
+- `vi-add`
+- `vi-add-at-eol`
+- `vi-change-meta`
+- `vi-change-to-eol`
+- `vi-command-mode`
+- `vi-delete-meta`
+- `vi-delete-prev-char`
+- `vi-editing-mode`
+- `vi-end-big-word`
+- `vi-end-word`
+- `vi-first-print`
+- `vi-histedit`
+- `vi-insert`
+- `vi-insert-at-bol`
+- `vi-join-lines`
+- `vi-kill-line-prev`
+- `vi-list-or-eof`
+- `vi-next-big-word`
+- `vi-next-char`
+- `vi-next-word`
+- `vi-paste-next`
+- `vi-paste-prev`
+- `vi-prev-big-word`
+- `vi-prev-char`
+- `vi-prev-word`
+- `vi-replace-char`
+- `vi-search-next`
+- `vi-search-prev`
+- `vi-to-column`
+- `vi-to-history-line`
+- `vi-to-next-char`
+- `vi-to-prev-char`
+- `vi-yank`
+- `vi-zero`
 
 ### Directives
 
@@ -431,5 +431,5 @@ another initialization file:
 
 [directives]:   rdoc-ref:initialization_file.md@Directives
 [key bindings]: rdoc-ref:initialization_file.md@Key+Bindings
-[methods]:      rdoc-ref:initialization_file.md@Methods
+[functions]:    rdoc-ref:initialization_file.md@Functions
 [variables]:    rdoc-ref:initialization_file.md@Variables
