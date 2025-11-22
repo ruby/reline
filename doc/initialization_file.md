@@ -32,17 +32,6 @@ filename matching and completion.
 
 The default setting is `'off'`.
 
-#### `convert-meta`
-
-If set to `'on'`, affects 8-bit characters that have their high bits set
-(i.e., characters whose values in range `128..255`).
-Reline converts each such character by clearing the high bit
-(which puts the character in range `0..127`)
-and prefixing `Esc`.
-
-The default value is `'on'`, but Reline sets it to `'off'`
-if the locale contains characters whose encodings may include bytes with the eighth bit set.
-
 #### `disable-completion`
 
 If set to `'on'`, Reline inhibits word completion.
