@@ -1245,16 +1245,16 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
     assert_line_around_cursor('aaa bbb ccc ddd', '')
     input_keys("\C-a\eF\eF")
     assert_line_around_cursor('aaa bbb', ' ccc ddd')
-    assert_equal(nil, @line_editor.instance_variable_get(:@mark_pointer))
+    assert_equal(nil, @line_editor.instance_variable_get(:@mark_position))
     input_keys("\x00") # C-Space
     assert_line_around_cursor('aaa bbb', ' ccc ddd')
-    assert_equal([7, 0], @line_editor.instance_variable_get(:@mark_pointer))
+    assert_equal([0, 7], @line_editor.instance_variable_get(:@mark_position))
     input_keys("\C-a")
     assert_line_around_cursor('', 'aaa bbb ccc ddd')
-    assert_equal([7, 0], @line_editor.instance_variable_get(:@mark_pointer))
+    assert_equal([0, 7], @line_editor.instance_variable_get(:@mark_position))
     input_key_by_symbol(:em_exchange_mark)
     assert_line_around_cursor('aaa bbb', ' ccc ddd')
-    assert_equal([0, 0], @line_editor.instance_variable_get(:@mark_pointer))
+    assert_equal([0, 0], @line_editor.instance_variable_get(:@mark_position))
   end
 
   def test_em_exchange_mark_without_mark
@@ -1262,10 +1262,33 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
     assert_line_around_cursor('aaa bbb ccc ddd', '')
     input_keys("\C-a\ef")
     assert_line_around_cursor('aaa', ' bbb ccc ddd')
-    assert_equal(nil, @line_editor.instance_variable_get(:@mark_pointer))
+    assert_equal(nil, @line_editor.instance_variable_get(:@mark_position))
     input_key_by_symbol(:em_exchange_mark)
     assert_line_around_cursor('aaa', ' bbb ccc ddd')
-    assert_equal(nil, @line_editor.instance_variable_get(:@mark_pointer))
+    assert_equal(nil, @line_editor.instance_variable_get(:@mark_position))
+  end
+
+  def test_em_exchange_mark_multibyte
+    input_keys("aaaaaaaaaaあああああ")
+    input_keys("\C-b\C-b")
+    assert_line_around_cursor('aaaaaaaaaaあああ', 'ああ')
+    input_keys("\x00") # C-Space
+    input_keys("\C-e\C-w")
+    input_keys("ああbbbbbああああああ")
+    input_key_by_symbol(:em_exchange_mark)
+    assert_line_around_cursor('ああbbbbbあああ', 'あああ')
+  end
+
+  def test_em_exchange_mark_line_disappear
+    input_key_by_symbol(:insert_multiline_text, char: "aaa\nbbb\nccc")
+    input_keys("\C-b\C-b")
+    input_keys("\x00") # C-Space
+    assert_line_around_cursor('c', 'cc')
+    input_keys("\C-a\C-h\C-p\C-a")
+    assert_line_around_cursor('', 'aaa')
+    input_key_by_symbol(:em_exchange_mark)
+    # If mark line does not exist, moves to the end of the input
+    assert_line_around_cursor('bbbccc', '')
   end
 
   def test_modify_lines_with_wrong_rs
