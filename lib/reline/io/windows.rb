@@ -31,6 +31,42 @@ class Reline::Windows < Reline::IO
     @SetConsoleMode = Win32API.new('kernel32', 'SetConsoleMode', ['L', 'L'], 'L')
     @WaitForSingleObject = Win32API.new('kernel32', 'WaitForSingleObject', ['L', 'L'], 'L')
 
+    # Win32API does not have pointer size integer.
+    # Current process pseudo handle (-1)LL seems to fail to be passed to DuplicateHandle.
+    # @GetCurrentProcess = Win32API.new('kernel32', 'GetCurrentProcess', [], 'L')
+    @GetCurrentProcessId = Win32API.new('kernel32', 'GetCurrentProcessId', [], 'L')
+    @OpenProcess = Win32API.new('kernel32', 'OpenProcess', ['L', 'L', 'L'], 'L')
+    @CloseHandle = Win32API.new('kernel32', 'CloseHandle', ['L'], 'L')
+    @DuplicateHandle = Win32API.new('kernel32', 'DuplicateHandle', ['L', 'L', 'L', 'P', 'I', 'I', 'I'], 'L')
+
+    current_process_handle = @OpenProcess.call(
+      0x0040,  # PROCESS_DUP_HANDLE
+      0,       # bInheritHandle
+      @GetCurrentProcessId.call()
+    )
+    duplicate_handle = proc { |handle|
+      dupHandle = "\0" * 8
+      @DuplicateHandle.call(
+        current_process_handle,
+        handle,
+        current_process_handle,
+        dupHandle,
+        0,  # dwDesiredAccess
+        0,  # bInheritHandle
+        2   # dwOptions = DUPLICATE_SAME_ACCESS
+      )
+      dupHandle.unpack1("J")
+    }
+    if (dup = duplicate_handle.call(@hConsoleHandle)) != 0
+      @hConsoleHandle = dup
+      at_exit { @CloseHandle.call(@hConsoleHandle) }
+    end
+    if (dup = duplicate_handle.call(@hConsoleInputHandle)) != 0
+      @hConsoleInputHandle = dup
+      at_exit { @CloseHandle.call(@hConsoleInputHandle) }
+    end
+    @CloseHandle.call(current_process_handle)
+
     @legacy_console = getconsolemode & ENABLE_VIRTUAL_TERMINAL_PROCESSING == 0
   end
 
