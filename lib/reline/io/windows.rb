@@ -35,6 +35,10 @@ class Reline::Windows < Reline::IO
 
     @legacy_console = getconsolemode & ENABLE_VIRTUAL_TERMINAL_PROCESSING == 0
     @jruby_p = RUBY_ENGINE == 'jruby'
+    if @jruby_p && @legacy_console
+      setconsolemode(getconsolemode() | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+      @legacy_console = getconsolemode & ENABLE_VIRTUAL_TERMINAL_PROCESSING == 0
+    end
   end
 
   def encoding
