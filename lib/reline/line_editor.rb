@@ -700,6 +700,8 @@ class Reline::LineEditor
   end
 
   private def update_each_dialog(dialog, cursor_column, cursor_row, key = nil)
+    no_color = Reline::IOGate.win? && Reline::IOGate.win_legacy_console? && Reline::IOGate.jruby?
+    pointer_width = no_color ? 1 : 0
     dialog.set_cursor_pos(cursor_column, cursor_row)
     dialog_render_info = dialog.call(key)
     if dialog_render_info.nil? or dialog_render_info.contents.nil? or dialog_render_info.contents.empty?
@@ -743,6 +745,7 @@ class Reline::LineEditor
     end
     dialog.column = dialog_render_info.pos.x
     dialog.width += @block_elem_width if scrollbar_pos
+    dialog.width += pointer_width
     diff = (dialog.column + dialog.width) - screen_width
     if diff > 0
       dialog.column -= diff
@@ -759,12 +762,12 @@ class Reline::LineEditor
       dialog.width = screen_width
     end
     face = Reline::Face[dialog_render_info.face || :default]
-    scrollbar_sgr = face[:scrollbar]
-    default_sgr = face[:default]
-    enhanced_sgr = face[:enhanced]
+    scrollbar_sgr = no_color ? "" : face[:scrollbar]
+    default_sgr = no_color ? " " : face[:default]
+    enhanced_sgr = no_color ? "*" : face[:enhanced]
     dialog.contents = contents.map.with_index do |item, i|
       line_sgr = i == pointer ? enhanced_sgr : default_sgr
-      str_width = dialog.width - (scrollbar_pos.nil? ? 0 : @block_elem_width)
+      str_width = dialog.width - (scrollbar_pos.nil? ? 0 : @block_elem_width) - pointer_width
       str, = Reline::Unicode.take_mbchar_range(item, 0, str_width, padding: true)
       colored_content = "#{line_sgr}#{str}"
       if scrollbar_pos

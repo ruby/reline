@@ -4,6 +4,7 @@ class Reline::Windows < Reline::IO
 
   attr_writer :output
   attr_reader :jruby_p
+  alias jruby? jruby_p
   alias flush_before_control? jruby_p
 
   def initialize
@@ -38,6 +39,10 @@ class Reline::Windows < Reline::IO
     if @jruby_p && @legacy_console
       setconsolemode(getconsolemode() | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
       @legacy_console = getconsolemode & ENABLE_VIRTUAL_TERMINAL_PROCESSING == 0
+      if @legacy_console
+        self.class.const_set(:RESET_COLOR, "")
+        ENV['RELINE_ALT_SCROLLBAR'] = '1'
+      end
     end
   end
 
