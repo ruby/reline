@@ -3,6 +3,8 @@ require 'fiddle/import'
 class Reline::Windows < Reline::IO
 
   attr_writer :output
+  attr_reader :jruby_p
+  alias flush_before_control? jruby_p
 
   def initialize
     @input_buf = []
@@ -32,6 +34,7 @@ class Reline::Windows < Reline::IO
     @WaitForSingleObject = Win32API.new('kernel32', 'WaitForSingleObject', ['L', 'L'], 'L')
 
     @legacy_console = getconsolemode & ENABLE_VIRTUAL_TERMINAL_PROCESSING == 0
+    @jruby_p = RUBY_ENGINE == 'jruby'
   end
 
   def encoding
@@ -181,11 +184,6 @@ class Reline::Windows < Reline::IO
   private def setconsolemode(mode)
     call_with_console_handle(@SetConsoleMode, mode)
   end
-
-  #if @legacy_console
-  #  setconsolemode(getconsolemode() | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
-  #  @legacy_console = (getconsolemode() & ENABLE_VIRTUAL_TERMINAL_PROCESSING == 0)
-  #end
 
   def msys_tty?(io = @hConsoleInputHandle)
     # check if fd is a pipe
@@ -366,22 +364,26 @@ class Reline::Windows < Reline::IO
   ALTERNATIVE_CSBI = [80, 24, 0, 0, 7, 0, 0, 79, 23].freeze
 
   def get_screen_size
+    @output.flush if flush_before_control?
     width, _, _, _, _, _, top, _, bottom = get_console_screen_buffer_info || ALTERNATIVE_CSBI
     [bottom - top + 1, width]
   end
 
   def cursor_pos
+    @output.flush if flush_before_control?
     _, _, x, y, _, _, top, = get_console_screen_buffer_info || ALTERNATIVE_CSBI
     Reline::CursorPos.new(x, y - top)
   end
 
   def move_cursor_column(val)
+    @output.flush if flush_before_control?
     _, _, _, y, = get_console_screen_buffer_info
     call_with_console_handle(@SetConsoleCursorPosition, y * 65536 + val) if y
   end
 
   def move_cursor_up(val)
     if val > 0
+      @output.flush if flush_before_control?
       _, _, x, y, _, _, top, = get_console_screen_buffer_info
       return unless y
       y = (y - top) - val
@@ -394,6 +396,7 @@ class Reline::Windows < Reline::IO
 
   def move_cursor_down(val)
     if val > 0
+      @output.flush if flush_before_control?
       _, _, x, y, _, _, top, _, bottom = get_console_screen_buffer_info
       return unless y
       screen_height = bottom - top
@@ -406,6 +409,7 @@ class Reline::Windows < Reline::IO
   end
 
   def erase_after_cursor
+    @output.flush if flush_before_control?
     width, _, x, y, attributes, = get_console_screen_buffer_info
     return unless x
     written = 0.chr * 4
@@ -423,6 +427,7 @@ class Reline::Windows < Reline::IO
 
   def clear_screen
     if @legacy_console
+      @output.flush if flush_before_control?
       width, _, _, _, attributes, _, top, _, bottom = get_console_screen_buffer_info
       return unless width
       fill_length = width * (bottom - top + 1)
