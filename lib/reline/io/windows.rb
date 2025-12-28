@@ -31,6 +31,42 @@ class Reline::Windows < Reline::IO
     @SetConsoleMode = Win32API.new('kernel32', 'SetConsoleMode', ['L', 'L'], 'L')
     @WaitForSingleObject = Win32API.new('kernel32', 'WaitForSingleObject', ['L', 'L'], 'L')
 
+    # Win32API does not have pointer size integer.
+    # Current process pseudo handle (-1)LL seems to fail to be passed to DuplicateHandle.
+    # @GetCurrentProcess = Win32API.new('kernel32', 'GetCurrentProcess', [], 'L')
+    @GetCurrentProcessId = Win32API.new('kernel32', 'GetCurrentProcessId', [], 'L')
+    @OpenProcess = Win32API.new('kernel32', 'OpenProcess', ['L', 'L', 'L'], 'L')
+    @CloseHandle = Win32API.new('kernel32', 'CloseHandle', ['L'], 'L')
+    @DuplicateHandle = Win32API.new('kernel32', 'DuplicateHandle', ['L', 'L', 'L', 'P', 'I', 'I', 'I'], 'L')
+
+    current_process_handle = @OpenProcess.call(
+      0x0040,  # PROCESS_DUP_HANDLE
+      0,       # bInheritHandle
+      @GetCurrentProcessId.call()
+    )
+    duplicate_handle = proc { |handle|
+      dupHandle = "\0" * 8
+      @DuplicateHandle.call(
+        current_process_handle,
+        handle,
+        current_process_handle,
+        dupHandle,
+        0,  # dwDesiredAccess
+        0,  # bInheritHandle
+        2   # dwOptions = DUPLICATE_SAME_ACCESS
+      )
+      dupHandle.unpack1("J")
+    }
+    if (dup = duplicate_handle.call(@hConsoleHandle)) != 0
+      @hConsoleHandle = dup
+      at_exit { @CloseHandle.call(@hConsoleHandle) }
+    end
+    if (dup = duplicate_handle.call(@hConsoleInputHandle)) != 0
+      @hConsoleInputHandle = dup
+      at_exit { @CloseHandle.call(@hConsoleInputHandle) }
+    end
+    @CloseHandle.call(current_process_handle)
+
     @legacy_console = getconsolemode & ENABLE_VIRTUAL_TERMINAL_PROCESSING == 0
   end
 
@@ -162,24 +198,14 @@ class Reline::Windows < Reline::IO
   ENABLE_WRAP_AT_EOL_OUTPUT = 2
   ENABLE_VIRTUAL_TERMINAL_PROCESSING = 4
 
-  # Calling Win32API with console handle is reported to fail after executing some external command.
-  # We need to refresh console handle and retry the call again.
-  private def call_with_console_handle(win32func, *args)
-    val = win32func.call(@hConsoleHandle, *args)
-    return val if val != 0
-
-    @hConsoleHandle = @GetStdHandle.call(STD_OUTPUT_HANDLE)
-    win32func.call(@hConsoleHandle, *args)
-  end
-
   private def getconsolemode
     mode = +"\0\0\0\0"
-    call_with_console_handle(@GetConsoleMode, mode)
+    @GetConsoleMode.call(@hConsoleHandle, mode)
     mode.unpack1('L')
   end
 
   private def setconsolemode(mode)
-    call_with_console_handle(@SetConsoleMode, mode)
+    @SetConsoleMode.call(@hConsoleHandle, mode)
   end
 
   #if @legacy_console
@@ -355,7 +381,7 @@ class Reline::Windows < Reline::IO
     # [18,2] dwMaximumWindowSize.X
     # [20,2] dwMaximumWindowSize.Y
     csbi = 0.chr * 22
-    if call_with_console_handle(@GetConsoleScreenBufferInfo, csbi) != 0
+    if @GetConsoleScreenBufferInfo.call(@hConsoleHandle, csbi) != 0
       # returns [width, height, x, y, attributes, left, top, right, bottom]
       csbi.unpack("s9")
     else
@@ -377,7 +403,7 @@ class Reline::Windows < Reline::IO
 
   def move_cursor_column(val)
     _, _, _, y, = get_console_screen_buffer_info
-    call_with_console_handle(@SetConsoleCursorPosition, y * 65536 + val) if y
+    @SetConsoleCursorPosition.call(@hConsoleHandle, y * 65536 + val) if y
   end
 
   def move_cursor_up(val)
@@ -386,7 +412,7 @@ class Reline::Windows < Reline::IO
       return unless y
       y = (y - top) - val
       y = 0 if y < 0
-      call_with_console_handle(@SetConsoleCursorPosition, (y + top) * 65536 + x)
+      @SetConsoleCursorPosition.call(@hConsoleHandle, (y + top) * 65536 + x)
     elsif val < 0
       move_cursor_down(-val)
     end
@@ -399,7 +425,7 @@ class Reline::Windows < Reline::IO
       screen_height = bottom - top
       y = (y - top) + val
       y = screen_height if y > screen_height
-      call_with_console_handle(@SetConsoleCursorPosition, (y + top) * 65536 + x)
+      @SetConsoleCursorPosition.call(@hConsoleHandle, (y + top) * 65536 + x)
     elsif val < 0
       move_cursor_up(-val)
     end
@@ -409,8 +435,8 @@ class Reline::Windows < Reline::IO
     width, _, x, y, attributes, = get_console_screen_buffer_info
     return unless x
     written = 0.chr * 4
-    call_with_console_handle(@FillConsoleOutputCharacter, 0x20, width - x, y * 65536 + x, written)
-    call_with_console_handle(@FillConsoleOutputAttribute, attributes, width - x, y * 65536 + x, written)
+    @FillConsoleOutputCharacter.call(@hConsoleHandle, 0x20, width - x, y * 65536 + x, written)
+    @FillConsoleOutputAttribute.call(@hConsoleHandle, attributes, width - x, y * 65536 + x, written)
   end
 
   # This only works when the cursor is at the bottom of the scroll range
@@ -428,9 +454,9 @@ class Reline::Windows < Reline::IO
       fill_length = width * (bottom - top + 1)
       screen_topleft = top * 65536
       written = 0.chr * 4
-      call_with_console_handle(@FillConsoleOutputCharacter, 0x20, fill_length, screen_topleft, written)
-      call_with_console_handle(@FillConsoleOutputAttribute, attributes, fill_length, screen_topleft, written)
-      call_with_console_handle(@SetConsoleCursorPosition, screen_topleft)
+      @FillConsoleOutputCharacter.call(@hConsoleHandle, 0x20, fill_length, screen_topleft, written)
+      @FillConsoleOutputAttribute.call(@hConsoleHandle, attributes, fill_length, screen_topleft, written)
+      @SetConsoleCursorPosition.call(@hConsoleHandle, screen_topleft)
     else
       @output.write "\e[2J" "\e[H"
     end
@@ -444,14 +470,14 @@ class Reline::Windows < Reline::IO
     size = 100
     visible = 0 # 0 means false
     cursor_info = [size, visible].pack('Li')
-    call_with_console_handle(@SetConsoleCursorInfo, cursor_info)
+    @SetConsoleCursorInfo.call(@hConsoleHandle, cursor_info)
   end
 
   def show_cursor
     size = 100
     visible = 1 # 1 means true
     cursor_info = [size, visible].pack('Li')
-    call_with_console_handle(@SetConsoleCursorInfo, cursor_info)
+    @SetConsoleCursorInfo.call(@hConsoleHandle, cursor_info)
   end
 
   def set_winch_handler(&handler)
