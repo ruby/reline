@@ -223,7 +223,7 @@ class Reline::LineEditor
 
   def reset_variables(prompt = '')
     @prompt = prompt.gsub("\n", "\\n")
-    @mark_pointer = nil
+    @mark_position = nil
     @is_multiline = false
     @finished = false
     @history_pointer = nil
@@ -2303,15 +2303,22 @@ class Reline::LineEditor
   end
 
   private def em_set_mark(key)
-    @mark_pointer = [@byte_pointer, @line_index]
+    cursor_column = Reline::Unicode.calculate_width(current_line.byteslice(0, @byte_pointer))
+    @mark_position = [@line_index, cursor_column]
   end
   alias_method :set_mark, :em_set_mark
 
   private def em_exchange_mark(key)
-    return unless @mark_pointer
-    new_pointer = [@byte_pointer, @line_index]
-    @byte_pointer, @line_index = @mark_pointer
-    @mark_pointer = new_pointer
+    return unless @mark_position
+    line_index, cursor_column = @mark_position
+    em_set_mark(key)
+    if @buffer_of_lines.size <= line_index
+      @line_index = @buffer_of_lines.size - 1
+      @byte_pointer = current_line.bytesize
+    else
+      @line_index = line_index
+      calculate_nearest_cursor(cursor_column)
+    end
   end
   alias_method :exchange_point_and_mark, :em_exchange_mark
 
