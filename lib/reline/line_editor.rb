@@ -13,6 +13,7 @@ class Reline::LineEditor
   attr_accessor :prompt_proc
   attr_accessor :auto_indent_proc
   attr_accessor :dig_perfect_match_proc
+  attr_accessor :rprompt
 
   VI_MOTIONS = %i{
     ed_prev_char
@@ -476,6 +477,20 @@ class Reline::LineEditor
       prompt_width = Reline::Unicode.calculate_width(prompt, true)
       [[0, prompt_width, prompt], [prompt_width, Reline::Unicode.calculate_width(line, true), line]]
     end
+
+    # Add rprompt to the first visible line if set and there's room
+    if @rprompt && !@rprompt.empty? && new_lines[0]
+      rprompt_width = Reline::Unicode.calculate_width(@rprompt, true)
+      right_col = screen_width - rprompt_width
+      first_line = new_lines[0]
+      # Calculate the end of the current content (prompt + input)
+      content_end = first_line.sum { |_, width, _| width }
+      # Only show rprompt if there's at least 1 char gap between content and rprompt
+      if right_col > content_end
+        first_line << [right_col, rprompt_width, @rprompt]
+      end
+    end
+
     if @menu_info
       @menu_info.lines(screen_width).each do |item|
         new_lines << [[0, Reline::Unicode.calculate_width(item), item]]
@@ -491,8 +506,8 @@ class Reline::LineEditor
         next if row < 0 || row >= screen_height
 
         dialog_rows = new_lines[row] ||= []
-        # index 0 is for prompt, index 1 is for line, index 2.. is for dialog
-        dialog_rows[index + 2] = [x_range.begin, dialog.width, dialog.contents[row - y_range.begin]]
+        # index 0 is for prompt, index 1 is for line, index 2 is for rprompt, index 3.. is for dialog
+        dialog_rows[index + 3] = [x_range.begin, dialog.width, dialog.contents[row - y_range.begin]]
       end
     end
 

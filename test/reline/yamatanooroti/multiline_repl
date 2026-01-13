@@ -212,6 +212,10 @@ opt.on('--autocomplete-width-long') {
     }.select{ |c| c.start_with?(target) }
   }
 }
+rprompt = nil
+opt.on('--rprompt VAL') { |v|
+  rprompt = v
+}
 opt.parse!(ARGV)
 
 begin
@@ -222,7 +226,7 @@ end
 begin
   prompt = ENV['RELINE_TEST_PROMPT'] || "\e[1mprompt>\e[m "
   puts 'Multiline REPL.'
-  while code = Reline.readmultiline(prompt, true) { |code| TerminationChecker.terminated?(code) }
+  while code = Reline.readmultiline(prompt, true, rprompt: rprompt) { |code| TerminationChecker.terminated?(code) }
     case code.chomp
     when 'exit', 'quit', 'q'
       exit 0

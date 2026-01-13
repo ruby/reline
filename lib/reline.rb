@@ -247,14 +247,14 @@ module Reline
     } # :nodoc:
     Reline::DEFAULT_DIALOG_CONTEXT = Array.new # :nodoc:
 
-    def readmultiline(prompt = '', add_hist = false, &confirm_multiline_termination)
+    def readmultiline(prompt = '', add_hist = false, rprompt: nil, &confirm_multiline_termination)
       @mutex.synchronize do
         unless confirm_multiline_termination
           raise ArgumentError.new('#readmultiline needs block to confirm multiline termination')
         end
 
         io_gate.with_raw_input do
-          inner_readline(prompt, add_hist, true, &confirm_multiline_termination)
+          inner_readline(prompt, add_hist, true, rprompt: rprompt, &confirm_multiline_termination)
         end
 
         whole_buffer = line_editor.whole_buffer.dup
@@ -273,10 +273,10 @@ module Reline
       end
     end
 
-    def readline(prompt = '', add_hist = false)
+    def readline(prompt = '', add_hist = false, rprompt: nil)
       @mutex.synchronize do
         io_gate.with_raw_input do
-          inner_readline(prompt, add_hist, false)
+          inner_readline(prompt, add_hist, false, rprompt: rprompt)
         end
 
         line = line_editor.line.dup
@@ -290,7 +290,7 @@ module Reline
       end
     end
 
-    private def inner_readline(prompt, add_hist, multiline, &confirm_multiline_termination)
+    private def inner_readline(prompt, add_hist, multiline, rprompt: nil, &confirm_multiline_termination)
       if ENV['RELINE_STDERR_TTY']
         if io_gate.win?
           $stderr = File.open(ENV['RELINE_STDERR_TTY'], 'a')
@@ -323,6 +323,7 @@ module Reline
       line_editor.prompt_proc = prompt_proc
       line_editor.auto_indent_proc = auto_indent_proc
       line_editor.dig_perfect_match_proc = dig_perfect_match_proc
+      line_editor.rprompt = rprompt&.encode(encoding)
 
       pre_input_hook&.call
 

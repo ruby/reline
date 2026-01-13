@@ -232,6 +232,18 @@ class Reline::Test < Reline::TestCase
     assert_equal(l, Reline.pre_input_hook)
   end
 
+  def test_readline_with_rprompt
+    pend if win?
+    lib = File.expand_path("../../lib", __dir__)
+    code = "p result: Reline.readline('>', rprompt: '[TIME]')"
+    out = IO.popen([Reline.test_rubybin, "-I#{lib}", "-rreline", "-e", code], "r+") do |io|
+      io.write "a\n"
+      io.close_write
+      io.read
+    end
+    assert_include(out, { result: 'a' }.inspect)
+  end
+
   def test_dig_perfect_match_proc
     assert_equal(nil, Reline.dig_perfect_match_proc)
 
