@@ -212,6 +212,9 @@ opt.on('--autocomplete-width-long') {
     }.select{ |c| c.start_with?(target) }
   }
 }
+opt.on('--rprompt VAL') { |v|
+  Reline.rprompt = v
+}
 opt.parse!(ARGV)
 
 begin

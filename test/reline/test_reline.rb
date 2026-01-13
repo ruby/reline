@@ -19,6 +19,7 @@ class Reline::Test < Reline::TestCase
     Reline.auto_indent_proc = nil
     Reline.pre_input_hook = nil
     Reline.dig_perfect_match_proc = nil
+    Reline.rprompt = nil
   end
 
   def teardown
@@ -230,6 +231,21 @@ class Reline::Test < Reline::TestCase
     l = lambda {}
     Reline.pre_input_hook = l
     assert_equal(l, Reline.pre_input_hook)
+  end
+
+  def test_rprompt
+    assert_equal(nil, Reline.rprompt)
+
+    Reline.rprompt = "[Time]"
+    assert_equal("[Time]", Reline.rprompt)
+    assert_equal(get_reline_encoding, Reline.rprompt.encoding)
+
+    Reline.rprompt = "[Time]".encode(Encoding::ASCII)
+    assert_equal("[Time]", Reline.rprompt)
+    assert_equal(get_reline_encoding, Reline.rprompt.encoding)
+
+    Reline.rprompt = nil
+    assert_equal(nil, Reline.rprompt)
   end
 
   def test_dig_perfect_match_proc
