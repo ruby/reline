@@ -403,6 +403,27 @@ class Reline::LineEditor
     levels
   end
 
+  def render_line_item(x, content)
+    segments = Reline::Unicode.split_ambiguous_emoji(content)
+    if segments
+      Reline::IOGate.write Reline::IOGate.reset_color_sequence
+      segments.each do |segment, ambiguous|
+        w = Reline::Unicode.calculate_width(segment, true)
+        Reline::IOGate.move_cursor_column(x)
+        if ambiguous
+          Reline::IOGate.write(' ' * w)
+          Reline::IOGate.move_cursor_column(x)
+        end
+        Reline::IOGate.write(segment)
+        x += w
+      end
+      Reline::IOGate.write Reline::IOGate.reset_color_sequence
+    else
+      Reline::IOGate.move_cursor_column(x)
+      Reline::IOGate.write "#{Reline::IOGate.reset_color_sequence}#{content}#{Reline::IOGate.reset_color_sequence}"
+    end
+  end
+
   def render_line_differential(old_items, new_items)
     old_levels = calculate_overlay_levels(old_items.zip(new_items).each_with_index.map {|((x, w, c), (nx, _nw, nc)), i| [x, w, c == nc && x == nx ? i : -1] if x }.compact)
     new_levels = calculate_overlay_levels(new_items.each_with_index.map { |(x, w), i| [x, w, i] if x }.compact).take(screen_width)
@@ -422,8 +443,7 @@ class Reline::LineEditor
         unless x == base_x && w == width
           content, pos = Reline::Unicode.take_mbchar_range(content, base_x - x, width, cover_begin: cover_begin, cover_end: cover_end, padding: true)
         end
-        Reline::IOGate.move_cursor_column x + pos
-        Reline::IOGate.write "#{Reline::IOGate.reset_color_sequence}#{content}#{Reline::IOGate.reset_color_sequence}"
+        render_line_item(x + pos, content)
       end
       base_x += width
     end
