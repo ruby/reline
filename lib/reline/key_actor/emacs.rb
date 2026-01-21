@@ -307,7 +307,7 @@ module Reline::KeyActor
     # 152 M-^X
     nil,
     # 153 M-^Y
-    :em_yank_pop,
+    nil,
     # 154 M-^Z
     nil,
     # 155 M-^[
@@ -499,7 +499,7 @@ module Reline::KeyActor
     # 248 M-x
     nil,
     # 249 M-y
-    nil,
+    :em_yank_pop,
     # 250 M-z
     nil,
     # 251 M-{
