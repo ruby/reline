@@ -247,7 +247,7 @@ module Reline
     } # :nodoc:
     Reline::DEFAULT_DIALOG_CONTEXT = Array.new # :nodoc:
 
-    def readmultiline(prompt = '', add_hist = false, rprompt: nil, &confirm_multiline_termination)
+    def readmultiline(_prompt = '', _add_hist = false, prompt: _prompt, add_hist: _add_hist, rprompt: nil, &confirm_multiline_termination)
       @mutex.synchronize do
         unless confirm_multiline_termination
           raise ArgumentError.new('#readmultiline needs block to confirm multiline termination')
@@ -273,7 +273,7 @@ module Reline
       end
     end
 
-    def readline(prompt = '', add_hist = false, rprompt: nil)
+    def readline(_prompt = '', _add_hist = false, prompt: _prompt, add_hist: _add_hist, rprompt: nil)
       @mutex.synchronize do
         io_gate.with_raw_input do
           inner_readline(prompt, add_hist, false, rprompt: rprompt)

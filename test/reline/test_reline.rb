@@ -244,6 +244,30 @@ class Reline::Test < Reline::TestCase
     assert_include(out, { result: 'a' }.inspect)
   end
 
+  def test_readline_with_keyword_arguments
+    pend if win?
+    lib = File.expand_path("../../lib", __dir__)
+    code = "p result: Reline.readline(prompt: '>', add_hist: true, rprompt: '[TIME]')"
+    out = IO.popen([Reline.test_rubybin, "-I#{lib}", "-rreline", "-e", code], "r+") do |io|
+      io.write "a\n"
+      io.close_write
+      io.read
+    end
+    assert_include(out, { result: 'a' }.inspect)
+  end
+
+  def test_readmultiline_with_keyword_arguments
+    pend if win?
+    lib = File.expand_path("../../lib", __dir__)
+    code = "p result: Reline.readmultiline(prompt: '>', add_hist: true, rprompt: '[TIME]') { true }"
+    out = IO.popen([Reline.test_rubybin, "-I#{lib}", "-rreline", "-e", code], "r+") do |io|
+      io.write "a\n"
+      io.close_write
+      io.read
+    end
+    assert_include(out, { result: 'a' }.inspect)
+  end
+
   def test_dig_perfect_match_proc
     assert_equal(nil, Reline.dig_perfect_match_proc)
 
