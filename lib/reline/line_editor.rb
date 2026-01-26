@@ -234,6 +234,7 @@ class Reline::LineEditor
     @vi_waiting_operator = nil
     @vi_waiting_operator_arg = nil
     @completion_journey_state = nil
+    @autocompletion_first_tab_completed = false
     @completion_state = CompletionState::NORMAL
     @perfect_matched = nil
     @menu_info = nil
@@ -1027,6 +1028,7 @@ class Reline::LineEditor
     unless @completion_occurs
       @completion_state = CompletionState::NORMAL
       @completion_journey_state = nil
+      @autocompletion_first_tab_completed = false
     end
 
     modified = old_buffer_of_lines != @buffer_of_lines
@@ -1295,7 +1297,32 @@ class Reline::LineEditor
     process_insert(force: true)
     if @config.autocompletion
       @completion_state = CompletionState::NORMAL
-      @completion_occurs = move_completed_list(:down)
+      if @completion_journey_state && @completion_journey_state.pointer > 0
+        # Already cycling (third+ tab): move to next candidate
+        @completion_occurs = move_completed_list(:down)
+      elsif @completion_journey_state && @completion_journey_state.pointer == 0 && @autocompletion_first_tab_completed
+        # Second tab: select first candidate (dialog is already shown by autocompletion)
+        @completion_occurs = move_completed_list(:down)
+      else
+        # First tab: complete to common prefix
+        pre, target, post, quote = retrieve_completion_block
+        result = call_completion_proc(pre, target, post, quote)
+        if result.is_a?(Array)
+          @completion_occurs = true
+          perform_completion(pre, target, post, quote, result)
+          # Set up journey state for subsequent cycling
+          candidates = filter_normalize_candidates(target, result)
+          if candidates.size > 1
+            completed = Reline::Unicode.common_prefix(candidates, ignore_case: @config.completion_ignore_case)
+            pre_part = pre.split("\n", -1).last || ''
+            post_part = post.split("\n", -1).first || ''
+            @completion_journey_state = CompletionJourneyState.new(
+              @line_index, pre_part, completed, post_part, [completed] + candidates, 0
+            )
+            @autocompletion_first_tab_completed = true
+          end
+        end
+      end
     else
       @completion_journey_state = nil
       pre, target, post, quote = retrieve_completion_block
