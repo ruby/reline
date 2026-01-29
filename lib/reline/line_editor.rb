@@ -8,6 +8,7 @@ class Reline::LineEditor
   attr_reader :byte_pointer
   attr_accessor :confirm_multiline_termination_proc
   attr_accessor :completion_proc
+  attr_writer :completion_filter_proc
   attr_accessor :completion_append_character
   attr_accessor :output_modifier_proc
   attr_accessor :prompt_proc
@@ -799,6 +800,14 @@ class Reline::LineEditor
     @menu_info = MenuInfo.new(list)
   end
 
+  private def completion_filter_proc
+    @completion_filter_proc || if @config.completion_ignore_case
+      ->(target, candidate) { candidate.downcase.start_with?(target) }
+    else
+      ->(target, candidate) { candidate.start_with?(target) }
+    end
+  end
+
   private def filter_normalize_candidates(target, list)
     target = target.downcase if @config.completion_ignore_case
     list.select do |item|
@@ -810,11 +819,7 @@ class Reline::LineEditor
         end
       end
 
-      if @config.completion_ignore_case
-        item.downcase.start_with?(target)
-      else
-        item.start_with?(target)
-      end
+      completion_filter_proc.(target, item)
     end.map do |item|
       item.unicode_normalize
     rescue Encoding::CompatibilityError
@@ -894,7 +899,7 @@ class Reline::LineEditor
     list = call_completion_proc(preposing, target, postposing, quote)
     return unless list.is_a?(Array)
 
-    candidates = list.select{ |item| item.start_with?(target) }
+    candidates = list.select(&completion_filter_proc.curry.(target))
     return if candidates.empty?
 
     pre = preposing.split("\n", -1).last || ''
