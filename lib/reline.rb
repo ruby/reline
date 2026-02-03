@@ -247,19 +247,19 @@ module Reline
     } # :nodoc:
     Reline::DEFAULT_DIALOG_CONTEXT = Array.new # :nodoc:
 
-    def readmultiline(_prompt = '', _add_hist = false, prompt: _prompt, add_hist: _add_hist, rprompt: nil, &confirm_multiline_termination)
+    def readmultiline(_prompt = '', _add_history = false, prompt: _prompt, add_history: _add_history, rprompt: nil, &confirm_multiline_termination)
       @mutex.synchronize do
         unless confirm_multiline_termination
           raise ArgumentError.new('#readmultiline needs block to confirm multiline termination')
         end
 
         io_gate.with_raw_input do
-          inner_readline(prompt, add_hist, true, rprompt: rprompt, &confirm_multiline_termination)
+          inner_readline(prompt, add_history, true, rprompt: rprompt, &confirm_multiline_termination)
         end
 
         whole_buffer = line_editor.whole_buffer.dup
         whole_buffer.taint if RUBY_VERSION < '2.7'
-        if add_hist and whole_buffer and whole_buffer.chomp("\n").size > 0
+        if add_history and whole_buffer and whole_buffer.chomp("\n").size > 0
           Reline::HISTORY << whole_buffer
         end
 
@@ -273,15 +273,15 @@ module Reline
       end
     end
 
-    def readline(_prompt = '', _add_hist = false, prompt: _prompt, add_hist: _add_hist, rprompt: nil)
+    def readline(_prompt = '', _add_history = false, prompt: _prompt, add_history: _add_history, rprompt: nil)
       @mutex.synchronize do
         io_gate.with_raw_input do
-          inner_readline(prompt, add_hist, false, rprompt: rprompt)
+          inner_readline(prompt, add_history, false, rprompt: rprompt)
         end
 
         line = line_editor.line.dup
         line.taint if RUBY_VERSION < '2.7'
-        if add_hist and line and line.chomp("\n").size > 0
+        if add_history and line and line.chomp("\n").size > 0
           Reline::HISTORY << line.chomp("\n")
         end
 
@@ -290,7 +290,7 @@ module Reline
       end
     end
 
-    private def inner_readline(prompt, add_hist, multiline, rprompt: nil, &confirm_multiline_termination)
+    private def inner_readline(prompt, add_history, multiline, rprompt: nil, &confirm_multiline_termination)
       if ENV['RELINE_STDERR_TTY']
         if io_gate.win?
           $stderr = File.open(ENV['RELINE_STDERR_TTY'], 'a')
@@ -443,13 +443,13 @@ module Reline
   ##
   # :singleton-method: readmultiline
   # :call-seq:
-  #   readmultiline(prompt = '', add_hist = false, &confirm_multiline_termination) -> string or nil
+  #   readmultiline(prompt = '', add_history = false, &confirm_multiline_termination) -> string or nil
   def_single_delegators :core, :readmultiline
 
   ##
   # :singleton-method: readline
   # :call-seq:
-  #   readline(prompt = '', add_hist = false) -> string or nil
+  #   readline(prompt = '', add_history = false) -> string or nil
   def_single_delegators :core, :readline
   def_single_delegators :core, :completion_case_fold, :completion_case_fold=
   def_single_delegators :core, :completion_quote_character

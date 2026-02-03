@@ -247,7 +247,7 @@ class Reline::Test < Reline::TestCase
   def test_readline_with_keyword_arguments
     pend if win?
     lib = File.expand_path("../../lib", __dir__)
-    code = "p result: Reline.readline(prompt: '>', add_hist: true, rprompt: '[TIME]')"
+    code = "p result: Reline.readline(prompt: '>', add_history: true, rprompt: '[TIME]')"
     out = IO.popen([Reline.test_rubybin, "-I#{lib}", "-rreline", "-e", code], "r+") do |io|
       io.write "a\n"
       io.close_write
@@ -259,7 +259,7 @@ class Reline::Test < Reline::TestCase
   def test_readmultiline_with_keyword_arguments
     pend if win?
     lib = File.expand_path("../../lib", __dir__)
-    code = "p result: Reline.readmultiline(prompt: '>', add_hist: true, rprompt: '[TIME]') { true }"
+    code = "p result: Reline.readmultiline(prompt: '>', add_history: true, rprompt: '[TIME]') { true }"
     out = IO.popen([Reline.test_rubybin, "-I#{lib}", "-rreline", "-e", code], "r+") do |io|
       io.write "a\n"
       io.close_write
