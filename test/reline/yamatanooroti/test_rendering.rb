@@ -183,6 +183,35 @@ begin
       close
     end
 
+    def test_rprompt
+      start_terminal(5, 40, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --rprompt [RPROMPT]}, startup_message: 'Multiline REPL.')
+      assert_screen(<<~EOC)
+        Multiline REPL.
+        prompt>                        [RPROMPT]
+      EOC
+      close
+    end
+
+    def test_rprompt_with_input
+      start_terminal(5, 40, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --rprompt [RPROMPT]}, startup_message: 'Multiline REPL.')
+      write("hello")
+      assert_screen(<<~EOC)
+        Multiline REPL.
+        prompt> hello                  [RPROMPT]
+      EOC
+      close
+    end
+
+    def test_rprompt_hides_when_input_reaches_rprompt
+      start_terminal(5, 40, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --rprompt [RPROMPT]}, startup_message: 'Multiline REPL.')
+      write("a" * 30)
+      assert_screen(<<~EOC)
+        Multiline REPL.
+        prompt> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      EOC
+      close
+    end
+
     def test_mode_string_emacs
       write_inputrc <<~LINES
         set show-mode-in-prompt on
