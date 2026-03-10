@@ -108,4 +108,50 @@ class Reline::KeyStroke::Test < Reline::TestCase
       assert_equal([[], []], stroke.expand(partial_bytes))
     end
   end
+
+  def test_expand_kitty_ctrl_and_special_keys
+    config = Reline::Config.new
+    Reline::IOGate.set_default_key_bindings(config)
+    stroke = Reline::KeyStroke.new(config, encoding)
+
+    key, = stroke.expand("\e[97;5u".bytes).first
+    assert_equal(Reline::Key.new("\C-a", :ed_move_to_beg, false), key)
+
+    key, = stroke.expand("\e[99;5u".bytes).first
+    assert_equal('', key.char)
+    assert_equal(:ed_interrupt, key.method_symbol)
+
+    key, = stroke.expand("\e[127u".bytes).first
+    assert_equal("\C-?", key.char)
+    assert_equal(:em_delete_prev_char, key.method_symbol)
+
+    key, = stroke.expand("\e[27u".bytes).first
+    assert_equal("\e", key.char)
+    assert_equal(:ed_ignore, key.method_symbol)
+  end
+
+  def test_expand_kitty_meta_and_basic_keys
+    config = Reline::Config.new
+    Reline::IOGate.set_default_key_bindings(config)
+    stroke = Reline::KeyStroke.new(config, encoding)
+
+    key, = stroke.expand("\e[98;3u".bytes).first
+    assert_equal("\eb", key.char)
+    assert_equal(:ed_prev_word, key.method_symbol)
+
+    key, = stroke.expand("\e[9u".bytes).first
+    assert_equal("\t", key.char)
+    assert_equal(:complete, key.method_symbol)
+
+    key, = stroke.expand("\e[13u".bytes).first
+    assert_equal("\r", key.char)
+    assert_equal(:ed_newline, key.method_symbol)
+  end
+
+  def test_ignore_unhandled_kitty_sequence
+    config = Reline::Config.new
+    stroke = Reline::KeyStroke.new(config, encoding)
+
+    assert_equal([[], []], stroke.expand("\e[1114112u".bytes))
+  end
 end

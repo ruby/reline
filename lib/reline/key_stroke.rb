@@ -2,6 +2,9 @@ class Reline::KeyStroke
   ESC_BYTE = 27
   CSI_PARAMETER_BYTES_RANGE = 0x30..0x3f
   CSI_INTERMEDIATE_BYTES_RANGE = (0x20..0x2f)
+  KITTY_MODIFIER_SHIFT = 0b001
+  KITTY_MODIFIER_ALT = 0b010
+  KITTY_MODIFIER_CTRL = 0b100
 
   attr_accessor :encoding
 
@@ -63,6 +66,8 @@ class Reline::KeyStroke
       end
     elsif func
       keys = [Reline::Key.new(s, func, false)]
+    elsif (kitty_keys = expand_kitty_csi_u(matched_bytes))
+      keys = kitty_keys
     else
       if s.valid_encoding? && s.size == 1
         keys = [Reline::Key.new(s, :ed_insert, false)]
@@ -75,6 +80,91 @@ class Reline::KeyStroke
   end
 
   private
+
+  def expand_kitty_csi_u(bytes)
+    packed = bytes.pack('C*')
+    match = packed.match(/\A\e\[(?<codepoint>\d+)(?:;(?<modifiers>\d+))?u\z/)
+    return unless match
+
+    codepoint = Integer(match[:codepoint], 10)
+    modifiers = Integer(match[:modifiers] || '1', 10)
+    return unless codepoint.positive? && modifiers.positive?
+
+    modifier_bits = modifiers - 1
+    ctrl = (modifier_bits & KITTY_MODIFIER_CTRL) != 0
+    alt = (modifier_bits & KITTY_MODIFIER_ALT) != 0
+
+    normalized_bytes = []
+    normalized_bytes << ESC_BYTE if alt
+
+    if ctrl && (control_byte = control_byte_from_codepoint(codepoint))
+      if control_byte == 3
+        return [Reline::Key.new(String.new(encoding: @encoding), :ed_interrupt, false)]
+      end
+      normalized_bytes << control_byte
+    elsif (special_bytes = special_bytes_from_codepoint(codepoint))
+      normalized_bytes.concat(special_bytes)
+    elsif (char = char_from_codepoint(codepoint))
+      normalized_bytes.concat(char.bytes)
+    else
+      return
+    end
+
+    build_keys_from_bytes(normalized_bytes)
+  end
+
+  def build_keys_from_bytes(bytes)
+    func = key_mapping.get(bytes)
+    string = bytes.pack('C*').force_encoding(@encoding)
+    if func
+      [Reline::Key.new(string, func, false)]
+    elsif string.valid_encoding? && string.size == 1
+      [Reline::Key.new(string, :ed_insert, false)]
+    elsif bytes.first == ESC_BYTE && bytes.size > 1
+      expanded = bytes.each_with_index.filter_map do |byte, index|
+        partial = bytes.take(index + 1)
+        next if index.zero? && key_mapping.matching?(partial)
+
+        char = [byte].pack('C').force_encoding(@encoding)
+        func = key_mapping.get([byte])
+        Reline::Key.new(char, func.is_a?(Symbol) ? func : :ed_insert, false)
+      end
+      expanded unless expanded.empty?
+    end
+  end
+
+  def special_bytes_from_codepoint(codepoint)
+    case codepoint
+    when 8
+      [8]
+    when 9
+      [9]
+    when 13
+      [13]
+    when 27
+      [27]
+    when 127
+      [127]
+    end
+  end
+
+  def char_from_codepoint(codepoint)
+    return unless codepoint <= 0x10ffff
+
+    char = [codepoint].pack('U')
+    char.valid_encoding? ? char : nil
+  rescue RangeError
+    nil
+  end
+
+  def control_byte_from_codepoint(codepoint)
+    case codepoint
+    when 63
+      127
+    when 64..95, 97..122
+      codepoint & 0x1f
+    end
+  end
 
   # returns match status of CSI/SS3 sequence and matched length
   def match_unknown_escape_sequence(input, vi_mode: false)

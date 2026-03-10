@@ -1,6 +1,7 @@
 require_relative 'helper'
 require 'reline'
 require 'stringio'
+require 'timeout'
 begin
   require "pty"
 rescue LoadError # some platforms don't support PTY
@@ -462,6 +463,72 @@ class Reline::Test < Reline::TestCase
     end
   ensure
     File.delete(ruby_file.path) if ruby_file
+  end
+
+  def test_kitty_keyboard_protocol_ctrl_c
+    omit 'PTY is not supported on this platform' unless defined?(PTY)
+
+    script = <<~RUBY
+      begin
+        Reline.readline("> ", false)
+      rescue Interrupt
+        puts "INT"
+      end
+    RUBY
+
+    output = with_reline_pty(script) do |r, w|
+      initial = read_until(r, '> ')
+      w.print('abc')
+      w.print("\e[99;5u")
+      initial + read_until(r, "INT\r\n")
+    end
+
+    assert_include(output, "\e[>1u")
+    assert_include(output, "\e[<u")
+    assert_include(output, "INT\r\n")
+  end
+
+  def test_kitty_keyboard_protocol_alt_b
+    omit 'PTY is not supported on this platform' unless defined?(PTY)
+
+    script = <<~RUBY
+      line = Reline.readline("> ", false)
+      puts line.inspect
+    RUBY
+
+    output = with_reline_pty(script) do |r, w|
+      initial = read_until(r, '> ')
+      w.print('ab')
+      w.print("\e[98;3u")
+      w.print('X')
+      w.print("\r")
+      initial + read_until(r, "\"Xab\"\r\n")
+    end
+
+    assert_include(output, "\"Xab\"\r\n")
+  end
+
+  private
+
+  def with_reline_pty(script)
+    args = [Reline.test_rubybin, "-I#{File.expand_path('../../lib', __dir__)}", '-rreline', '-e', script]
+    r = w = pid = nil
+    r, w, pid = PTY.spawn(*args)
+    yield r, w
+  ensure
+    r.close if r && !r.closed?
+    w.close if w && !w.closed?
+    Process.wait(pid) if pid
+  end
+
+  def read_until(io, marker, timeout: 5)
+    buffer = +''
+    Timeout.timeout(timeout) do
+      until buffer.include?(marker)
+        buffer << io.readpartial(1024)
+      end
+    end
+    buffer
   end
 
   def get_reline_encoding

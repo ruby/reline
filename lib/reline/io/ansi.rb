@@ -2,6 +2,8 @@ require 'io/console'
 require 'io/wait'
 
 class Reline::ANSI < Reline::IO
+  KITTY_KEYBOARD_PROTOCOL_ENABLE = "\e[>1u"
+  KITTY_KEYBOARD_PROTOCOL_DISABLE = "\e[<u"
   ANSI_CURSOR_KEY_BINDINGS = {
     # Up
     'A' => [:ed_prev_history, {}],
@@ -298,12 +300,14 @@ class Reline::ANSI < Reline::IO
   def prep
     # Enable bracketed paste
     write "\e[?2004h" if Reline.core.config.enable_bracketed_paste && both_tty?
+    write KITTY_KEYBOARD_PROTOCOL_ENABLE if both_tty?
     nil
   end
 
   def deprep(otio)
     # Disable bracketed paste
     write "\e[?2004l" if Reline.core.config.enable_bracketed_paste && both_tty?
+    write KITTY_KEYBOARD_PROTOCOL_DISABLE if both_tty?
     Signal.trap('WINCH', @old_winch_handler) if @old_winch_handler
     Signal.trap('CONT', @old_cont_handler) if @old_cont_handler
   end

@@ -1,5 +1,6 @@
 require_relative 'helper'
 require 'reline'
+require 'stringio'
 
 class Reline::ANSITest < Reline::TestCase
   def setup
@@ -68,5 +69,29 @@ class Reline::ANSITest < Reline::TestCase
   def test_more_emacs
     assert_key_binding("\e ", :em_set_mark, [:emacs])
     assert_key_binding("\C-x\C-x", :em_exchange_mark, [:emacs])
+  end
+
+  def test_prep_enables_kitty_keyboard_protocol
+    output = StringIO.new
+    io_gate = Reline::ANSI.new
+    io_gate.output = output
+    io_gate.define_singleton_method(:both_tty?) { true }
+
+    io_gate.send(:prep)
+
+    assert_include(output.string, "\e[>1u")
+    assert_include(output.string, "\e[?2004h")
+  end
+
+  def test_deprep_disables_kitty_keyboard_protocol
+    output = StringIO.new
+    io_gate = Reline::ANSI.new
+    io_gate.output = output
+    io_gate.define_singleton_method(:both_tty?) { true }
+
+    io_gate.send(:deprep, nil)
+
+    assert_include(output.string, "\e[<u")
+    assert_include(output.string, "\e[?2004l")
   end
 end

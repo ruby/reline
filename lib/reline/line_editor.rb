@@ -204,6 +204,11 @@ class Reline::LineEditor
     end
   end
 
+  private def ed_interrupt(_key)
+    @interrupted = true
+    handle_interrupted
+  end
+
   def set_signal_handlers
     Reline::IOGate.set_winch_handler do
       @resized = true
