@@ -15,6 +15,7 @@ class Reline::Test < Reline::TestCase
     Reline.send(:test_mode)
     Reline.output_modifier_proc = nil
     Reline.completion_proc = nil
+    Reline.completion_filter_proc = nil
     Reline.prompt_proc = nil
     Reline.auto_indent_proc = nil
     Reline.pre_input_hook = nil
@@ -161,6 +162,28 @@ class Reline::Test < Reline::TestCase
     dummy = DummyCallbackObject.new
     Reline.completion_proc = dummy
     assert_equal(dummy, Reline.completion_proc)
+  end
+
+  def test_completion_filter_proc
+    assert_equal(nil, Reline.completion_filter_proc)
+
+    dummy_proc = proc {}
+    Reline.completion_filter_proc = dummy_proc
+    assert_equal(dummy_proc, Reline.completion_filter_proc)
+
+    l = lambda {}
+    Reline.completion_filter_proc = l
+    assert_equal(l, Reline.completion_filter_proc)
+
+    assert_raise(ArgumentError) { Reline.completion_filter_proc = 42 }
+    assert_raise(ArgumentError) { Reline.completion_filter_proc = "hoge" }
+
+    dummy = DummyCallbackObject.new
+    Reline.completion_filter_proc = dummy
+    assert_equal(dummy, Reline.completion_filter_proc)
+
+    Reline.completion_filter_proc = nil
+    assert_nil(Reline.completion_filter_proc)
   end
 
   def test_output_modifier_proc
