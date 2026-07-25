@@ -562,16 +562,7 @@ class Reline::ViInsertTest < Reline::TestCase
   end
 
   def test_completion_journey
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        foo_bar
-        foo_bar_baz
-      }.select { |s|
-        s.start_with?(word)
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[foo_bar foo_bar_baz])
     input_keys('foo')
     assert_line_around_cursor('foo', '')
     input_keys("\C-n")
@@ -589,16 +580,7 @@ class Reline::ViInsertTest < Reline::TestCase
   end
 
   def test_completion_journey_reverse
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        foo_bar
-        foo_bar_baz
-      }.select { |s|
-        s.start_with?(word)
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[foo_bar foo_bar_baz])
     input_keys('foo')
     assert_line_around_cursor('foo', '')
     input_keys("\C-p")
@@ -616,16 +598,7 @@ class Reline::ViInsertTest < Reline::TestCase
   end
 
   def test_completion_journey_in_middle_of_line
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        foo_bar
-        foo_bar_baz
-      }.select { |s|
-        s.start_with?(word)
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[foo_bar foo_bar_baz])
     input_keys('abcde fo ABCDE')
     assert_line_around_cursor('abcde fo ABCDE', '')
     input_keys("\C-[" + 'h' * 5 + "i\C-n")
@@ -645,16 +618,7 @@ class Reline::ViInsertTest < Reline::TestCase
   end
 
   def test_completion
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        foo_bar
-        foo_bar_baz
-      }.select { |s|
-        s.start_with?(word)
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[foo_bar foo_bar_baz])
     input_keys('foo')
     assert_line_around_cursor('foo', '')
     input_keys("\C-i")
@@ -663,15 +627,7 @@ class Reline::ViInsertTest < Reline::TestCase
 
   def test_autocompletion_with_upward_navigation
     @config.autocompletion = true
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        Readline
-        Regexp
-        RegexpError
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[Readline Regexp RegexpError])
     input_keys('Re')
     assert_line_around_cursor('Re', '')
     input_keys("\C-i")
@@ -686,15 +642,7 @@ class Reline::ViInsertTest < Reline::TestCase
 
   def test_autocompletion_with_upward_navigation_and_menu_complete_backward
     @config.autocompletion = true
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        Readline
-        Regexp
-        RegexpError
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[Readline Regexp RegexpError])
     input_keys('Re')
     assert_line_around_cursor('Re', '')
     input_keys("\C-i")
@@ -709,16 +657,7 @@ class Reline::ViInsertTest < Reline::TestCase
 
   def test_completion_with_disable_completion
     @config.disable_completion = true
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        foo_bar
-        foo_bar_baz
-      }.select { |s|
-        s.start_with?(word)
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[foo_bar foo_bar_baz])
     input_keys('foo')
     assert_line_around_cursor('foo', '')
     input_keys("\C-i")

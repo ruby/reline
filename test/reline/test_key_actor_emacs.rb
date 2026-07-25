@@ -740,18 +740,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_em_delete_or_list
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        foo_foo
-        foo_bar
-        foo_baz
-        qux
-      }.select { |s|
-        s.start_with?(word)
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[foo_foo foo_bar foo_baz qux])
     input_keys('fooo')
     assert_line_around_cursor('fooo', '')
     assert_equal(nil, @line_editor.instance_variable_get(:@menu_info))
@@ -767,15 +756,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_completion_duplicated_list
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        foo_foo
-        foo_foo
-        foo_bar
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[foo_foo foo_foo foo_bar])
     input_keys('foo_')
     assert_line_around_cursor('foo_', '')
     assert_equal(nil, @line_editor.instance_variable_get(:@menu_info))
@@ -788,18 +769,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_completion
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        foo_foo
-        foo_bar
-        foo_baz
-        qux
-      }.select { |s|
-        s.start_with?(word)
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[foo_foo foo_bar foo_baz qux])
     input_keys('fo')
     assert_line_around_cursor('fo', '')
     assert_equal(nil, @line_editor.instance_variable_get(:@menu_info))
@@ -833,15 +803,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
 
   def test_autocompletion
     @config.autocompletion = true
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        Readline
-        Regexp
-        RegexpError
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[Readline Regexp RegexpError])
     input_keys('Re')
     assert_line_around_cursor('Re', '')
     input_keys("\C-i")
@@ -861,18 +823,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_completion_with_indent
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        foo_foo
-        foo_bar
-        foo_baz
-        qux
-      }.select { |s|
-        s.start_with?(word)
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[foo_foo foo_bar foo_baz qux])
     input_keys('  fo')
     assert_line_around_cursor('  fo', '')
     assert_equal(nil, @line_editor.instance_variable_get(:@menu_info))
@@ -885,16 +836,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_completion_with_perfect_match
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        foo
-        foo_bar
-      }.select { |s|
-        s.start_with?(word)
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[foo foo_bar])
     matched = nil
     @line_editor.dig_perfect_match_proc = proc { |m|
       matched = m
@@ -951,9 +893,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_completion_append_character
-    @line_editor.completion_proc = proc { |word|
-      %w[foo_ foo_foo foo_bar].select { |s| s.start_with? word }
-    }
+    set_completion_candidates(%w[foo_ foo_foo foo_bar])
     @line_editor.completion_append_character = 'X'
     input_keys('f')
     input_keys("\C-i")
@@ -967,9 +907,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_completion_with_quote_append
-    @line_editor.completion_proc = proc { |word|
-      %w[foo bar baz].select { |s| s.start_with? word }
-    }
+    set_completion_candidates(%w[foo bar baz])
     set_line_around_cursor('x = "b', '')
     input_keys("\C-i")
     assert_line_around_cursor('x = "ba', '')
@@ -991,18 +929,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_completion_with_completion_ignore_case
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        foo_foo
-        foo_bar
-        Foo_baz
-        qux
-      }.select { |s|
-        s.downcase.start_with?(word.downcase)
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[foo_foo foo_bar Foo_baz qux], ignore_case: true)
     input_keys('fo')
     assert_line_around_cursor('fo', '')
     assert_equal(nil, @line_editor.instance_variable_get(:@menu_info))
@@ -1052,18 +979,7 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
   end
 
   def test_completion_in_middle_of_line
-    @line_editor.completion_proc = proc { |word|
-      %w{
-        foo_foo
-        foo_bar
-        foo_baz
-        qux
-      }.select { |s|
-        s.start_with?(word)
-      }.map { |i|
-        i.encode(@encoding)
-      }
-    }
+    set_completion_candidates(%w[foo_foo foo_bar foo_baz qux])
     input_keys('abcde fo ABCDE')
     assert_line_around_cursor('abcde fo ABCDE', '')
     input_keys("\C-b" * 6 + "\C-i")
