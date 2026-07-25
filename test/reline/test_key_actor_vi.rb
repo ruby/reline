@@ -566,6 +566,8 @@ class Reline::ViInsertTest < Reline::TestCase
       %w{
         foo_bar
         foo_bar_baz
+      }.select { |s|
+        s.start_with?(word)
       }.map { |i|
         i.encode(@encoding)
       }
@@ -591,6 +593,8 @@ class Reline::ViInsertTest < Reline::TestCase
       %w{
         foo_bar
         foo_bar_baz
+      }.select { |s|
+        s.start_with?(word)
       }.map { |i|
         i.encode(@encoding)
       }
@@ -616,6 +620,8 @@ class Reline::ViInsertTest < Reline::TestCase
       %w{
         foo_bar
         foo_bar_baz
+      }.select { |s|
+        s.start_with?(word)
       }.map { |i|
         i.encode(@encoding)
       }
@@ -643,6 +649,8 @@ class Reline::ViInsertTest < Reline::TestCase
       %w{
         foo_bar
         foo_bar_baz
+      }.select { |s|
+        s.start_with?(word)
       }.map { |i|
         i.encode(@encoding)
       }
@@ -705,6 +713,8 @@ class Reline::ViInsertTest < Reline::TestCase
       %w{
         foo_bar
         foo_bar_baz
+      }.select { |s|
+        s.start_with?(word)
       }.map { |i|
         i.encode(@encoding)
       }
