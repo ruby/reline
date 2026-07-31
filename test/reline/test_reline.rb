@@ -418,6 +418,16 @@ class Reline::Test < Reline::TestCase
     assert_match(/#<Reline::Dumb/, out.chomp)
   end
 
+  def test_readline_reads_piped_stdin
+    out = readline_from_piped_stdin("input\n")
+    assert_include(out, { result: 'input' }.inspect)
+  end
+
+  def test_readline_returns_nil_on_piped_stdin_eof
+    out = readline_from_piped_stdin("")
+    assert_include(out, { result: nil }.inspect)
+  end
+
   def test_read_eof_returns_input
     pend if win?
     lib = File.expand_path("../../lib", __dir__)
@@ -458,6 +468,24 @@ class Reline::Test < Reline::TestCase
 
   def win?
     /mswin|mingw/.match?(RUBY_PLATFORM)
+  end
+
+  def readline_from_piped_stdin(stdin)
+    lib = File.expand_path("../../lib", __dir__)
+    code = <<~'RUBY'
+      require 'timeout'
+      begin
+        p result: Timeout.timeout(3) { Reline.readline('>') }
+      rescue Timeout::Error
+        puts 'timeout'
+      end
+    RUBY
+
+    IO.popen([Reline.test_rubybin, "-I#{lib}", "-rreline", "-e", code], "r+") do |io|
+      io.write stdin
+      io.close_write
+      io.read
+    end
   end
 
   def test_tty_ambiguous_width

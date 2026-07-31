@@ -13,7 +13,7 @@ module Reline
         when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
           require 'reline/io/windows'
           io = Reline::Windows.new
-          if io.msys_tty?
+          if io.msys_tty? || !STDIN.tty?
             Reline::ANSI.new
           else
             io
