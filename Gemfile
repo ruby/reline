@@ -19,4 +19,4 @@ gem 'test-unit-ruby-core'
 gem 'readline'
 
 # Only used in windows
-gem 'fiddle'
+gem 'io-console'
