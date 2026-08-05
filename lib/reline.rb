@@ -47,6 +47,7 @@ module Reline
       filename_quote_characters
       special_prefixes
       completion_proc
+      completion_filter_proc
       output_modifier_proc
       prompt_proc
       auto_indent_proc
@@ -132,6 +133,11 @@ module Reline
     def completion_proc=(p)
       raise ArgumentError unless p.respond_to?(:call) or p.nil?
       @completion_proc = p
+    end
+
+    def completion_filter_proc=(p)
+      raise ArgumentError unless p.respond_to?(:call) or p.nil?
+      @completion_filter_proc = p
     end
 
     def output_modifier_proc=(p)
@@ -318,6 +324,7 @@ module Reline
         line_editor.multiline_off
       end
       line_editor.completion_proc = completion_proc
+      line_editor.completion_filter_proc = completion_filter_proc
       line_editor.completion_append_character = completion_append_character
       line_editor.output_modifier_proc = output_modifier_proc
       line_editor.prompt_proc = prompt_proc

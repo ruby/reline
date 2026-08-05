@@ -1018,6 +1018,30 @@ class Reline::KeyActor::EmacsTest < Reline::TestCase
     assert_line_around_cursor('Foo_baz', '')
   end
 
+  def test_completion_with_completion_filter_proc
+    @line_editor.completion_proc = proc { |word|
+      %w{
+        foo_bar
+        foo_baz
+        qux
+      }.map { |i|
+        i.encode(@encoding)
+      }
+    }
+    # Fuzzy matching: characters appear in order but not necessarily contiguous
+    @line_editor.completion_filter_proc = ->(target, candidate) {
+      idx = 0
+      target.each_char.all? { |c| (idx = candidate.index(c, idx)) && (idx += 1) }
+    }
+    input_keys('fb')
+    assert_line_around_cursor('fb', '')
+    input_keys("\C-i")
+    # 'fb' fuzzy matches 'foo_bar' and 'foo_baz' (f...b)
+    assert_line_around_cursor('foo_ba', '')
+    input_keys("\C-i")
+    assert_equal(%w{foo_bar foo_baz}, @line_editor.instance_variable_get(:@menu_info).list)
+  end
+
   def test_completion_in_middle_of_line
     @line_editor.completion_proc = proc { |word|
       %w{
