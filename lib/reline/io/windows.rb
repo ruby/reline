@@ -1,6 +1,20 @@
 require 'fiddle/import'
 
 class Reline::Windows < Reline::IO
+  ANSI_CURSOR_KEY_BINDINGS = {
+    # Up
+    'A' => [:ed_prev_history, {}],
+    # Down
+    'B' => [:ed_next_history, {}],
+    # Right
+    'C' => [:ed_next_char, { ctrl: :em_next_word, meta: :em_next_word }],
+    # Left
+    'D' => [:ed_prev_char, { ctrl: :ed_prev_word, meta: :ed_prev_word }],
+    # End
+    'F' => [:ed_move_to_end, {}],
+    # Home
+    'H' => [:ed_move_to_beg, {}],
+  }
 
   attr_writer :output
 
@@ -13,6 +27,8 @@ class Reline::Windows < Reline::IO
     @getwch = Win32API.new('msvcrt', '_getwch', [], 'I')
     @kbhit = Win32API.new('msvcrt', '_kbhit', [], 'I')
     @GetKeyState = Win32API.new('user32', 'GetKeyState', ['L'], 'L')
+    @MapVirtualKeyA = Win32API.new('user32', 'MapVirtualKeyA', ['L', 'L'], 'L')
+    @ToUnicode = Win32API.new('user32', 'ToUnicode', ['I', 'I', 'P', 'P', 'I', 'I'], 'I')
     @GetConsoleScreenBufferInfo = Win32API.new('kernel32', 'GetConsoleScreenBufferInfo', ['L', 'P'], 'L')
     @SetConsoleCursorPosition = Win32API.new('kernel32', 'SetConsoleCursorPosition', ['L', 'L'], 'L')
     @GetStdHandle = Win32API.new('kernel32', 'GetStdHandle', ['L'], 'L')
@@ -83,40 +99,73 @@ class Reline::Windows < Reline::IO
   end
 
   def set_default_key_bindings(config)
-    {
-      [224, 72] => :ed_prev_history, # ↑
-      [224, 80] => :ed_next_history, # ↓
-      [224, 77] => :ed_next_char,    # →
-      [224, 75] => :ed_prev_char,    # ←
-      [224, 83] => :key_delete,      # Del
-      [224, 71] => :ed_move_to_beg,  # Home
-      [224, 79] => :ed_move_to_end,  # End
-      [  0, 72] => :ed_prev_history, # ↑
-      [  0, 80] => :ed_next_history, # ↓
-      [  0, 77] => :ed_next_char,    # →
-      [  0, 75] => :ed_prev_char,    # ←
-      [  0, 83] => :key_delete,      # Del
-      [  0, 71] => :ed_move_to_beg,  # Home
-      [  0, 79] => :ed_move_to_end   # End
-    }.each_pair do |key, func|
-      config.add_default_key_binding_by_keymap(:emacs, key, func)
-      config.add_default_key_binding_by_keymap(:vi_insert, key, func)
-      config.add_default_key_binding_by_keymap(:vi_command, key, func)
-    end
-
-    {
-      [27, 32] => :em_set_mark,             # M-<space>
-      [24, 24] => :em_exchange_mark,        # C-x C-x
-    }.each_pair do |key, func|
-      config.add_default_key_binding_by_keymap(:emacs, key, func)
-    end
-
-    # Emulate ANSI key sequence.
+    # set_bracketed_paste_key_bindings(config)
+    set_default_key_bindings_ansi_cursor(config)
+    set_default_key_bindings_comprehensive_list(config)
     {
       [27, 91, 90] => :completion_journey_up, # S-Tab
     }.each_pair do |key, func|
       config.add_default_key_binding_by_keymap(:emacs, key, func)
       config.add_default_key_binding_by_keymap(:vi_insert, key, func)
+    end
+    {
+      # default bindings
+      [27, 32] => :em_set_mark,             # M-<space>
+      [24, 24] => :em_exchange_mark,        # C-x C-x
+    }.each_pair do |key, func|
+      config.add_default_key_binding_by_keymap(:emacs, key, func)
+    end
+  end
+
+  def set_bracketed_paste_key_bindings(config)
+    [:emacs, :vi_insert, :vi_command].each do |keymap|
+      config.add_default_key_binding_by_keymap(keymap, START_BRACKETED_PASTE.bytes, :bracketed_paste_start)
+    end
+  end
+
+  def set_default_key_bindings_ansi_cursor(config)
+    ANSI_CURSOR_KEY_BINDINGS.each do |char, (default_func, modifiers)|
+      bindings = [
+        ["\e[#{char}", default_func], # CSI + char
+        ["\eO#{char}", default_func] # SS3 + char, application cursor key mode
+      ]
+      if modifiers[:ctrl]
+        # CSI + ctrl_key_modifier + char
+        bindings << ["\e[1;5#{char}", modifiers[:ctrl]]
+      end
+      if modifiers[:meta]
+        # CSI + meta_key_modifier + char
+        bindings << ["\e[1;3#{char}", modifiers[:meta]]
+        # Meta(ESC) + CSI + char
+        bindings << ["\e\e[#{char}", modifiers[:meta]]
+      end
+      bindings.each do |sequence, func|
+        key = sequence.bytes
+        config.add_default_key_binding_by_keymap(:emacs, key, func)
+        config.add_default_key_binding_by_keymap(:vi_insert, key, func)
+        config.add_default_key_binding_by_keymap(:vi_command, key, func)
+      end
+    end
+  end
+
+  def set_default_key_bindings_comprehensive_list(config)
+    {
+      # xterm
+      [27, 91, 51, 126] => :key_delete, # kdch1
+      [27, 91, 53, 126] => :ed_search_prev_history, # kpp
+      [27, 91, 54, 126] => :ed_search_next_history, # knp
+
+      # Console (80x25)
+      [27, 91, 49, 126] => :ed_move_to_beg, # Home
+      [27, 91, 52, 126] => :ed_move_to_end, # End
+
+      # urxvt / exoterm
+      [27, 91, 55, 126] => :ed_move_to_beg, # Home
+      [27, 91, 56, 126] => :ed_move_to_end, # End
+    }.each_pair do |key, func|
+      config.add_default_key_binding_by_keymap(:emacs, key, func)
+      config.add_default_key_binding_by_keymap(:vi_insert, key, func)
+      config.add_default_key_binding_by_keymap(:vi_command, key, func)
     end
   end
 
@@ -163,11 +212,16 @@ class Reline::Windows < Reline::IO
   end
 
   VK_RETURN = 0x0D
-  VK_MENU = 0x12 # ALT key
-  VK_LMENU = 0xA4
-  VK_CONTROL = 0x11
   VK_SHIFT = 0x10
-  VK_DIVIDE = 0x6F
+  VK_CONTROL = 0x11
+  VK_MENU = 0x12 # ALT key
+  VK_CAPITAL = 0x14
+  VK_LSHIFT = 0xA0
+  VK_RSHIFT = 0xA1
+  VK_LCONTROL = 0xA2
+  VK_RCONTROL = 0xA3
+  VK_LMENU = 0xA4
+  VK_RMENU = 0xA5
 
   KEY_EVENT = 0x01
   WINDOW_BUFFER_SIZE_EVENT = 0x04
@@ -182,14 +236,49 @@ class Reline::Windows < Reline::IO
   SCROLLLOCK_ON = 0x0040
   SHIFT_PRESSED = 0x0010
 
+  ALT_PRESSED = LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED
+  CTRL_PRESSED = LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED
+  SAC_MASK = SHIFT_PRESSED | ALT_PRESSED | CTRL_PRESSED
+
   VK_TAB = 0x09
+  VK_CLEAR = 0x0C
+  VK_PRIOR = 0x21
+  VK_NEXT = 0x22
   VK_END = 0x23
   VK_HOME = 0x24
   VK_LEFT = 0x25
   VK_UP = 0x26
   VK_RIGHT = 0x27
   VK_DOWN = 0x28
+  VK_INSERT = 0x2D
   VK_DELETE = 0x2E
+
+  VK_NUMPAD0 = 0x60
+  VK_NUMPAD1 = 0x61
+  VK_NUMPAD2 = 0x62
+  VK_NUMPAD3 = 0x63
+  VK_NUMPAD4 = 0x64
+  VK_NUMPAD5 = 0x65
+  VK_NUMPAD6 = 0x66
+  VK_NUMPAD7 = 0x67
+  VK_NUMPAD8 = 0x68
+  VK_NUMPAD9 = 0x69
+  VK_DECIMAL = 0x6E
+  VK_F1 = 0x70
+  VK_F2 = 0x71
+  VK_F3 = 0x72
+  VK_F4 = 0x73
+  VK_F5 = 0x74
+  VK_F6 = 0x75
+  VK_F7 = 0x76
+  VK_F8 = 0x77
+  VK_F9 = 0x78
+  VK_F10 = 0x79
+  VK_F11 = 0x7A
+  VK_F12 = 0x7B
+
+  CSI = "\e["
+  SS3 = "\eO"
 
   STD_INPUT_HANDLE = -10
   STD_OUTPUT_HANDLE = -11
@@ -237,28 +326,94 @@ class Reline::Windows < Reline::IO
     name =~ /(msys-|cygwin-).*-pty/ ? true : false
   end
 
-  KEY_MAP = [
-    # It's treated as Meta+Enter on Windows.
-    [ { control_keys: :CTRL,  virtual_key_code: 0x0D }, "\e\r".bytes ],
-    [ { control_keys: :SHIFT, virtual_key_code: 0x0D }, "\e\r".bytes ],
+  def map_vk_to_char(vk)
+    res = @MapVirtualKeyA.call(vk, 2) # MAPVK_VK_TO_CHAR, convert VK to char
+  end
 
-    # It's treated as Meta+Space on Windows.
-    [ { control_keys: :CTRL,  char_code: 0x20 }, "\e ".bytes ],
+  def map_vk_to_codepoint(vk, sc, cks)
+    # map vk to base char
+    ks = "\0" * 256
+    wchar = "\0" * 2
+    ks[VK_SHIFT] = "\x80" if cks.anybits?(SHIFT_PRESSED)
+    ks[VK_MENU] = "\x80" if cks.anybits?(ALT_PRESSED)
+    ks[VK_CAPITAL] =  "\x01" if cks.anybits?(CAPSLOCK_ON)
+    ks[VK_LSHIFT] = "\x80" if cks.anybits?(SHIFT_PRESSED)
+    ks[VK_LMENU] = "\x80" if cks.anybits?(LEFT_ALT_PRESSED)
+    ks[VK_RMENU] = "\x80" if cks.anybits?(RIGHT_ALT_PRESSED)
+    ks[vk] = "\x80"
+    res = @ToUnicode.call(vk, sc, ks, wchar, 1, 1)
+    return wchar.unpack1("S") if res > 0
+    return 0
+  end
 
-    # Emulate getwch() key sequences.
-    [ { control_keys: [], virtual_key_code: VK_UP },     [0, 72] ],
-    [ { control_keys: [], virtual_key_code: VK_DOWN },   [0, 80] ],
-    [ { control_keys: [], virtual_key_code: VK_RIGHT },  [0, 77] ],
-    [ { control_keys: [], virtual_key_code: VK_LEFT },   [0, 75] ],
-    [ { control_keys: [], virtual_key_code: VK_DELETE }, [0, 83] ],
-    [ { control_keys: [], virtual_key_code: VK_HOME },   [0, 71] ],
-    [ { control_keys: [], virtual_key_code: VK_END },    [0, 79] ],
+  CTRL_MAP = {
+    "2".b => 0,
+    "3".b => 27,
+    "4".b => 28,
+    "5".b => 29,
+    "6".b => 30,
+    "7".b => 31,
+    "8".b => 127,
+    "?".b => 127,
+    "/".b => 31,
+  }
+  SEQ_MAP = {
+    VK_UP		=> [ CSI, "" , "A" ],
+    VK_DOWN		=> [ CSI, "" , "B" ],
+    VK_RIGHT	=> [ CSI, "" , "C" ],
+    VK_LEFT		=> [ CSI, "" , "D" ],
+    VK_CLEAR	=> [ CSI, "" , "G" ],
+    VK_HOME		=> [ CSI, "1", "~" ],
+    VK_INSERT	=> [ CSI, "2", "~" ],
+    VK_DELETE	=> [ CSI, "3", "~" ],
+    VK_END		=> [ CSI, "4", "~" ],
+    VK_PRIOR	=> [ CSI, "5", "~" ],
+    VK_NEXT		=> [ CSI, "6", "~" ],
+    VK_F1		=> [ SS3, "" , "P" ],
+    VK_F2		=> [ SS3, "" , "Q" ],
+    VK_F3		=> [ SS3, "" , "R" ],
+    VK_F4		=> [ SS3, "" , "S" ],
+    VK_F5		=> [ CSI, "15", "~" ],
+    VK_F6		=> [ CSI, "17", "~" ],
+    VK_F7		=> [ CSI, "18", "~" ],
+    VK_F8		=> [ CSI, "19", "~" ],
+    VK_F9		=> [ CSI, "20", "~" ],
+    VK_F10		=> [ CSI, "21", "~" ],
+    VK_F11		=> [ CSI, "23", "~" ],
+    VK_F12		=> [ CSI, "24", "~" ],
+  }
+  MOD_MAP = ["", ";2", ";3", ";4", ";5", ";6", ";7", ";8"]
+  NUMPAD_MAP = {
+    VK_NUMPAD0 => [ VK_INSERT, 0x30 ],
+    VK_NUMPAD1 => [ VK_END, 0x31 ],
+    VK_NUMPAD2 => [ VK_DOWN, 0x32 ],
+    VK_NUMPAD3 => [ VK_NEXT, 0x33 ],
+    VK_NUMPAD4 => [ VK_LEFT, 0x34 ],
+    VK_NUMPAD5 => [ VK_CLEAR, 0x35 ],
+    VK_NUMPAD6 => [ VK_RIGHT, 0x36 ],
+    VK_NUMPAD7 => [ VK_HOME, 0x37 ],
+    VK_NUMPAD8 => [ VK_UP, 0x38 ],
+    VK_NUMPAD9 => [ VK_PRIOR, 0x39 ],
+    VK_DECIMAL => [ VK_DELETE, VK_DECIMAL ]
+  }
 
-    # Emulate ANSI key sequence.
-    [ { control_keys: :SHIFT, virtual_key_code: VK_TAB }, [27, 91, 90] ],
-  ]
+  def process_key_event(repeat_count, virtual_key_code, virtual_scan_code, char_code, control_key_state, is_key_down)
 
-  def process_key_event(repeat_count, virtual_key_code, virtual_scan_code, char_code, control_key_state)
+    ctrl = control_key_state.anybits?(CTRL_PRESSED)
+    alt = control_key_state.anybits?(ALT_PRESSED)
+    shift = control_key_state.anybits?(SHIFT_PRESSED)
+    seq = nil
+
+    if !is_key_down
+      return if virtual_key_code != VK_MENU
+      return if char_code == 0
+    end
+
+    if char_code == 0 && virtual_scan_code < 54
+      # full key with or without AltGr => dead key(?)
+      return if ctrl && alt
+      return if !ctrl && !alt
+    end
 
     # high-surrogate
     if 0xD800 <= char_code and char_code <= 0xDBFF
@@ -279,20 +434,59 @@ class Reline::Windows < Reline::IO
       @hsg = nil
     end
 
-    key = KeyEventRecord.new(virtual_key_code, char_code, control_key_state)
-
-    match = KEY_MAP.find { |args,| key.match?(**args) }
-    unless match.nil?
-      @output_buf.concat(match.last)
-      return
+    if is_key_down
+      case char_code
+      when 32	# space
+        if ctrl
+          alt, ctrl = true, false # ctrl+space is mapped to alt+space
+        end
+      when 9	# TAB
+        seq = "\e[Z" if shift
+      when 0
+        if alt && !ctrl && !shift &&
+            VK_NUMPAD0 <= virtual_key_code && virtual_key_code <= VK_NUMPAD9
+          return
+        end
+        numpad = NUMPAD_MAP[virtual_key_code]
+        if numpad
+          numlk = control_key_state.allbits?(NUMLOCK_ON)
+          numlk = shift = false if numlk && shift
+          virtual_key_code = numpad[numlk ? 1 : 0]
+        end
+        seq = SEQ_MAP[virtual_key_code]
+        if seq
+          intro, lead, trail = *seq
+        elsif virtual_key_code == VK_TAB
+          seq = shift ? "\e[Z" : "\t"
+        else
+          # raw_key = map_vk_to_char(virtual_key_code)
+          raw_key = map_vk_to_codepoint(virtual_key_code, virtual_scan_code, control_key_state)
+          return if raw_key == 0
+          char_code = CTRL_MAP[raw_key.chr(Encoding::BINARY)] || case raw_key
+          when 64..127, 0x2f, 0x20
+            raw_key & 0x1f
+          else
+            raw_key
+          end
+        end
+      end
     end
 
-    # no char, only control keys
-    return if key.char_code == 0 and key.control_keys.any?
+    if intro
+      if control_key_state.anybits?(SAC_MASK)
+        modindex = (shift ? 1 : 0) + (alt ? 2 : 0) + (ctrl ? 4 : 0)
+        if lead == ""
+          intro = CSI
+          lead = "1"
+        end
+        mod = MOD_MAP[modindex]
+      end
+      seq = [intro, lead, mod, trail].join('')
+    else
+      seq = (alt ? "\e" : "") + (seq || char_code.chr(Encoding::UTF_8))
+    end
 
-    @output_buf.push("\e".ord) if key.control_keys.include?(:ALT) and !key.control_keys.include?(:CTRL)
-
-    @output_buf.concat(key.char.bytes)
+    @output_buf.concat(seq.bytes)
   end
 
   def check_input_event
@@ -323,9 +517,7 @@ class Reline::Windows < Reline::IO
             char_code = input_record[14, 2].unpack1('S*')
             control_key_state = input_record[16, 2].unpack1('S*')
             is_key_down = key_down.zero? ? false : true
-            if is_key_down
-              process_key_event(repeat_count, virtual_key_code, virtual_scan_code, char_code, control_key_state)
-            end
+            process_key_event(repeat_count, virtual_key_code, virtual_scan_code, char_code, control_key_state, is_key_down)
           end
         end
       end
@@ -342,6 +534,19 @@ class Reline::Windows < Reline::IO
 
   def buffered_output
     yield
+  end
+
+  START_BRACKETED_PASTE = String.new("\e[200~", encoding: Encoding::ASCII_8BIT)
+  END_BRACKETED_PASTE = String.new("\e[201~", encoding: Encoding::ASCII_8BIT)
+  def read_bracketed_paste
+    buffer = String.new(encoding: Encoding::ASCII_8BIT)
+    until buffer.end_with?(END_BRACKETED_PASTE)
+      c = getc(Float::INFINITY)
+      break unless c
+      buffer << c
+    end
+    string = buffer.delete_suffix(END_BRACKETED_PASTE).force_encoding(encoding)
+    string.valid_encoding? ? string : ''
   end
 
   def getc(_timeout_second)
@@ -485,12 +690,15 @@ class Reline::Windows < Reline::IO
   end
 
   def prep
-    # do nothing
+    # Enable bracketed paste
+    # @output.write "\e[?2004h" if Reline.core.config.enable_bracketed_paste && !win_legacy_console?
     nil
   end
 
   def deprep(otio)
-    # do nothing
+    # Disable bracketed paste
+    # @output.write "\e[?2004l" if Reline.core.config.enable_bracketed_paste && !win_legacy_console?
+    nil
   end
 
   def disable_auto_linewrap(setting = true, &block)
@@ -513,44 +721,5 @@ class Reline::Windows < Reline::IO
     else
       block.call if block
     end
-  end
-
-  class KeyEventRecord
-
-    attr_reader :virtual_key_code, :char_code, :control_key_state, :control_keys
-
-    def initialize(virtual_key_code, char_code, control_key_state)
-      @virtual_key_code = virtual_key_code
-      @char_code = char_code
-      @control_key_state = control_key_state
-      @enhanced = control_key_state & ENHANCED_KEY != 0
-
-      (@control_keys = []).tap do |control_keys|
-        # symbols must be sorted to make comparison is easier later on
-        control_keys << :ALT   if control_key_state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED) != 0
-        control_keys << :CTRL  if control_key_state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED) != 0
-        control_keys << :SHIFT if control_key_state & SHIFT_PRESSED != 0
-      end.freeze
-    end
-
-    def char
-      @char_code.chr(Encoding::UTF_8)
-    end
-
-    def enhanced?
-      @enhanced
-    end
-
-    # Verifies if the arguments match with this key event.
-    # Nil arguments are ignored, but at least one must be passed as non-nil.
-    # To verify that no control keys were pressed, pass an empty array: `control_keys: []`.
-    def match?(control_keys: nil, virtual_key_code: nil, char_code: nil)
-      raise ArgumentError, 'No argument was passed to match key event' if control_keys.nil? && virtual_key_code.nil? && char_code.nil?
-
-      (control_keys.nil? || [*control_keys].sort == @control_keys) &&
-      (virtual_key_code.nil? || @virtual_key_code == virtual_key_code) &&
-      (char_code.nil? || char_code == @char_code)
-    end
-
   end
 end
