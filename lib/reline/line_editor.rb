@@ -813,23 +813,20 @@ class Reline::LineEditor
     @menu_info = MenuInfo.new(list)
   end
 
-  private def filter_normalize_candidates(target, list)
-    target = target.downcase if @config.completion_ignore_case
-    list.select do |item|
-      next unless item
-      unless Encoding.compatible?(target.encoding, item.encoding)
-        # Workaround for Readline test
-        if defined?(::Readline) && ::Readline == ::Reline
+  # Candidates are not filtered by target. Readline (and readline-ext) treats
+  # filtering as completion_proc's responsibility and uses the returned
+  # candidates as-is.
+  private def normalize_candidates(target, list)
+    candidates = list.compact
+    if defined?(::Readline) && ::Readline == ::Reline
+      # Workaround for Readline test
+      candidates.each do |item|
+        unless Encoding.compatible?(target.encoding, item.encoding)
           raise Encoding::CompatibilityError, "incompatible character encodings: #{target.encoding} and #{item.encoding}"
         end
       end
-
-      if @config.completion_ignore_case
-        item.downcase.start_with?(target)
-      else
-        item.start_with?(target)
-      end
-    end.map do |item|
+    end
+    candidates.map do |item|
       item.unicode_normalize
     rescue Encoding::CompatibilityError
       item
@@ -837,7 +834,8 @@ class Reline::LineEditor
   end
 
   private def perform_completion(preposing, target, postposing, quote, list)
-    candidates = filter_normalize_candidates(target, list)
+    candidates = normalize_candidates(target, list)
+    return if candidates.empty?
 
     case @completion_state
     when CompletionState::PERFECT_MATCH
@@ -855,7 +853,6 @@ class Reline::LineEditor
     end
 
     completed = Reline::Unicode.common_prefix(candidates, ignore_case: @config.completion_ignore_case)
-    return if completed.empty?
 
     append_character = ''
     if candidates.include?(completed)
@@ -873,6 +870,10 @@ class Reline::LineEditor
       @completion_state = CompletionState::MENU
       menu(candidates) if @config.show_all_if_ambiguous
     end
+    # Aligned with GNU readline: TAB completion with no common prefix leaves
+    # the line as-is but still displays candidates on the next TAB.
+    return if completed.empty?
+
     @buffer_of_lines[@line_index] = (preposing + completed + append_character + postposing).split("\n")[@line_index] || String.new(encoding: encoding)
     line_to_pointer = (preposing + completed + append_character).split("\n")[@line_index] || String.new(encoding: encoding)
     @byte_pointer = line_to_pointer.bytesize
@@ -908,7 +909,7 @@ class Reline::LineEditor
     list = call_completion_proc(preposing, target, postposing, quote)
     return unless list.is_a?(Array)
 
-    candidates = list.select{ |item| item.start_with?(target) }
+    candidates = list.compact
     return if candidates.empty?
 
     pre = preposing.split("\n", -1).last || ''
@@ -1784,7 +1785,7 @@ class Reline::LineEditor
       pre, target, post, quote = retrieve_completion_block
       result = call_completion_proc(pre, target, post, quote)
       if result.is_a?(Array)
-        candidates = filter_normalize_candidates(target, result)
+        candidates = normalize_candidates(target, result)
         menu(candidates)
       end
     end
