@@ -2,6 +2,24 @@ require_relative '../helper'
 return unless Reline.const_defined?(:Windows)
 
 class Reline::Windows
+  class Test < Reline::TestCase
+    def test_does_not_define_win32api
+      refute Reline::Windows.const_defined?(:Win32API, false)
+    end
+
+    def test_empty_buffer_uses_input_pending
+      windows = Reline::Windows.allocate
+      input = Object.new
+      input.define_singleton_method(:input_pending?) { false }
+      windows.instance_variable_set(:@input, input)
+      windows.instance_variable_set(:@output_buf, [])
+      assert windows.empty_buffer?
+
+      input.define_singleton_method(:input_pending?) { true }
+      refute windows.empty_buffer?
+    end
+  end
+
   class KeyEventRecord::Test < Reline::TestCase
 
     def setup
