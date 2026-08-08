@@ -114,7 +114,11 @@ module Reline
     end
 
     def special_prefixes=(v)
-      @special_prefixes = v.encode(encoding)
+      if v.nil?
+        @special_prefixes = ''
+      else
+        @special_prefixes = v.encode(encoding)
+      end
     end
 
     def completion_case_fold=(v)
@@ -174,14 +178,25 @@ module Reline
     end
 
     def input=(val)
-      raise TypeError unless val.respond_to?(:getc) or val.nil?
+      raise TypeError unless val.respond_to?(:getc)
       if val.respond_to?(:getc) && io_gate.respond_to?(:input=)
         io_gate.input = val
+      elsif val.nil?
+        io_gate.input = STDIN
+        return
+      else
+        # noop
+        # Reline::Windows does not suppport input= method
       end
     end
 
     def output=(val)
-      raise TypeError unless val.respond_to?(:write) or val.nil?
+      if val.nil?
+        val = STDOUT
+      elsif !val.respond_to?(:write)
+        raise TypeError
+      end
+
       @output = val
       io_gate.output = val
     end
