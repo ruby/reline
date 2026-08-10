@@ -758,6 +758,7 @@ begin
       start_terminal(10, 30, %W{ruby -I#{@pwd}/lib #{@pwd}/test/reline/yamatanooroti/multiline_repl --auto-indent}, startup_message: 'Multiline REPL.')
       "def hoge\nputs(\n1,\n2\n)\nend".lines do |line|
         write line
+        assert_screen(/#{Regexp.escape(line.chomp)}\nprompt>/) if line.end_with?("\n")
       end
       assert_screen(<<~EOC)
         Multiline REPL.
