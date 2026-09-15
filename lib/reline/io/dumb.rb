@@ -1,4 +1,4 @@
-require 'io/wait'
+require 'io/wait' unless IO.method_defined?(:wait_readable, false)
 
 class Reline::Dumb < Reline::IO
   RESET_COLOR = '' # Do not send color reset sequence
