@@ -1,5 +1,5 @@
 require 'io/console'
-require 'io/wait'
+require 'io/wait' unless IO.method_defined?(:wait_readable, false)
 
 class Reline::ANSI < Reline::IO
   ANSI_CURSOR_KEY_BINDINGS = {
