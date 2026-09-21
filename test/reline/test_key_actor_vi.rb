@@ -667,6 +667,10 @@ class Reline::ViInsertTest < Reline::TestCase
     input_keys('Re')
     assert_line_around_cursor('Re', '')
     input_keys("\C-i")
+    # First tab completes to common prefix
+    assert_line_around_cursor('Re', '')
+    input_keys("\C-i")
+    # Second tab selects first candidate
     assert_line_around_cursor('Readline', '')
     input_keys("\C-i")
     assert_line_around_cursor('Regexp', '')
@@ -690,6 +694,10 @@ class Reline::ViInsertTest < Reline::TestCase
     input_keys('Re')
     assert_line_around_cursor('Re', '')
     input_keys("\C-i")
+    # First tab completes to common prefix
+    assert_line_around_cursor('Re', '')
+    input_keys("\C-i")
+    # Second tab selects first candidate
     assert_line_around_cursor('Readline', '')
     input_keys("\C-i")
     assert_line_around_cursor('Regexp', '')
