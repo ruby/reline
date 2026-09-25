@@ -253,6 +253,14 @@ module Reline
           raise ArgumentError.new('#readmultiline needs block to confirm multiline termination')
         end
 
+        unless io_gate.both_tty?
+          whole_buffer = read_noninteractively(prompt, true, &confirm_multiline_termination)
+          if add_history and whole_buffer and whole_buffer.chomp("\n").size > 0
+            Reline::HISTORY << whole_buffer
+          end
+          return whole_buffer
+        end
+
         io_gate.with_raw_input do
           inner_readline(prompt, add_history, true, rprompt: rprompt, &confirm_multiline_termination)
         end
@@ -275,6 +283,14 @@ module Reline
 
     def readline(_prompt = '', _add_history = false, prompt: _prompt, add_history: _add_history, rprompt: nil)
       @mutex.synchronize do
+        unless io_gate.both_tty?
+          line = read_noninteractively(prompt, false)
+          if add_history and line and line.chomp("\n").size > 0
+            Reline::HISTORY << line.chomp("\n")
+          end
+          return line
+        end
+
         io_gate.with_raw_input do
           inner_readline(prompt, add_history, false, rprompt: rprompt)
         end
@@ -288,6 +304,42 @@ module Reline
         line_editor.reset_line if line_editor.line.nil?
         line
       end
+    end
+
+    # Line-by-line read used when input or output is not a tty. Editing keys
+    # in the input are not interpreted, and the output contains no escape
+    # sequences. Like GNU Readline, the prompt and the input are echoed to
+    # the output so that it forms a self-contained transcript.
+    # https://github.com/ruby/reline/issues/886
+    private def read_noninteractively(prompt, multiline, &confirm_multiline_termination)
+      input = io_gate.input
+      lines = []
+      loop do
+        output.write(noninteractive_prompt(prompt, multiline, lines))
+        output.flush
+        line = input.gets
+        unless line
+          # Close the prompt line even on EOF
+          output.write("\n")
+          break
+        end
+        chomped = line.chomp
+        # Control characters in the input are echoed in caret notation so
+        # that they cannot corrupt the output
+        output.write("#{Reline::Unicode.escape_for_print(chomped)}\n")
+        lines << chomped
+        break unless line.end_with?("\n") # EOF without a trailing newline
+        break unless multiline
+        break if confirm_multiline_termination.call(lines.join("\n") + "\n")
+      end
+      output.flush
+      lines.empty? ? nil : lines.join("\n")
+    end
+
+    private def noninteractive_prompt(prompt, multiline, lines)
+      return prompt unless multiline and prompt_proc
+      prompt_list = prompt_proc.call(lines + [''])
+      prompt_list[lines.size] || prompt_list[0] || prompt
     end
 
     private def inner_readline(prompt, add_history, multiline, rprompt: nil, &confirm_multiline_termination)

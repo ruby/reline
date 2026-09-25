@@ -965,8 +965,8 @@ begin
       cmd = %Q{ruby -e 'puts(%Q{ello\C-ah\C-e})' | ruby -I#{@pwd}/lib -rreline -e 'p Reline.readline(%{> })' | ruby -e 'print STDIN.read'}
       start_terminal(40, 50, ['bash', '-c', cmd])
       assert_screen(<<~'EOC')
-        > hello
-        "hello"
+        > ello^Ah^E
+        "ello\u0001h\u0005"
       EOC
       close
     end
@@ -976,8 +976,8 @@ begin
       cmd = %Q{ruby -e 'print(%Q{abc def \\e\\r})' | ruby -I#{@pwd}/lib -rreline -e 'p Reline.readline(%{> })'}
       start_terminal(40, 50, ['bash', '-c', cmd])
       assert_screen(<<~'EOC')
-        > abc def
-        "abc def "
+        > abc def ^[
+        "abc def \e"
       EOC
       close
     end
@@ -989,6 +989,32 @@ begin
       assert_screen(<<~'EOC')
         > hello
         "hello"
+      EOC
+      close
+    end
+
+    def test_nontty_multiline_eof
+      omit if Reline.core.io_gate.win?
+      cmd = %Q{ruby -e 'puts(%{hello});print(%{world})' | ruby -I#{@pwd}/lib -rreline -e 'p Reline.readmultiline(%{> }){false}'}
+      start_terminal(40, 50, ['bash', '-c', cmd])
+      assert_screen(<<~'EOC')
+        > hello
+        > world
+        "hello\nworld"
+      EOC
+      close
+    end
+
+    def test_nontty_multiline
+      omit if Reline.core.io_gate.win?
+      cmd = %Q{ruby -e 'puts("def f", "42", "end", "hello")' | ruby -I#{@pwd}/lib -rreline -e 'p Reline.readmultiline(%{> }){|input| input.match?(/end/)}; p gets'}
+      start_terminal(40, 50, ['bash', '-c', cmd])
+      assert_screen(<<~'EOC')
+        > def f
+        > 42
+        > end
+        "def f\n42\nend"
+        "hello\n"
       EOC
       close
     end

@@ -3,6 +3,7 @@ require 'io/wait' unless IO.method_defined?(:wait_readable, false)
 class Reline::Dumb < Reline::IO
   RESET_COLOR = '' # Do not send color reset sequence
 
+  attr_reader :input
   attr_writer :output
 
   def initialize(encoding: nil)

@@ -428,28 +428,48 @@ class Reline::Test < Reline::TestCase
     assert_include(out, { result: nil }.inspect)
   end
 
-  def test_read_eof_returns_input
-    pend if win?
-    lib = File.expand_path("../../lib", __dir__)
-    code = "p result: Reline.readline"
-    out = IO.popen([Reline.test_rubybin, "-I#{lib}", "-rreline", "-e", code], "r+") do |io|
-      io.write "a\C-a"
-      io.close_write
-      io.read
-    end
-    assert_include(out, { result: 'a' }.inspect)
+  def test_readline_with_piped_stdin_emits_plain_transcript
+    out = readline_from_piped_stdin("input\n")
+    assert_include(out, ">input\n")
+    assert_not_include(out, "\e")
   end
 
-  def test_read_eof_returns_nil_if_empty
-    pend if win?
-    lib = File.expand_path("../../lib", __dir__)
-    code = "p result: Reline.readline"
-    out = IO.popen([Reline.test_rubybin, "-I#{lib}", "-rreline", "-e", code], "r+") do |io|
-      io.write "a\C-h"
-      io.close_write
-      io.read
-    end
-    assert_include(out, { result: nil }.inspect)
+  def test_readline_with_piped_stdin_closes_prompt_line_on_eof
+    out = readline_from_piped_stdin("")
+    assert_include(out, ">\n")
+  end
+
+  def test_readline_does_not_interpret_editing_keys_in_piped_stdin
+    out = readline_from_piped_stdin("a\C-ab\n")
+    assert_include(out, ">a^Ab\n")
+    assert_include(out, { result: "a\C-ab" }.inspect)
+  end
+
+  def test_readline_adds_piped_stdin_to_history
+    code = <<~'RUBY'
+      require 'timeout'
+      Timeout.timeout(3) { Reline.readline('>', true) }
+      p history: Reline::HISTORY.to_a
+    RUBY
+    out = run_ruby_with_piped_stdin(code, "input\n")
+    assert_include(out, { history: ['input'] }.inspect)
+  end
+
+  def test_readmultiline_with_piped_stdin
+    code = <<~'RUBY'
+      require 'timeout'
+      Reline.prompt_proc = proc { |lines| lines.map.with_index { |_, i| "#{i}>" } }
+      p result: Timeout.timeout(3) { Reline.readmultiline('fallback>') { |code| code.include?('end') } }
+    RUBY
+    out = run_ruby_with_piped_stdin(code, "a\nend\n")
+    assert_include(out, "0>a\n")
+    assert_include(out, "1>end\n")
+    assert_include(out, { result: "a\nend" }.inspect)
+  end
+
+  def test_read_eof_returns_partial_line
+    out = readline_from_piped_stdin("a")
+    assert_include(out, { result: 'a' }.inspect)
   end
 
   def test_require_reline_should_not_trigger_winsize
@@ -471,7 +491,6 @@ class Reline::Test < Reline::TestCase
   end
 
   def readline_from_piped_stdin(stdin)
-    lib = File.expand_path("../../lib", __dir__)
     code = <<~'RUBY'
       require 'timeout'
       begin
@@ -481,6 +500,11 @@ class Reline::Test < Reline::TestCase
       end
     RUBY
 
+    run_ruby_with_piped_stdin(code, stdin)
+  end
+
+  def run_ruby_with_piped_stdin(code, stdin)
+    lib = File.expand_path("../../lib", __dir__)
     IO.popen([Reline.test_rubybin, "-I#{lib}", "-rreline", "-e", code], "r+") do |io|
       io.write stdin
       io.close_write
