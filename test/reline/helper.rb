@@ -112,6 +112,17 @@ class Reline::TestCase < Test::Unit::TestCase
     end
   end
 
+  # Readline-compatible completion_proc: prefix-filtering candidates is
+  # completion_proc's responsibility, not Reline's.
+  def set_completion_candidates(candidates, ignore_case: false)
+    @line_editor.completion_proc = proc { |word|
+      word = word.downcase if ignore_case
+      candidates.select { |s|
+        (ignore_case ? s.downcase : s).start_with?(word)
+      }.map { |s| convert_str(s) }
+    }
+  end
+
   def set_line_around_cursor(before, after)
     input_keys("\C-a\C-k")
     input_keys(after)
