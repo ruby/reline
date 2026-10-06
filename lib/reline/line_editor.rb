@@ -968,6 +968,8 @@ class Reline::LineEditor
 
     return unless respond_to?(method_symbol, true)
     method_obj = method(method_symbol)
+    # Not an editing function, e.g. Kernel#exit bound in inputrc
+    return if Object <= method_obj.owner
     if @vi_arg and argumentable?(method_obj)
       if inclusive?(method_obj)
         method_obj.(key, arg: @vi_arg, inclusive: with_operator)
