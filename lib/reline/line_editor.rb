@@ -78,7 +78,7 @@ class Reline::LineEditor
   end
 
   def io_gate
-    Reline::IOGate
+    Reline.io_gate
   end
 
   def encoding
@@ -139,15 +139,15 @@ class Reline::LineEditor
   end
 
   def reset(prompt = '')
-    @screen_size = Reline::IOGate.get_screen_size
+    @screen_size = io_gate.get_screen_size
     reset_variables(prompt)
-    @rendered_screen.base_y = Reline::IOGate.cursor_pos.y
+    @rendered_screen.base_y = io_gate.cursor_pos.y
     if ENV.key?('RELINE_ALT_SCROLLBAR')
       @full_block = '::'
       @upper_half_block = "''"
       @lower_half_block = '..'
       @block_elem_width = 2
-    elsif Reline::IOGate.win?
+    elsif io_gate.win?
       @full_block = '█'
       @upper_half_block = '▀'
       @lower_half_block = '▄'
@@ -173,11 +173,11 @@ class Reline::LineEditor
   private def handle_resized
     return unless @resized
 
-    @screen_size = Reline::IOGate.get_screen_size
+    @screen_size = io_gate.get_screen_size
     @resized = false
     scroll_into_view
-    Reline::IOGate.move_cursor_up @rendered_screen.cursor_y
-    @rendered_screen.base_y = Reline::IOGate.cursor_pos.y
+    io_gate.move_cursor_up @rendered_screen.cursor_y
+    @rendered_screen.base_y = io_gate.cursor_pos.y
     clear_rendered_screen_cache
     render
   end
@@ -189,8 +189,8 @@ class Reline::LineEditor
     clear_dialogs
     render
     cursor_to_bottom_offset = @rendered_screen.lines.size - @rendered_screen.cursor_y
-    Reline::IOGate.scroll_down cursor_to_bottom_offset
-    Reline::IOGate.move_cursor_column 0
+    io_gate.scroll_down cursor_to_bottom_offset
+    io_gate.move_cursor_column 0
     clear_rendered_screen_cache
     case @old_trap
     when 'DEFAULT', 'SYSTEM_DEFAULT'
@@ -204,9 +204,15 @@ class Reline::LineEditor
     end
   end
 
+  # The screen size changed: the next read of a key redraws, as after
+  # SIGWINCH.
+  def resize
+    @resized = true
+  end
+
   def set_signal_handlers
-    Reline::IOGate.set_winch_handler do
-      @resized = true
+    io_gate.set_winch_handler do
+      resize
     end
     @old_trap = Signal.trap('INT') do
       @interrupted = true
@@ -412,8 +418,8 @@ class Reline::LineEditor
       if level == :skip
         # do nothing
       elsif level == :blank
-        Reline::IOGate.move_cursor_column base_x
-        Reline::IOGate.write "#{Reline::IOGate.reset_color_sequence}#{' ' * width}"
+        io_gate.move_cursor_column base_x
+        io_gate.write "#{io_gate.reset_color_sequence}#{' ' * width}"
       else
         x, w, content = new_items[level]
         cover_begin = base_x != 0 && new_levels[base_x - 1] == level
@@ -422,14 +428,14 @@ class Reline::LineEditor
         unless x == base_x && w == width
           content, pos = Reline::Unicode.take_mbchar_range(content, base_x - x, width, cover_begin: cover_begin, cover_end: cover_end, padding: true)
         end
-        Reline::IOGate.move_cursor_column x + pos
-        Reline::IOGate.write "#{Reline::IOGate.reset_color_sequence}#{content}#{Reline::IOGate.reset_color_sequence}"
+        io_gate.move_cursor_column x + pos
+        io_gate.write "#{io_gate.reset_color_sequence}#{content}#{io_gate.reset_color_sequence}"
       end
       base_x += width
     end
     if old_levels.size > new_levels.size
-      Reline::IOGate.move_cursor_column new_levels.size
-      Reline::IOGate.erase_after_cursor
+      io_gate.move_cursor_column new_levels.size
+      io_gate.erase_after_cursor
     end
   end
 
@@ -459,14 +465,14 @@ class Reline::LineEditor
   end
 
   def render_finished
-    Reline::IOGate.buffered_output do
+    io_gate.buffered_output do
       render_differential([], 0, 0)
       lines = @buffer_of_lines.size.times.map do |i|
         line = Reline::Unicode.strip_non_printing_start_end(prompt_list[i]) + modified_lines[i]
         wrapped_lines = split_line_by_width(line, screen_width)
         wrapped_lines.last.empty? ? "#{line} " : line
       end
-      Reline::IOGate.write lines.map { |l| "#{l}\r\n" }.join
+      io_gate.write lines.map { |l| "#{l}\r\n" }.join
     end
   end
 
@@ -510,7 +516,7 @@ class Reline::LineEditor
       end
     end
 
-    Reline::IOGate.buffered_output do
+    io_gate.buffered_output do
       render_differential new_lines, wrapped_cursor_x, wrapped_cursor_y - screen_scroll_top
     end
   end
@@ -519,15 +525,15 @@ class Reline::LineEditor
   # by calculating the difference from the previous render.
 
   private def render_differential(new_lines, new_cursor_x, new_cursor_y)
-    Reline::IOGate.disable_auto_linewrap(true) if Reline::IOGate.win?
+    io_gate.disable_auto_linewrap(true) if io_gate.win?
     rendered_lines = @rendered_screen.lines
     cursor_y = @rendered_screen.cursor_y
     if new_lines != rendered_lines
       # Hide cursor while rendering to avoid cursor flickering.
-      Reline::IOGate.hide_cursor
+      io_gate.hide_cursor
       num_lines = [[new_lines.size, rendered_lines.size].max, screen_height].min
       if @rendered_screen.base_y + num_lines > screen_height
-        Reline::IOGate.scroll_down(num_lines - cursor_y - 1)
+        io_gate.scroll_down(num_lines - cursor_y - 1)
         @rendered_screen.base_y = screen_height - num_lines
         cursor_y = num_lines - 1
       end
@@ -536,23 +542,23 @@ class Reline::LineEditor
         line_to_render = new_lines[i] || []
         next if rendered_line == line_to_render
 
-        Reline::IOGate.move_cursor_down i - cursor_y
+        io_gate.move_cursor_down i - cursor_y
         cursor_y = i
         unless rendered_lines[i]
-          Reline::IOGate.move_cursor_column 0
-          Reline::IOGate.erase_after_cursor
+          io_gate.move_cursor_column 0
+          io_gate.erase_after_cursor
         end
         render_line_differential(rendered_line, line_to_render)
       end
       @rendered_screen.lines = new_lines
-      Reline::IOGate.show_cursor
+      io_gate.show_cursor
     end
-    Reline::IOGate.move_cursor_column new_cursor_x
+    io_gate.move_cursor_column new_cursor_x
     new_cursor_y = new_cursor_y.clamp(0, screen_height - 1)
-    Reline::IOGate.move_cursor_down new_cursor_y - cursor_y
+    io_gate.move_cursor_down new_cursor_y - cursor_y
     @rendered_screen.cursor_y = new_cursor_y
   ensure
-    Reline::IOGate.disable_auto_linewrap(false) if Reline::IOGate.win?
+    io_gate.disable_auto_linewrap(false) if io_gate.win?
   end
 
   private def clear_rendered_screen_cache
@@ -1815,8 +1821,8 @@ class Reline::LineEditor
   alias_method :yank_pop, :em_yank_pop
 
   private def ed_clear_screen(key)
-    Reline::IOGate.clear_screen
-    @screen_size = Reline::IOGate.get_screen_size
+    io_gate.clear_screen
+    @screen_size = io_gate.get_screen_size
     @rendered_screen.base_y = 0
     clear_rendered_screen_cache
   end

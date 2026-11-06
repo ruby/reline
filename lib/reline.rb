@@ -74,7 +74,15 @@ module Reline
     end
 
     def io_gate
-      Reline::IOGate
+      Reline.io_gate
+    end
+
+    # The size of a remote terminal, as [rows, columns]. The line editor
+    # redraws as it does after SIGWINCH.
+    def screen_size=(size)
+      rows, columns = size
+      io_gate.set_screen_size(rows, columns)
+      line_editor.resize
     end
 
     def encoding
@@ -327,7 +335,7 @@ module Reline
 
       pre_input_hook&.call
 
-      unless Reline::IOGate.dumb?
+      unless io_gate.dumb?
         @dialog_proc_list.each_pair do |name_sym, d|
           line_editor.add_dialog_proc(name_sym, d.dialog_proc, d.context)
         end
@@ -411,7 +419,7 @@ module Reline
     end
 
     private def may_req_ambiguous_char_width
-      @ambiguous_width = 1 if io_gate.dumb? || !STDIN.tty? || !STDOUT.tty?
+      @ambiguous_width = 1 if io_gate.dumb? || !io_gate.terminal?
       return if defined? @ambiguous_width
       io_gate.move_cursor_column(0)
       begin
@@ -438,6 +446,19 @@ module Reline
     def_single_delegators :core, :"#{name}", :"#{name}="
   }
   def_single_delegators :core, :input=, :output=
+  def_single_delegators :core, :screen_size=
+
+  # The IO gate in use: the one set with io_gate=, else Reline::IOGate.
+  def self.io_gate
+    @io_gate || Reline::IOGate
+  end
+
+  # Replaces the IO gate: an ANSI gate over a socket or a serial line puts
+  # the line editor on a remote terminal. nil restores Reline::IOGate.
+  def self.io_gate=(gate)
+    @io_gate = gate
+    core.output = gate.output if gate.respond_to?(:output)
+  end
   def_single_delegators :core, :vi_editing_mode, :emacs_editing_mode
 
   ##

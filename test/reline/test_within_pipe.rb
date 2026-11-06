@@ -74,4 +74,19 @@ class Reline::WithinPipeTest < Reline::TestCase
     })
     assert_equal "abc\ndef", result
   end
+
+  # A terminal on the far side of the pipes: an ANSI gate with terminal: true
+  # takes the place of the default gate, and a reported screen size reaches
+  # the line editor.
+  def test_ansi_gate_on_a_remote_terminal
+    Reline.io_gate = Reline::ANSI.new(input: @input_reader, output: @output_writer, terminal: true)
+    Reline.screen_size = [30, 100]
+    assert_equal [30, 100], Reline.get_screen_size
+    # the answer to the cursor position query, then a line
+    @writer.write("\e[1;1Rabc\n")
+    assert_equal 'abc', Reline.readmultiline(&proc{ true })
+    assert_include @reader.read_nonblock(4096), "\e[6n"
+  ensure
+    Reline.io_gate = nil
+  end
 end

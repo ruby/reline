@@ -69,4 +69,47 @@ class Reline::ANSITest < Reline::TestCase
     assert_key_binding("\e ", :em_set_mark, [:emacs])
     assert_key_binding("\C-x\C-x", :em_exchange_mark, [:emacs])
   end
+
+  # An ANSI gate over a pair of pipes, with a terminal on the far side
+  # (a socket or a serial line in practice).
+  def with_remote_terminal(terminal: true)
+    in_r, in_w = IO.pipe
+    out_r, out_w = IO.pipe
+    yield Reline::ANSI.new(input: in_r, output: out_w, terminal: terminal), in_w, out_r
+  ensure
+    [in_r, in_w, out_r, out_w].each(&:close)
+  end
+
+  def test_remote_terminal_cursor_pos
+    with_remote_terminal do |gate, keys, screen|
+      assert_true gate.terminal?
+      keys.write "\e[12;5R"
+      pos = gate.cursor_pos
+      assert_equal [4, 11], [pos.x, pos.y]
+      assert_equal "\e[6n", screen.read_nonblock(100)
+    end
+  end
+
+  def test_pipe_without_terminal_asks_nothing
+    with_remote_terminal(terminal: nil) do |gate, keys, screen|
+      assert_false gate.terminal?
+      pos = gate.cursor_pos
+      assert_equal [0, 0], [pos.x, pos.y]
+      assert_raise(IO::WaitReadable) { screen.read_nonblock(1) }
+    end
+  end
+
+  def test_remote_terminal_screen_size
+    with_remote_terminal do |gate, _keys, _screen|
+      gate.set_screen_size(30, 100)
+      assert_equal [30, 100], gate.get_screen_size
+    end
+  end
+
+  def test_remote_terminal_read_single_char
+    with_remote_terminal do |gate, keys, _screen|
+      keys.write "a"
+      assert_equal "a", gate.read_single_char(1)
+    end
+  end
 end
