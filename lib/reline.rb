@@ -7,6 +7,7 @@ require 'reline/key_stroke'
 require 'reline/line_editor'
 require 'reline/history'
 require 'reline/io'
+require 'reline/telnet'
 require 'reline/face'
 require 'rbconfig'
 
