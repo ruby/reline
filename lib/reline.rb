@@ -449,6 +449,8 @@ module Reline
   def_single_delegators :core, :input=, :output=
   def_single_delegators :core, :screen_size=
 
+  @io_gate = nil
+
   # The IO gate in use: the one set with io_gate=, else Reline::IOGate.
   def self.io_gate
     @io_gate || Reline::IOGate
