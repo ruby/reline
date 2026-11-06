@@ -89,4 +89,17 @@ class Reline::WithinPipeTest < Reline::TestCase
   ensure
     Reline.io_gate = nil
   end
+
+  # An interrupt that another thread reports (a remote terminal sends a
+  # byte, not a signal) acts as SIGINT: with no handler of INT, readmultiline
+  # raises Interrupt.
+  def test_interrupt_from_another_thread
+    t = Thread.new do
+      sleep 0.1
+      Reline.line_editor.interrupt
+    end
+    assert_raise(Interrupt) { Reline.readmultiline(&proc{ true }) }
+  ensure
+    t&.join
+  end
 end

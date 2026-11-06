@@ -210,12 +210,18 @@ class Reline::LineEditor
     @resized = true
   end
 
+  # The terminal sent an interrupt (a remote terminal sends a byte, not a
+  # signal): the next read of a key handles it as after SIGINT.
+  def interrupt
+    @interrupted = true
+  end
+
   def set_signal_handlers
     io_gate.set_winch_handler do
       resize
     end
     @old_trap = Signal.trap('INT') do
-      @interrupted = true
+      interrupt
     end
   end
 
