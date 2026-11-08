@@ -37,4 +37,13 @@ class Reline::MacroTest < Reline::TestCase
     }
     assert_equal 'ab', @line_editor.line
   end
+
+  def test_ignore_method_inherited_from_object
+    input('abc')
+    assert_nothing_raised {
+      input_key("\C-d", :exit)
+      input_key("\C-d", :sleep)
+    }
+    assert_equal 'abc', @line_editor.line
+  end
 end
