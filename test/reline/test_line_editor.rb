@@ -130,107 +130,107 @@ class Reline::LineEditor
 
     def test_line_increase_decrease
       assert_output '[COL_0]bb' do
-        @line_editor.render_line_differential([[0, 1, 'a']], [[0, 2, 'bb']])
+        @line_editor.render_line_differential([[:line, 0, 1, 'a']], [[:line, 0, 2, 'bb']])
       end
 
       assert_output '[COL_0]b[COL_1][ERASE]' do
-        @line_editor.render_line_differential([[0, 2, 'aa']], [[0, 1, 'b']])
+        @line_editor.render_line_differential([[:line, 0, 2, 'aa']], [[:line, 0, 1, 'b']])
       end
     end
 
     def test_dialog_appear_disappear
       assert_output '[COL_3]dialog' do
-        @line_editor.render_line_differential([[0, 1, 'a']], [[0, 1, 'a'], [3, 6, 'dialog']])
+        @line_editor.render_line_differential([[:line, 0, 1, 'a']], [[:line, 0, 1, 'a'], [:dialog, 3, 6, 'dialog']])
       end
 
       assert_output '[COL_3]dialog' do
-        @line_editor.render_line_differential([[0, 10, 'a' * 10]], [[0, 10, 'a' * 10], [3, 6, 'dialog']])
+        @line_editor.render_line_differential([[:line, 0, 10, 'a' * 10]], [[:line, 0, 10, 'a' * 10], [:dialog, 3, 6, 'dialog']])
       end
 
       assert_output '[COL_1][ERASE]' do
-        @line_editor.render_line_differential([[0, 1, 'a'], [3, 6, 'dialog']], [[0, 1, 'a']])
+        @line_editor.render_line_differential([[:line, 0, 1, 'a'], [:dialog, 3, 6, 'dialog']], [[:line, 0, 1, 'a']])
       end
 
       assert_output '[COL_3]aaaaaa' do
-        @line_editor.render_line_differential([[0, 10, 'a' * 10], [3, 6, 'dialog']], [[0, 10, 'a' * 10]])
+        @line_editor.render_line_differential([[:line, 0, 10, 'a' * 10], [:dialog, 3, 6, 'dialog']], [[:line, 0, 10, 'a' * 10]])
       end
     end
 
     def test_dialog_change
       assert_output '[COL_3]DIALOG' do
-        @line_editor.render_line_differential([[0, 2, 'a'], [3, 6, 'dialog']], [[0, 2, 'a'], [3, 6, 'DIALOG']])
+        @line_editor.render_line_differential([[:line, 0, 2, 'a'], [:dialog, 3, 6, 'dialog']], [[:line, 0, 2, 'a'], [:dialog, 3, 6, 'DIALOG']])
       end
 
       assert_output '[COL_3]DIALOG' do
-        @line_editor.render_line_differential([[0, 10, 'a' * 10], [3, 6, 'dialog']], [[0, 10, 'a' * 10], [3, 6, 'DIALOG']])
+        @line_editor.render_line_differential([[:line, 0, 10, 'a' * 10], [:dialog, 3, 6, 'dialog']], [[:line, 0, 10, 'a' * 10], [:dialog, 3, 6, 'DIALOG']])
       end
     end
 
     def test_update_under_dialog
       assert_output '[COL_0]b[COL_1] ' do
-        @line_editor.render_line_differential([[0, 2, 'aa'], [4, 6, 'dialog']], [[0, 1, 'b'], [4, 6, 'dialog']])
+        @line_editor.render_line_differential([[:line, 0, 2, 'aa'], [:dialog, 4, 6, 'dialog']], [[:line, 0, 1, 'b'], [:dialog, 4, 6, 'dialog']])
       end
 
       assert_output '[COL_0]bbb[COL_9]b' do
-        @line_editor.render_line_differential([[0, 10, 'a' * 10], [3, 6, 'dialog']], [[0, 10, 'b' * 10], [3, 6, 'dialog']])
+        @line_editor.render_line_differential([[:line, 0, 10, 'a' * 10], [:dialog, 3, 6, 'dialog']], [[:line, 0, 10, 'b' * 10], [:dialog, 3, 6, 'dialog']])
       end
 
       assert_output '[COL_0]b[COL_1]  [COL_9][ERASE]' do
-        @line_editor.render_line_differential([[0, 10, 'a' * 10], [3, 6, 'dialog']], [[0, 1, 'b'], [3, 6, 'dialog']])
+        @line_editor.render_line_differential([[:line, 0, 10, 'a' * 10], [:dialog, 3, 6, 'dialog']], [[:line, 0, 1, 'b'], [:dialog, 3, 6, 'dialog']])
       end
     end
 
     def test_dialog_move
       assert_output '[COL_3]dialog[COL_9][ERASE]' do
-        @line_editor.render_line_differential([[0, 1, 'a'], [4, 6, 'dialog']], [[0, 1, 'a'], [3, 6, 'dialog']])
+        @line_editor.render_line_differential([[:line, 0, 1, 'a'], [:dialog, 4, 6, 'dialog']], [[:line, 0, 1, 'a'], [:dialog, 3, 6, 'dialog']])
       end
 
       assert_output '[COL_4] [COL_5]dialog' do
-        @line_editor.render_line_differential([[0, 1, 'a'], [4, 6, 'dialog']], [[0, 1, 'a'], [5, 6, 'dialog']])
+        @line_editor.render_line_differential([[:line, 0, 1, 'a'], [:dialog, 4, 6, 'dialog']], [[:line, 0, 1, 'a'], [:dialog, 5, 6, 'dialog']])
       end
 
       assert_output '[COL_2]dialog[COL_8]a' do
-        @line_editor.render_line_differential([[0, 10, 'a' * 10], [3, 6, 'dialog']], [[0, 10, 'a' * 10], [2, 6, 'dialog']])
+        @line_editor.render_line_differential([[:line, 0, 10, 'a' * 10], [:dialog, 3, 6, 'dialog']], [[:line, 0, 10, 'a' * 10], [:dialog, 2, 6, 'dialog']])
       end
 
       assert_output '[COL_2]a[COL_3]dialog' do
-        @line_editor.render_line_differential([[0, 10, 'a' * 10], [2, 6, 'dialog']], [[0, 10, 'a' * 10], [3, 6, 'dialog']])
+        @line_editor.render_line_differential([[:line, 0, 10, 'a' * 10], [:dialog, 2, 6, 'dialog']], [[:line, 0, 10, 'a' * 10], [:dialog, 3, 6, 'dialog']])
       end
     end
 
     def test_multibyte
-      base = [0, 12, '一二三一二三']
-      left = [0, 3, 'LLL']
-      right = [9, 3, 'RRR']
-      front = [3, 6, 'FFFFFF']
+      base = [:base, 0, 12, '一二三一二三']
+      left = [:left, 0, 3, 'LLL']
+      right = [:right, 9, 3, 'RRR']
+      front = [:front, 3, 6, 'FFFFFF']
       # 一 FFFFFF 三
       # 一二三一二三
       assert_output '[COL_2]二三一二' do
-        @line_editor.render_line_differential([base, front], [base, nil])
+        @line_editor.render_line_differential([base, front], [base])
       end
 
       # LLLFFFFFF 三
       # LLL 三一二三
       assert_output '[COL_3] 三一二' do
-        @line_editor.render_line_differential([base, left, front], [base, left, nil])
+        @line_editor.render_line_differential([base, left, front], [base, left])
       end
 
       # 一 FFFFFFRRR
       # 一二三一 RRR
       assert_output '[COL_2]二三一 ' do
-        @line_editor.render_line_differential([base, right, front], [base, right, nil])
+        @line_editor.render_line_differential([base, right, front], [base, right])
       end
 
       # LLLFFFFFFRRR
       # LLL 三一 RRR
       assert_output '[COL_3] 三一 ' do
-        @line_editor.render_line_differential([base, left, right, front], [base, left, right, nil])
+        @line_editor.render_line_differential([base, left, right, front], [base, left, right])
       end
     end
 
     def test_complicated
-      state_a = [nil, [19, 7, 'bbbbbbb'], [15, 8, 'cccccccc'], [10, 5, 'ddddd'], [18, 4, 'eeee'], [1, 3, 'fff'], [17, 2, 'gg'], [7, 1, 'h']]
-      state_b = [[5, 9, 'aaaaaaaaa'], nil, [15, 8, 'cccccccc'], nil, [18, 4, 'EEEE'], [25, 4, 'ffff'], [17, 2, 'gg'], [2, 2, 'hh']]
+      state_a = [[:b, 19, 7, 'bbbbbbb'], [:c, 15, 8, 'cccccccc'], [:d, 10, 5, 'ddddd'], [:e, 18, 4, 'eeee'], [:f, 1, 3, 'fff'], [:g, 17, 2, 'gg'], [:h, 7, 1, 'h']]
+      state_b = [[:a, 5, 9, 'aaaaaaaaa'], [:c, 15, 8, 'cccccccc'], [:e, 18, 4, 'EEEE'], [:f, 25, 4, 'ffff'], [:g, 17, 2, 'gg'], [:h, 2, 2, 'hh']]
       # state_a: " fff   h  dddddccggeeecbbb"
       # state_b: "  hh aaaaaaaaa ccggEEEc  ffff"
 
