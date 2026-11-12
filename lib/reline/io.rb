@@ -34,6 +34,11 @@ module Reline
       false
     end
 
+    # Whether input and output are both connected to a terminal.
+    def both_tty?
+      true
+    end
+
     def win?
       false
     end
