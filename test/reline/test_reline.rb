@@ -428,6 +428,26 @@ class Reline::Test < Reline::TestCase
     assert_include(out, { result: nil }.inspect)
   end
 
+  def test_dumb_tty_buffered_output_keeps_first_and_finished_renders
+    input = StringIO.new
+    output = StringIO.new
+
+    [input, output].each do |io|
+      def io.tty?
+        true
+      end
+    end
+    io_gate = Reline::Dumb.new
+    io_gate.input = input
+    io_gate.output = output
+
+    io_gate.buffered_output { io_gate.write("first render") }
+    io_gate.buffered_output { io_gate.write("rerender") }
+    io_gate.buffered_output { io_gate.write("finished render\n") }
+
+    assert_equal("first renderfinished render\n", output.string)
+  end
+
   def test_read_eof_returns_input
     pend if win?
     lib = File.expand_path("../../lib", __dir__)
