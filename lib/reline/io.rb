@@ -38,6 +38,12 @@ module Reline
       false
     end
 
+    # Whether a terminal that answers queries (cursor position, width of
+    # an ambiguous character) is on the far side of the IO pair.
+    def terminal?
+      STDIN.tty? && STDOUT.tty?
+    end
+
     def reset_color_sequence
       self.class::RESET_COLOR
     end
