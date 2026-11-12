@@ -41,6 +41,11 @@ class Reline::Unicode
   OSC_REGEXP = /\e\]\d+(?:;[^;\a\e]+)*(?:\a|\e\\)/
   WIDTH_SCANNER = /\G(?:(#{NON_PRINTING_START})|(#{NON_PRINTING_END})|(#{CSI_REGEXP})|(#{OSC_REGEXP})|(\X))/o
 
+  AMBIGUOUS_WIDTH_EMOJI_CLUSTER = Regexp.union(
+    /\p{Grapheme_Cluster_Break=Regional_Indicator}{2}/, # Flag emoji
+    /\p{Extended_Pictographic}\u{FE0F}/ # Variation selector-16
+  )
+
   def self.escape_for_print(str)
     str.chars.map! { |gr|
       case gr
@@ -78,6 +83,20 @@ class Reline::Unicode
     size == -1 ? Reline.ambiguous_width : size
   end
 
+  # Some emoji needs special handling on rendering because width is ambiguous depending on terminal emulator and configuration.
+  # For example, iTerm can configure flag-emoji width and variation selector 16 emoji width.
+  #   split_ambiguous_emoji('abc') #=> nil (no ambiguous emoji)
+  #   split_ambiguous_emoji('abc[flag][flag]de') #=> [['abc', false], ['[flag]', true], ['[flag]', true], ['de', false]]
+  def self.split_ambiguous_emoji(str)
+    return if str.ascii_only? || !str.match?(AMBIGUOUS_WIDTH_EMOJI_CLUSTER)
+
+    str.grapheme_clusters.chunk.with_index do |gc, idx|
+      gc.match?(AMBIGUOUS_WIDTH_EMOJI_CLUSTER) ? idx : -1
+    end.map do |key, gcs|
+      [gcs.join, key != -1]
+    end
+  end
+
   def self.get_mbchar_width(mbchar)
     ord = mbchar.ord
     if ord <= 0x1F # in EscapedPairs
@@ -87,8 +106,16 @@ class Reline::Unicode
     end
 
     utf8_mbchar = mbchar.encode(Encoding::UTF_8)
+    return east_asian_width(utf8_mbchar.ord) if utf8_mbchar.size == 1
+
+    width = 0
+    if utf8_mbchar.match?(AMBIGUOUS_WIDTH_EMOJI_CLUSTER)
+      width += 2
+      utf8_mbchar = utf8_mbchar.sub(AMBIGUOUS_WIDTH_EMOJI_CLUSTER, '')
+    end
+
     zwj = false
-    utf8_mbchar.chars.sum do |c|
+    width + utf8_mbchar.chars.sum do |c|
       if zwj
         zwj = false
         0
