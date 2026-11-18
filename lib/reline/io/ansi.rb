@@ -17,14 +17,19 @@ class Reline::ANSI < Reline::IO
     'H' => [:ed_move_to_beg, {}],
   }
 
-  attr_writer :input, :output
+  attr_accessor :input, :output
 
-  def initialize
-    @input = STDIN
-    @output = STDOUT
+  # terminal: whether a terminal that answers ANSI queries is on the far
+  # side of the IO pair. nil (the default) means "when both are ttys".
+  # Pass true for a remote terminal behind a socket or a serial line.
+  def initialize(input: STDIN, output: STDOUT, terminal: nil)
+    @input = input
+    @output = output
+    @terminal = terminal
     @buf = []
     @output_buffer = nil
     @old_winch_handler = nil
+    @screen_size = nil
   end
 
   def encoding
@@ -105,12 +110,18 @@ class Reline::ANSI < Reline::IO
     end
   end
 
-  def with_raw_input
+  # Runs the block with the input in raw mode when the input is a tty. A
+  # socket or a pipe has no mode to set: the far side is raw already.
+  private def with_raw(**opts)
     if @input.tty?
-      @input.raw(intr: true) { yield }
+      @input.raw(**opts) { yield }
     else
       yield
     end
+  end
+
+  def with_raw_input
+    with_raw(intr: true) { yield }
   end
 
   def inner_getc(timeout_second)
@@ -169,18 +180,21 @@ class Reline::ANSI < Reline::IO
     @buf.unshift(c)
   end
 
+  # The size of the terminal: the winsize of a tty, else the size given
+  # to set_screen_size (a remote terminal reports it), else LINES and
+  # COLUMNS, else 24x80.
   def get_screen_size
-    s = @input.winsize
-    return s if s[0] > 0 && s[1] > 0
+    s = @input.winsize rescue nil
+    return s if s && s[0] > 0 && s[1] > 0
+    return @screen_size if @screen_size
     s = [ENV["LINES"].to_i, ENV["COLUMNS"].to_i]
     return s if s[0] > 0 && s[1] > 0
-    [24, 80]
-  rescue SystemCallError
     [24, 80]
   end
 
   def set_screen_size(rows, columns)
-    @input.winsize = [rows, columns]
+    @screen_size = [rows, columns]
+    @input.winsize = [rows, columns] if @input.tty?
     self
   rescue SystemCallError
     self
@@ -188,13 +202,13 @@ class Reline::ANSI < Reline::IO
 
   private def cursor_pos_internal(timeout:)
     match = nil
-    @input.raw do |stdin|
+    with_raw do
       @output << "\e[6n"
       @output.flush
       timeout_at = Time.now + timeout
       buf = +''
-      while (wait = timeout_at - Time.now) > 0 && stdin.wait_readable(wait)
-        buf << stdin.readpartial(1024)
+      while (wait = timeout_at - Time.now) > 0 && @input.wait_readable(wait)
+        buf << @input.readpartial(1024)
         if (match = buf.match(/\e\[(?<row>\d+);(?<column>\d+)R/))
           buf = match.pre_match + match.post_match
           break
@@ -206,12 +220,16 @@ class Reline::ANSI < Reline::IO
   end
 
   def cursor_pos
-    col, row = cursor_pos_internal(timeout: 0.5) if both_tty?
+    col, row = cursor_pos_internal(timeout: 0.5) if terminal?
     Reline::CursorPos.new(col || 0, row || 0)
   end
 
   def both_tty?
     @input.tty? && @output.tty?
+  end
+
+  def terminal?
+    @terminal.nil? ? both_tty? : @terminal
   end
 
   def write(string)
@@ -292,20 +310,20 @@ class Reline::ANSI < Reline::IO
 
   def read_single_char(timeout_second)
     # Disable intr to read `C-c` `C-z` `C-\` for quoted insert
-    @input.raw(intr: false) do
+    with_raw(intr: false) do
       super
     end
   end
 
   def prep
     # Enable bracketed paste
-    write "\e[?2004h" if Reline.core.config.enable_bracketed_paste && both_tty?
+    write "\e[?2004h" if Reline.core.config.enable_bracketed_paste && terminal?
     nil
   end
 
   def deprep(otio)
     # Disable bracketed paste
-    write "\e[?2004l" if Reline.core.config.enable_bracketed_paste && both_tty?
+    write "\e[?2004l" if Reline.core.config.enable_bracketed_paste && terminal?
     Signal.trap('WINCH', @old_winch_handler) if @old_winch_handler
     Signal.trap('CONT', @old_cont_handler) if @old_cont_handler
   end
