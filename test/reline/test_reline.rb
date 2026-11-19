@@ -445,6 +445,12 @@ class Reline::Test < Reline::TestCase
     assert_include(out, { result: "a\C-ab" }.inspect)
   end
 
+  def test_readline_with_piped_stdin_containing_invalid_bytes
+    out = readline_from_piped_stdin("ab\xFFcd\n")
+    assert_match(/^>ab.cd$/, out)
+    assert_include(out, { result: "ab\xFFcd" }.inspect)
+  end
+
   def test_readline_adds_piped_stdin_to_history
     code = <<~'RUBY'
       require 'timeout'

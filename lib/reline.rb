@@ -326,7 +326,7 @@ module Reline
         chomped = line.chomp
         # Control characters in the input are echoed in caret notation so
         # that they cannot corrupt the output
-        output.write("#{Reline::Unicode.escape_for_print(chomped)}\n")
+        output.write("#{Reline::Unicode.escape_for_print(chomped.scrub)}\n")
         lines << chomped
         break unless line.end_with?("\n") # EOF without a trailing newline
         break unless multiline
