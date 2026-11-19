@@ -17,7 +17,7 @@ class Reline::ANSI < Reline::IO
     'H' => [:ed_move_to_beg, {}],
   }
 
-  attr_writer :input, :output
+  attr_accessor :input, :output
 
   def initialize
     @input = STDIN
