@@ -5,6 +5,7 @@ class Reline::Windows < Reline::IO
     const_set(name, console.const_get(name))
   end
 
+  attr_reader :input
   attr_writer :output
 
   def initialize
@@ -91,6 +92,10 @@ class Reline::Windows < Reline::IO
     true
   rescue SystemCallError
     false
+  end
+
+  def both_tty?
+    @input.tty? && @console_output.tty?
   end
 
   def msys_tty?
